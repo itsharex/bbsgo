@@ -181,6 +181,15 @@ func CreateTopic(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// 给发帖用户增加积分
+	var user models.User
+	if err := database.DB.First(&user, userID).Error; err == nil {
+		user.Credits += 20
+		if err := database.DB.Save(&user).Error; err != nil {
+			log.Printf("create topic: failed to add credits, userID: %d, error: %v", userID, err)
+		}
+	}
+
 	// 重新加载话题关联数据
 	if err := database.DB.Preload("User").Preload("Forum").Preload("Tags").First(&topic, topic.ID).Error; err != nil {
 		log.Printf("create topic: failed to reload topic, id: %d, error: %v", topic.ID, err)

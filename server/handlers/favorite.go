@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // FavoriteRequest 收藏请求结构
@@ -69,18 +70,20 @@ func DeleteFavorite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 解析请求体
-	var req FavoriteRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Printf("delete favorite: failed to decode request body, error: %v", err)
+	// 从 URL 查询参数获取
+	topicIDStr := r.URL.Query().Get("topic_id")
+	topicID, _ := strconv.Atoi(topicIDStr)
+
+	if topicID == 0 {
+		log.Printf("delete favorite: invalid parameters, topicID: %d", topicID)
 		utils.Error(w, 400, "无效的请求参数")
 		return
 	}
 
 	// 查询收藏记录
 	var favorite models.Favorite
-	if err := database.DB.Where("user_id = ? AND topic_id = ?", userID, req.TopicID).First(&favorite).Error; err != nil {
-		log.Printf("delete favorite: favorite not found, userID: %d, topicID: %d, error: %v", userID, req.TopicID, err)
+	if err := database.DB.Where("user_id = ? AND topic_id = ?", userID, topicID).First(&favorite).Error; err != nil {
+		log.Printf("delete favorite: favorite not found, userID: %d, topicID: %d, error: %v", userID, topicID, err)
 		utils.Error(w, 404, "收藏记录不存在")
 		return
 	}
@@ -92,8 +95,33 @@ func DeleteFavorite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("delete favorite: favorite deleted successfully, userID: %d, topicID: %d", userID, req.TopicID)
+	log.Printf("delete favorite: favorite deleted successfully, userID: %d, topicID: %d", userID, topicID)
 	utils.Success(w, nil)
+}
+
+// CheckFavorite 检查收藏状态处理器
+func CheckFavorite(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		utils.Success(w, map[string]interface{}{"favorited": false})
+		return
+	}
+
+	var req FavoriteRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		utils.Success(w, map[string]interface{}{"favorited": false})
+		return
+	}
+
+	var count int64
+	if err := database.DB.Model(&models.Favorite{}).
+		Where("user_id = ? AND topic_id = ?", userID, req.TopicID).
+		Count(&count).Error; err != nil {
+		utils.Success(w, map[string]interface{}{"favorited": false})
+		return
+	}
+
+	utils.Success(w, map[string]interface{}{"favorited": count > 0})
 }
 
 // GetFavorites 获取当前用户的收藏列表处理器

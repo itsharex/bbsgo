@@ -11,15 +11,15 @@ import (
 )
 
 // UploadFile 文件上传处理器
-// 支持图片上传到配置的存储服务（本地/七牛云/阿里云/腾讯云）
-// 最大文件大小：50MB
+// 支持图片和视频上传到配置的存储服务（本地/七牛云/阿里云/腾讯云）
+// 最大文件大小：图片50MB，视频500MB
 func UploadFile(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[upload] upload handler started")
 
-	// 解析 multipart 表单，最大50MB
-	if err := r.ParseMultipartForm(50 << 20); err != nil {
+	// 解析 multipart 表单，最大500MB
+	if err := r.ParseMultipartForm(500 << 20); err != nil {
 		log.Printf("[upload] failed to parse multipart form, error: %v", err)
-		utils.Error(w, 400, "文件大小超过限制(最大50MB)")
+		utils.Error(w, 400, "文件大小超过限制")
 		return
 	}
 
@@ -34,16 +34,11 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("[upload] received file: %s, size: %d bytes", header.Filename, header.Size)
 
-	// 验证文件大小
-	if header.Size > 50*1024*1024 {
-		log.Printf("[upload] file too large: %d bytes", header.Size)
-		utils.Error(w, 400, "文件大小超过限制(最大50MB)")
-		return
-	}
-
 	// 获取文件扩展名并验证
 	ext := strings.ToLower(filepath.Ext(header.Filename))
-	allowedExts := map[string]bool{
+	
+	// 支持的文件格式
+	imageExts := map[string]bool{
 		".jpg":  true,
 		".jpeg": true,
 		".png":  true,
@@ -52,10 +47,36 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		".svg":  true,
 		".bmp":  true,
 	}
+	
+	videoExts := map[string]bool{
+		".mp4":  true,
+		".webm": true,
+		".ogg":  true,
+		".mov":  true,
+		".mkv":  true,
+		".avi":  true,
+	}
 
-	if !allowedExts[ext] {
+	// 验证文件类型
+	isImage := imageExts[ext]
+	isVideo := videoExts[ext]
+	
+	if !isImage && !isVideo {
 		log.Printf("[upload] unsupported file type: %s", ext)
 		utils.Error(w, 400, "不支持的文件类型")
+		return
+	}
+
+	// 验证文件大小（图片50MB，视频500MB）
+	if isImage && header.Size > 50*1024*1024 {
+		log.Printf("[upload] image too large: %d bytes", header.Size)
+		utils.Error(w, 400, "图片大小超过限制(最大50MB)")
+		return
+	}
+	
+	if isVideo && header.Size > 500*1024*1024 {
+		log.Printf("[upload] video too large: %d bytes", header.Size)
+		utils.Error(w, 400, "视频大小超过限制(最大500MB)")
 		return
 	}
 
@@ -79,14 +100,24 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 	// 获取上传目录参数
 	dir := r.URL.Query().Get("dir")
 	if dir == "" {
-		dir = "" // 文件直接保存在 ./uploads 根目录
+		if isImage {
+			dir = "images"
+		} else if isVideo {
+			dir = "videos"
+		}
 	}
 
 	// 生成存储文件key
 	key := storage.GenerateFileKey(dir, header.Filename)
 	contentType := header.Header.Get("Content-Type")
 	if contentType == "" {
-		contentType = "application/octet-stream"
+		if isImage {
+			contentType = "image/jpeg"
+		} else if isVideo {
+			contentType = "video/mp4"
+		} else {
+			contentType = "application/octet-stream"
+		}
 	}
 
 	// 上传到存储服务

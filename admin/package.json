@@ -14,7 +14,6 @@
     "element-plus": "^2.13.6",
     "lucide-vue-next": "^1.0.0",
     "pinia": "^2.1.0",
-    "sweetalert2": "^11.26.24",
     "vue": "^3.4.0",
     "vue-router": "^4.2.0"
   },

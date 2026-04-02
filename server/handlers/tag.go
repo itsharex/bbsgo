@@ -88,21 +88,19 @@ func GetOrCreateTagByName(name string) (*models.Tag, error) {
 		return nil, nil
 	}
 
-	var tag models.Tag
-	if err := database.DB.Where("name = ?", name).First(&tag).Error; err != nil {
+	tag := new(models.Tag) // 分配在堆上，避免返回指向局部变量的指针
+	if err := database.DB.Where("name = ?", name).First(tag).Error; err != nil {
 		// 标签不存在，创建新标签
-		tag = models.Tag{
-			Name:       name,
-			UsageCount: 0,
-			IsOfficial: false,
-			IsBanned:   false,
-		}
-		if err := database.DB.Create(&tag).Error; err != nil {
+		tag.Name = name
+		tag.UsageCount = 0
+		tag.IsOfficial = false
+		tag.IsBanned = false
+		if err := database.DB.Create(tag).Error; err != nil {
 			log.Printf("get or create tag: failed to create tag, name: %s, error: %v", name, err)
 			return nil, err
 		}
 	}
-	return &tag, nil
+	return tag, nil
 }
 
 // IncrementTagUsage 增加标签使用次数

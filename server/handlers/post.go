@@ -126,6 +126,15 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		log.Printf("create post: failed to update topic reply count, topicID: %d, error: %v", topicID, err)
 	}
 
+	// 给评论用户增加积分
+	var user models.User
+	if err := database.DB.First(&user, userID).Error; err == nil {
+		user.Credits += 5
+		if err := database.DB.Save(&user).Error; err != nil {
+			log.Printf("create post: failed to add credits, userID: %d, error: %v", userID, err)
+		}
+	}
+
 	// 重新加载回复关联数据
 	if err := database.DB.Preload("User").First(&post, post.ID).Error; err != nil {
 		log.Printf("create post: failed to reload post, id: %d, error: %v", post.ID, err)

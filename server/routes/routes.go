@@ -78,10 +78,12 @@ func SetupRoutes() *mux.Router {
 	// 点赞操作
 	auth.HandleFunc("/likes", handlers.CreateLike).Methods("POST")   // 创建点赞
 	auth.HandleFunc("/likes", handlers.DeleteLike).Methods("DELETE") // 删除点赞
+	auth.HandleFunc("/likes/check", handlers.CheckLike).Methods("POST") // 检查点赞状态
 
 	// 收藏操作
 	auth.HandleFunc("/favorites", handlers.CreateFavorite).Methods("POST")   // 创建收藏
 	auth.HandleFunc("/favorites", handlers.DeleteFavorite).Methods("DELETE")  // 删除收藏
+	auth.HandleFunc("/favorites/check", handlers.CheckFavorite).Methods("POST") // 检查收藏状态
 
 	// 关注操作
 	auth.HandleFunc("/follows", handlers.CreateFollow).Methods("POST")   // 创建关注

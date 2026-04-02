@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // LikeRequest 点赞请求结构
@@ -99,18 +100,21 @@ func DeleteLike(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 解析请求体
-	var req LikeRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Printf("delete like: failed to decode request body, error: %v", err)
+	// 从 URL 查询参数获取
+	targetType := r.URL.Query().Get("target_type")
+	targetIDStr := r.URL.Query().Get("target_id")
+	targetID, _ := strconv.Atoi(targetIDStr)
+
+	if targetType == "" || targetID == 0 {
+		log.Printf("delete like: invalid parameters, targetType: %s, targetID: %d", targetType, targetID)
 		utils.Error(w, 400, "无效的请求参数")
 		return
 	}
 
 	// 查询点赞记录
 	var like models.Like
-	if err := database.DB.Where("user_id = ? AND target_type = ? AND target_id = ?", userID, req.TargetType, req.TargetID).First(&like).Error; err != nil {
-		log.Printf("delete like: like not found, userID: %d, targetType: %s, targetID: %d, error: %v", userID, req.TargetType, req.TargetID, err)
+	if err := database.DB.Where("user_id = ? AND target_type = ? AND target_id = ?", userID, targetType, targetID).First(&like).Error; err != nil {
+		log.Printf("delete like: like not found, userID: %d, targetType: %s, targetID: %d, error: %v", userID, targetType, targetID, err)
 		utils.Error(w, 404, "点赞记录不存在")
 		return
 	}
@@ -123,26 +127,51 @@ func DeleteLike(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 更新目标对象的点赞数
-	if req.TargetType == "topic" {
+	if targetType == "topic" {
 		var topic models.Topic
-		if err := database.DB.First(&topic, req.TargetID).Error; err != nil {
-			log.Printf("delete like: topic not found, topicID: %d, error: %v", req.TargetID, err)
+		if err := database.DB.First(&topic, targetID).Error; err != nil {
+			log.Printf("delete like: topic not found, topicID: %d, error: %v", targetID, err)
 		} else if topic.LikeCount > 0 {
 			if err := database.DB.Model(&topic).UpdateColumn("like_count", topic.LikeCount-1).Error; err != nil {
-				log.Printf("delete like: failed to decrement topic like count, topicID: %d, error: %v", req.TargetID, err)
+				log.Printf("delete like: failed to decrement topic like count, topicID: %d, error: %v", targetID, err)
 			}
 		}
-	} else if req.TargetType == "post" {
+	} else if targetType == "post" {
 		var post models.Post
-		if err := database.DB.First(&post, req.TargetID).Error; err != nil {
-			log.Printf("delete like: post not found, postID: %d, error: %v", req.TargetID, err)
+		if err := database.DB.First(&post, targetID).Error; err != nil {
+			log.Printf("delete like: post not found, postID: %d, error: %v", targetID, err)
 		} else if post.LikeCount > 0 {
 			if err := database.DB.Model(&post).UpdateColumn("like_count", post.LikeCount-1).Error; err != nil {
-				log.Printf("delete like: failed to decrement post like count, postID: %d, error: %v", req.TargetID, err)
+				log.Printf("delete like: failed to decrement post like count, postID: %d, error: %v", targetID, err)
 			}
 		}
 	}
 
-	log.Printf("delete like: like deleted successfully, userID: %d, targetType: %s, targetID: %d", userID, req.TargetType, req.TargetID)
+	log.Printf("delete like: like deleted successfully, userID: %d, targetType: %s, targetID: %d", userID, targetType, targetID)
 	utils.Success(w, nil)
+}
+
+// CheckLike 检查点赞状态处理器
+func CheckLike(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		utils.Success(w, map[string]interface{}{"liked": false})
+		return
+	}
+
+	var req LikeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		utils.Success(w, map[string]interface{}{"liked": false})
+		return
+	}
+
+	var count int64
+	if err := database.DB.Model(&models.Like{}).
+		Where("user_id = ? AND target_type = ? AND target_id = ?", userID, req.TargetType, req.TargetID).
+		Count(&count).Error; err != nil {
+		utils.Success(w, map[string]interface{}{"liked": false})
+		return
+	}
+
+	utils.Success(w, map[string]interface{}{"liked": count > 0})
 }

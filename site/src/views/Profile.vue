@@ -140,7 +140,7 @@
             <div v-if="userTopics.length > 0" class="space-y-4">
               <div v-for="topic in userTopics" :key="topic.id" class="border-b pb-4 last:border-b-0">
                 <div class="flex items-center justify-between mb-1">
-                  <span class="text-sm text-gray-500">{{ topic.user?.username }}</span>
+                  <span class="text-sm text-gray-500">{{ topic.user?.nickname || topic.user?.username }}</span>
                   <span class="text-xs text-gray-400">{{ formatTime(topic.created_at) }}</span>
                 </div>
                 <router-link :to="`/topic/${topic.id}`" class="block">
@@ -378,6 +378,7 @@ async function updateProfile(data) {
     await api.put('/user/profile', data)
     if (userStore.user?.id === user.value?.id) {
       userStore.user = { ...userStore.user, ...data }
+      localStorage.setItem('user', JSON.stringify(userStore.user))
     }
   } catch (error) {
     console.error('Update profile error:', error)
