@@ -1,0 +1,209 @@
+<template>
+  <div class="min-h-screen bg-gray-100">
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <router-link to="/" class="flex items-center">
+              <img v-if="siteConfig.site_logo" :src="siteConfig.site_logo" class="w-8 h-8">
+              <svg v-else class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                </path>
+              </svg>
+              <span class="ml-2 text-xl font-bold text-gray-800">{{ siteConfig.site_name || '彩虹BBS' }}</span>
+            </router-link>
+          </div>
+          <div v-if="!isAuthPage" class="flex items-center space-x-4">
+            <div class="relative hidden sm:block">
+              <input type="text" placeholder="输入你想查找的内容"
+                class="w-64 px-4 py-2 rounded-full border border-gray-200 text-sm focus:outline-none focus:border-blue-400"
+                @keypress.enter="handleSearch" v-model="searchKeyword">
+              <button @click="handleSearch" class="absolute right-3 top-2.5 text-gray-400 hover:text-blue-500">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </button>
+            </div>
+            <template v-if="userStore.isLoggedIn">
+              <router-link to="/new-topic"
+                class="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm font-medium hover:bg-blue-600">
+                + 发表
+              </router-link>
+              <button class="relative text-gray-600 hover:text-blue-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                  </path>
+                </svg>
+                <span
+                  class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">4</span>
+              </button>
+              <div class="relative" ref="userMenuRef">
+                <button @click="toggleUserMenu" class="flex items-center space-x-2 hover:bg-gray-50 rounded-lg px-3 py-2 transition-colors">
+                  <img :src="userStore.user?.avatar || 'https://via.placeholder.com/40'" class="w-8 h-8 rounded-full">
+                  <span class="text-sm font-medium text-gray-700">{{ userStore.user?.nickname || userStore.user?.username }}</span>
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                <div v-if="showUserMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                  <router-link 
+                    :to="`/user/${userStore.user?.id}`" 
+                    @click="closeUserMenu"
+                    class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
+                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    个人中心
+                  </router-link>
+                  <router-link 
+                    to="/messages" 
+                    @click="closeUserMenu"
+                    class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
+                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                    </svg>
+                    我的消息
+                  </router-link>
+                  <router-link 
+                    to="/notifications" 
+                    @click="closeUserMenu"
+                    class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
+                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    系统通知
+                  </router-link>
+                  <div class="border-t border-gray-100 my-2"></div>
+                  <button 
+                    @click="handleLogout"
+                    class="flex items-center w-full px-4 py-2 text-red-600 hover:bg-red-50 transition-colors">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    退出登录
+                  </button>
+                </div>
+              </div>
+            </template>
+            <template v-else>
+              <router-link to="/login" class="text-gray-600 hover:text-blue-500">登录</router-link>
+              <router-link to="/register"
+                class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600">注册</router-link>
+            </template>
+          </div>
+        </div>
+      </div>
+      <div v-if="!isAuthPage" class="border-t border-gray-100 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex items-center space-x-1 py-2 overflow-x-auto">
+            <router-link
+              v-for="forum in forums"
+              :key="forum.id"
+              :to="forum.id === 1 ? '/' : `/?forum=${forum.id}`"
+              :class="[
+                'px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors',
+                currentForumId === forum.id
+                  ? 'bg-blue-500 text-white'
+                  : 'text-gray-600 hover:bg-gray-200'
+              ]">
+              {{ forum.name }}
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <main :class="isAuthPage ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6'">
+      <router-view />
+    </main>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import api from '@/api'
+
+const router = useRouter()
+const route = useRoute()
+const userStore = useUserStore()
+const searchKeyword = ref('')
+const forums = ref([])
+const siteConfig = ref({
+  site_name: '',
+  site_logo: ''
+})
+const showUserMenu = ref(false)
+const userMenuRef = ref(null)
+
+const currentForumId = computed(() => {
+  const forumId = route.query.forum
+  return forumId ? parseInt(forumId) : 1
+})
+
+const isAuthPage = computed(() => {
+  return route.name === 'Login' || route.name === 'Register'
+})
+
+function toggleUserMenu() {
+  showUserMenu.value = !showUserMenu.value
+}
+
+function closeUserMenu() {
+  showUserMenu.value = false
+}
+
+function handleLogout() {
+  userStore.logout()
+  showUserMenu.value = false
+  router.push('/')
+}
+
+function handleClickOutside(event) {
+  if (userMenuRef.value && !userMenuRef.value.contains(event.target)) {
+    showUserMenu.value = false
+  }
+}
+
+function handleSearch() {
+  if (searchKeyword.value.trim()) {
+    router.push({ name: 'Search', query: { keyword: searchKeyword.value } })
+  }
+}
+
+async function loadSiteConfig() {
+  try {
+    const res = await api.get('/config')
+    if (res) {
+      siteConfig.value = {
+        site_name: res.site_name || '',
+        site_logo: res.site_logo || ''
+      }
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function loadForums() {
+  try {
+    const res = await api.get('/forums')
+    forums.value = res || []
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+onMounted(() => {
+  loadSiteConfig()
+  loadForums()
+  document.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+</script>
