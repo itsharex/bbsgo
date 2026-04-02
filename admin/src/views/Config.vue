@@ -25,7 +25,7 @@
               </el-col>
               <el-col :span="12">
                 <el-form-item label="网站描述">
-                  <el-input v-model="config.site_description" type="textarea" :rows="2" placeholder="请输入网站描述" />
+                  <el-input v-model="config.site_description" placeholder="请输入网站描述" />
                 </el-form-item>
               </el-col>
             </el-row>
@@ -36,10 +36,8 @@
                   <div class="upload-container">
                     <el-upload
                       class="image-uploader"
-                      :action="uploadUrl"
-                      :headers="uploadHeaders"
                       :show-file-list="false"
-                      :on-success="handleLogoSuccess"
+                      :http-request="handleLogoUpload"
                       :before-upload="beforeUpload"
                       accept="image/*"
                     >
@@ -54,8 +52,13 @@
                       <div v-else class="upload-placeholder">
                         <el-icon class="upload-icon"><Plus /></el-icon>
                         <div class="upload-text">点击上传 Logo</div>
+                        <div class="upload-hint">建议尺寸：800×200px</div>
                       </div>
                     </el-upload>
+                    <div v-if="uploadingLogo" class="upload-loading">
+                      <el-icon class="is-loading"><Loading /></el-icon>
+                      <span>正在上传...</span>
+                    </div>
                     <div v-if="config.site_logo" class="url-display">
                       <el-input v-model="config.site_logo" placeholder="Logo URL" readonly>
                         <template #prepend>URL</template>
@@ -69,10 +72,8 @@
                   <div class="upload-container">
                     <el-upload
                       class="image-uploader icon-uploader"
-                      :action="uploadUrl"
-                      :headers="uploadHeaders"
                       :show-file-list="false"
-                      :on-success="handleIconSuccess"
+                      :http-request="handleIconUpload"
                       :before-upload="beforeUpload"
                       accept="image/*"
                     >
@@ -87,8 +88,13 @@
                       <div v-else class="upload-placeholder icon-placeholder">
                         <el-icon class="upload-icon"><Plus /></el-icon>
                         <div class="upload-text">点击上传 Icon</div>
+                        <div class="upload-hint">建议尺寸：256×256px</div>
                       </div>
                     </el-upload>
+                    <div v-if="uploadingIcon" class="upload-loading">
+                      <el-icon class="is-loading"><Loading /></el-icon>
+                      <span>正在上传...</span>
+                    </div>
                     <div v-if="config.site_icon" class="url-display">
                       <el-input v-model="config.site_icon" placeholder="Icon URL" readonly>
                         <template #prepend>URL</template>
@@ -228,7 +234,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, Loading } from '@element-plus/icons-vue'
 import api from '@/api'
 import { Settings, Globe, Save } from 'lucide-vue-next'
 
@@ -254,50 +260,124 @@ const config = ref({
 })
 
 const saving = ref(false)
+const uploadingLogo = ref(false)
+const uploadingIcon = ref(false)
 
 const uploadUrl = computed(() => {
-  const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1'
-  return `${baseURL}/upload`
+  return `/api/v1/upload`
 })
 
 const uploadHeaders = computed(() => {
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem('admin_token')
   return {
     Authorization: `Bearer ${token}`
   }
 })
 
+function compressImage(file, maxWidth, maxHeight, type = 'image/png') {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        let width = img.width
+        let height = img.height
+        
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height)
+          width = width * ratio
+          height = height * ratio
+        }
+        
+        canvas.width = width
+        canvas.height = height
+        
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+        
+        canvas.toBlob((blob) => {
+          resolve(new File([blob], file.name, { type: type }))
+        }, type, 0.9)
+      }
+      img.onerror = reject
+      img.src = e.target.result
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+async function uploadFile(file, type) {
+  const formData = new FormData()
+  formData.append('file', file)
+  
+  try {
+    const response = await fetch(uploadUrl.value, {
+      method: 'POST',
+      headers: uploadHeaders.value,
+      body: formData
+    })
+    
+    const result = await response.json()
+    return result
+  } catch (error) {
+    console.error('Upload error:', error)
+    throw error
+  }
+}
+
+async function handleLogoUpload(options) {
+  uploadingLogo.value = true
+  
+  try {
+    const compressedFile = await compressImage(options.file, 800, 200, 'image/png')
+    const result = await uploadFile(compressedFile, 'logo')
+    
+    if (result.code === 0 && result.data?.url) {
+      config.value.site_logo = result.data.url
+      ElMessage.success('Logo 上传成功')
+    } else {
+      ElMessage.error('上传失败')
+    }
+  } catch (error) {
+    console.error('Logo upload error:', error)
+    ElMessage.error('Logo 上传失败')
+  } finally {
+    uploadingLogo.value = false
+  }
+}
+
+async function handleIconUpload(options) {
+  uploadingIcon.value = true
+  
+  try {
+    const compressedFile = await compressImage(options.file, 256, 256, 'image/png')
+    const result = await uploadFile(compressedFile, 'icon')
+    
+    if (result.code === 0 && result.data?.url) {
+      config.value.site_icon = result.data.url
+      ElMessage.success('Icon 上传成功')
+    } else {
+      ElMessage.error('上传失败')
+    }
+  } catch (error) {
+    console.error('Icon upload error:', error)
+    ElMessage.error('Icon 上传失败')
+  } finally {
+    uploadingIcon.value = false
+  }
+}
+
 function beforeUpload(file) {
   const isImage = file.type.startsWith('image/')
-  const isLt50M = file.size / 1024 / 1024 < 50
-
+  
   if (!isImage) {
     ElMessage.error('只能上传图片文件!')
     return false
   }
-  if (!isLt50M) {
-    ElMessage.error('图片大小不能超过 50MB!')
-    return false
-  }
+  
   return true
-}
-
-function handleLogoSuccess(response) {
-  if (response.code === 200 && response.data?.url) {
-    config.value.site_logo = response.data.url
-    ElMessage.success('Logo 上传成功')
-  } else {
-    ElMessage.error('上传失败')
-  }
-}
-
-function handleIconSuccess(response) {
-  if (response.code === 200 && response.data?.url) {
-    config.value.site_icon = response.data.url
-    ElMessage.success('Icon 上传成功')
-  } else {
-    ElMessage.error('上传失败')
-  }
 }
 
 async function loadConfig() {
@@ -375,11 +455,12 @@ onMounted(() => {
 }
 
 .upload-container {
-  width: 100%;
+  display: inline-block;
 }
 
 .image-uploader {
-  width: 100%;
+  width: 200px;
+  height: 200px;
   border: 1px dashed #d9d9d9;
   border-radius: 8px;
   cursor: pointer;
@@ -392,24 +473,14 @@ onMounted(() => {
   border-color: #409eff;
 }
 
-.icon-uploader {
-  width: 200px;
-  height: 200px;
-}
-
 .upload-placeholder {
-  width: 100%;
+  width: 200px;
   height: 200px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   background-color: #fafafa;
-}
-
-.icon-placeholder {
-  width: 200px;
-  height: 200px;
 }
 
 .upload-icon {
@@ -423,19 +494,47 @@ onMounted(() => {
   font-size: 14px;
 }
 
+.upload-hint {
+  color: #c0c4cc;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.upload-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  color: #409eff;
+  font-size: 14px;
+  
+  .el-icon {
+    margin-right: 8px;
+    font-size: 16px;
+  }
+  
+  .is-loading {
+    animation: rotating 2s linear infinite;
+  }
+}
+
+@keyframes rotating {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .image-preview {
-  width: 100%;
+  width: 200px;
   height: 200px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #f5f7fa;
-}
-
-.icon-preview {
-  width: 200px;
-  height: 200px;
 }
 
 .preview-img {

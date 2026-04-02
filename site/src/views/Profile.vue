@@ -1,15 +1,23 @@
 <template>
   <div>
     <div class="bg-white rounded-lg shadow-sm mb-6 overflow-hidden">
-      <div class="h-48 bg-cover bg-center" :style="{ backgroundImage: 'url(https://picsum.photos/1200/400)' }">
+      <div class="h-48 bg-cover bg-center relative" :style="{ backgroundImage: `url(${user?.background || 'https://picsum.photos/1200/400'})` }">
         <div class="flex justify-end p-4">
-          <button class="bg-white/90 px-3 py-1 rounded text-sm text-gray-600 hover:bg-white">
+          <input
+            ref="backgroundInput"
+            type="file"
+            accept="image/*"
+            class="hidden"
+            @change="handleBackgroundUpload"
+          />
+          <button 
+            @click="$refs.backgroundInput.click()"
+            class="bg-white/90 px-3 py-1 rounded text-sm text-gray-600 hover:bg-white"
+          >
             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
               </path>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
             </svg>
             设置背景
           </button>
@@ -17,11 +25,40 @@
       </div>
       <div class="px-6 pb-6">
         <div class="flex items-end -mt-16">
-          <img :src="user?.avatar || 'https://via.placeholder.com/128'"
-            class="w-32 h-32 rounded-full border-4 border-white shadow-lg">
-          <div class="ml-4 mb-2">
-            <h1 class="text-xl font-bold text-gray-900">{{ user?.username || '用户名' }}</h1>
+          <div class="relative">
+            <img 
+              :src="getUserAvatar(user)" 
+              class="w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-200"
+            >
+            <input
+              ref="avatarInput"
+              type="file"
+              accept="image/*"
+              class="hidden"
+              @change="handleAvatarUpload"
+            />
+            <button 
+              v-if="isCurrentUser"
+              @click="$refs.avatarInput.click()"
+              class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-blue-600 shadow-lg"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="ml-4 mb-2 flex-1">
+            <h1 class="text-xl font-bold text-gray-900">{{ user?.nickname || user?.username || '用户名' }}</h1>
             <p class="text-gray-500 text-sm">{{ user?.signature || '这家伙很懒，什么都没留下...' }}</p>
+          </div>
+          <div v-if="isCurrentUser" class="mb-2">
+            <button 
+              @click="showEditDialog = true"
+              class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600"
+            >
+              编辑资料
+            </button>
           </div>
         </div>
       </div>
@@ -33,16 +70,16 @@
             <h3 class="font-medium text-gray-900 mb-4 border-b pb-2">个人成就</h3>
             <div class="grid grid-cols-4 gap-4 text-center">
               <div>
-                <div class="text-2xl font-bold text-gray-700">{{ user?.credits || 0 }}</div>
-                <div class="text-xs text-gray-400">积分</div>
-              </div>
-              <div>
                 <div class="text-2xl font-bold text-gray-700">{{ userStats.topic_count || 0 }}</div>
                 <div class="text-xs text-gray-400">帖子</div>
               </div>
               <div>
                 <div class="text-2xl font-bold text-gray-700">{{ userStats.post_count || 0 }}</div>
                 <div class="text-xs text-gray-400">评论</div>
+              </div>
+              <div>
+                <div class="text-2xl font-bold text-gray-700">{{ user?.credits || 0 }}</div>
+                <div class="text-xs text-gray-400">积分</div>
               </div>
               <div>
                 <div class="text-2xl font-bold text-gray-700">{{ userStats.rank || 0 }}</div>
@@ -53,7 +90,13 @@
           <div class="bg-white rounded-lg shadow-sm p-4">
             <div class="flex justify-between items-center mb-4">
               <h3 class="font-medium text-gray-900">个人资料</h3>
-              <button class="text-blue-500 text-sm hover:underline">编辑资料</button>
+              <button 
+                v-if="isCurrentUser"
+                @click="showEditDialog = true"
+                class="text-blue-500 text-sm hover:underline"
+              >
+                编辑资料
+              </button>
             </div>
             <div class="space-y-3">
               <div class="flex">
@@ -77,9 +120,9 @@
             </div>
             <div v-if="followers.length > 0" class="space-y-3">
               <div v-for="follower in followers" :key="follower.id" class="flex items-center space-x-3">
-                <img :src="follower.avatar || 'https://via.placeholder.com/40'" class="w-10 h-10 rounded-full">
+                <img :src="getUserAvatar(follower)" class="w-10 h-10 rounded-full bg-gray-200">
                 <div class="flex-1 min-w-0">
-                  <div class="text-sm font-medium text-gray-900 truncate">{{ follower.username }}</div>
+                  <div class="text-sm font-medium text-gray-900 truncate">{{ follower.nickname || follower.username }}</div>
                   <div class="text-xs text-gray-400 truncate">{{ follower.signature || '这家伙很懒，什么都没留下' }}</div>
                 </div>
                 <button class="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-blue-600">+ 关注</button>
@@ -105,9 +148,9 @@
                 </router-link>
                 <p class="text-gray-600 text-sm mb-3 line-clamp-3">{{ topic.content.substring(0, 200) }}</p>
                 <div class="flex items-center space-x-4 text-xs text-gray-500">
-                  <span>心赞 {{ topic.like_count || 0 }}</span>
-                  <span>评论 {{ topic.reply_count || 0 }}</span>
-                  <span>浏览 {{ topic.view_count || 0 }}</span>
+                  <span>👍 {{ topic.like_count || 0 }}</span>
+                  <span>💬 {{ topic.comment_count || 0 }}</span>
+                  <span>👁 {{ topic.view_count || 0 }}</span>
                   <span v-if="topic.forum" class="bg-gray-100 px-2 py-0.5 rounded">{{ topic.forum.name }}</span>
                 </div>
               </div>
@@ -119,15 +162,49 @@
         </div>
       </div>
     </div>
+
+    <el-dialog
+      v-model="showEditDialog"
+      title="编辑资料"
+      width="500px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="editForm" label-width="80px">
+        <el-form-item label="昵称">
+          <el-input v-model="editForm.nickname" placeholder="请输入昵称" maxlength="20" show-word-limit />
+        </el-form-item>
+        <el-form-item label="签名">
+          <el-input 
+            v-model="editForm.signature" 
+            type="textarea" 
+            :rows="3" 
+            placeholder="请输入个性签名" 
+            maxlength="100"
+            show-word-limit
+          />
+        </el-form-item>
+        <el-form-item label="个人主页">
+          <el-input v-model="editForm.intro" placeholder="请输入个人主页链接" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showEditDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleSaveProfile" :loading="saving">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores/user'
 import api from '@/api'
 
 const route = useRoute()
+const router = useRouter()
+const userStore = useUserStore()
 const user = ref(null)
 const userStats = ref({
   topic_count: 0,
@@ -136,6 +213,25 @@ const userStats = ref({
 })
 const userTopics = ref([])
 const followers = ref([])
+const showEditDialog = ref(false)
+const saving = ref(false)
+const editForm = ref({
+  nickname: '',
+  signature: '',
+  intro: ''
+})
+
+const isCurrentUser = computed(() => {
+  return userStore.user?.id === parseInt(route.params.id)
+})
+
+function getUserAvatar(userData) {
+  if (userData?.avatar) {
+    return userData.avatar
+  }
+  const username = userData?.username || 'default'
+  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(username)}`
+}
 
 function formatTime(time) {
   const date = new Date(time)
@@ -144,7 +240,160 @@ function formatTime(time) {
   if (diff < 60000) return '刚刚'
   if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前'
   if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前'
-  return Math.floor(diff / 86400000) + '天前'
+  if (diff < 2592000000) return Math.floor(diff / 86400000) + '天前'
+  return date.toLocaleDateString()
+}
+
+async function handleBackgroundUpload(event) {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  if (!file.type.startsWith('image/')) {
+    ElMessage.error('只能上传图片文件')
+    return
+  }
+  
+  try {
+    ElMessage.info('正在上传背景图片...')
+    
+    const compressedFile = await compressImage(file, 1920, 480)
+    const formData = new FormData()
+    formData.append('file', compressedFile)
+    
+    const response = await fetch('/api/v1/upload', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      },
+      body: formData
+    })
+    
+    const result = await response.json()
+    
+    if (result.code === 0 && result.data?.url) {
+      user.value.background = result.data.url
+      await updateProfile({ background: result.data.url })
+      ElMessage.success('背景图片更新成功')
+    } else {
+      ElMessage.error('上传失败')
+    }
+  } catch (error) {
+    console.error('Background upload error:', error)
+    ElMessage.error('背景图片上传失败')
+  }
+  
+  event.target.value = ''
+}
+
+async function handleAvatarUpload(event) {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  if (!file.type.startsWith('image/')) {
+    ElMessage.error('只能上传图片文件')
+    return
+  }
+  
+  try {
+    ElMessage.info('正在上传头像...')
+    
+    const compressedFile = await compressImage(file, 256, 256)
+    const formData = new FormData()
+    formData.append('file', compressedFile)
+    
+    const response = await fetch('/api/v1/upload', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      },
+      body: formData
+    })
+    
+    const result = await response.json()
+    
+    if (result.code === 0 && result.data?.url) {
+      user.value.avatar = result.data.url
+      await updateProfile({ avatar: result.data.url })
+      ElMessage.success('头像更新成功')
+    } else {
+      ElMessage.error('上传失败')
+    }
+  } catch (error) {
+    console.error('Avatar upload error:', error)
+    ElMessage.error('头像上传失败')
+  }
+  
+  event.target.value = ''
+}
+
+function compressImage(file, maxWidth, maxHeight) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        let width = img.width
+        let height = img.height
+        
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height)
+          width = width * ratio
+          height = height * ratio
+        }
+        
+        canvas.width = width
+        canvas.height = height
+        
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+        
+        canvas.toBlob((blob) => {
+          resolve(new File([blob], file.name, { type: 'image/png' }))
+        }, 'image/png', 0.9)
+      }
+      img.onerror = reject
+      img.src = e.target.result
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+async function updateProfile(data) {
+  try {
+    await api.put('/user/profile', data)
+    if (userStore.user?.id === user.value?.id) {
+      userStore.user = { ...userStore.user, ...data }
+    }
+  } catch (error) {
+    console.error('Update profile error:', error)
+    throw error
+  }
+}
+
+function openEditDialog() {
+  editForm.value = {
+    nickname: user.value?.nickname || '',
+    signature: user.value?.signature || '',
+    intro: user.value?.intro || ''
+  }
+  showEditDialog.value = true
+}
+
+async function handleSaveProfile() {
+  saving.value = true
+  
+  try {
+    await updateProfile(editForm.value)
+    user.value = { ...user.value, ...editForm.value }
+    showEditDialog.value = false
+    ElMessage.success('资料更新成功')
+  } catch (error) {
+    ElMessage.error('资料更新失败')
+  } finally {
+    saving.value = false
+  }
 }
 
 async function loadUser() {
@@ -200,3 +449,12 @@ onMounted(async () => {
   ])
 })
 </script>
+
+<style scoped>
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

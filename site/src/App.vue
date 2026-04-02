@@ -134,7 +134,8 @@ const searchKeyword = ref('')
 const forums = ref([])
 const siteConfig = ref({
   site_name: '',
-  site_logo: ''
+  site_logo: '',
+  site_icon: ''
 })
 const showUserMenu = ref(false)
 const userMenuRef = ref(null)
@@ -174,14 +175,36 @@ function handleSearch() {
   }
 }
 
+function updateFavicon(iconUrl) {
+  if (!iconUrl) return
+  
+  let link = document.querySelector("link[rel*='icon']")
+  if (!link) {
+    link = document.createElement('link')
+    link.rel = 'icon'
+    document.head.appendChild(link)
+  }
+  link.href = iconUrl
+}
+
+function updatePageTitle(title) {
+  if (title) {
+    document.title = title
+  }
+}
+
 async function loadSiteConfig() {
   try {
     const res = await api.get('/config')
     if (res) {
       siteConfig.value = {
         site_name: res.site_name || '',
-        site_logo: res.site_logo || ''
+        site_logo: res.site_logo || '',
+        site_icon: res.site_icon || ''
       }
+      
+      updateFavicon(res.site_icon)
+      updatePageTitle(res.site_name)
     }
   } catch (e) {
     console.error(e)

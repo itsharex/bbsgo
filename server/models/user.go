@@ -13,6 +13,7 @@ type User struct {
 	PasswordHash string         `gorm:"size:255;not null" json:"-"`
 	Role         int            `gorm:"default:0" json:"role"`
 	Avatar       string         `gorm:"size:255" json:"avatar"`
+	Background   string         `gorm:"size:255" json:"background"`
 	Signature    string         `gorm:"size:255" json:"signature"`
 	Intro        string         `gorm:"type:text" json:"intro"`
 	Credits      int            `gorm:"default:0" json:"credits"`

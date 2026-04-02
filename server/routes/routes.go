@@ -3,6 +3,7 @@ package routes
 import (
 	"bbsgo/handlers"
 	"bbsgo/middleware"
+	"net/http"
 
 	"github.com/gorilla/mux"
 )
@@ -11,6 +12,11 @@ func SetupRoutes() *mux.Router {
 	r := mux.NewRouter()
 
 	r.Use(middleware.CORS)
+
+	// 全局 OPTIONS 处理器，处理 CORS 预检请求
+	r.HandleFunc("/api/v1/{rest:.*}", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}).Methods("OPTIONS")
 
 	api := r.PathPrefix("/api/v1").Subrouter()
 

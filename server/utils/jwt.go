@@ -3,6 +3,7 @@ package utils
 import (
 	"bbsgo/config"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -41,12 +42,13 @@ func ParseToken(tokenString string) (*Claims, error) {
 	if secret == "" {
 		secret = "change-this-secret-in-production"
 	}
-	
+
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})
 
 	if err != nil {
+		log.Printf("解析Token失败, token: %s, error: %v", tokenString, err)
 		return nil, err
 	}
 
@@ -54,5 +56,6 @@ func ParseToken(tokenString string) (*Claims, error) {
 		return claims, nil
 	}
 
+	log.Printf("Token无效, token: %s", tokenString)
 	return nil, errors.New("invalid token")
 }
