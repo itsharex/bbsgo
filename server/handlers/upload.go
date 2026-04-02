@@ -79,7 +79,7 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 	// 获取上传目录参数
 	dir := r.URL.Query().Get("dir")
 	if dir == "" {
-		dir = "uploads"
+		dir = "" // 文件直接保存在 ./uploads 根目录
 	}
 
 	// 生成存储文件key

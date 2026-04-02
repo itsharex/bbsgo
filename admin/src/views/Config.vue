@@ -184,18 +184,14 @@
             </el-form-item>
 
             <template v-if="config.storage_type === 'local'">
-              <el-row :gutter="24">
-                <el-col :span="12">
-                  <el-form-item label="存储路径">
-                    <el-input v-model="config.local_storage_path" placeholder="./uploads" />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item label="访问URL">
-                    <el-input v-model="config.local_storage_base_url" placeholder="/uploads" />
-                  </el-form-item>
-                </el-col>
-              </el-row>
+              <el-alert type="info" :closable="false" show-icon>
+                <template #title>
+                  本地存储说明
+                </template>
+                <template #default>
+                  文件保存在服务器 <code>./uploads</code> 目录，访问路径为 <code>/uploads/文件名.png</code>
+                </template>
+              </el-alert>
             </template>
 
             <template v-if="config.storage_type === 'qiniu'">
@@ -345,8 +341,6 @@ const config = ref({
   email_from: '',
   email_from_name: '',
   storage_type: 'local',
-  local_storage_path: '',
-  local_storage_base_url: '',
   qiniu_access_key: '',
   qiniu_secret_key: '',
   qiniu_bucket: '',
@@ -503,8 +497,6 @@ async function loadConfig() {
         email_from: res.email_from || '',
         email_from_name: res.email_from_name || '',
         storage_type: res.storage_type || 'local',
-        local_storage_path: res.local_storage_path || '',
-        local_storage_base_url: res.local_storage_base_url || '',
         qiniu_access_key: res.qiniu_access_key || '',
         qiniu_secret_key: res.qiniu_secret_key || '',
         qiniu_bucket: res.qiniu_bucket || '',
