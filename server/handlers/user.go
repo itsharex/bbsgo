@@ -78,7 +78,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	utils.Success(w, user)
 }
 
-func GetUserTopics(w http.ResponseWriter, r *http.Request) {
+func GetCurrentUserTopics(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
 		log.Printf("获取用户话题失败: 未认证")

@@ -44,7 +44,7 @@ func SetupRoutes() *mux.Router {
 
 	auth.HandleFunc("/user/profile", handlers.GetProfile).Methods("GET")
 	auth.HandleFunc("/user/profile", handlers.UpdateProfile).Methods("PUT")
-	auth.HandleFunc("/user/topics", handlers.GetUserTopics).Methods("GET")
+	auth.HandleFunc("/user/topics", handlers.GetCurrentUserTopics).Methods("GET")
 	auth.HandleFunc("/user/signin", handlers.SignIn).Methods("POST")
 	auth.HandleFunc("/user/signin/status", handlers.GetSignInStatus).Methods("GET")
 	auth.HandleFunc("/user/favorites", handlers.GetFavorites).Methods("GET")

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="bg-white rounded-lg shadow-sm mb-6 overflow-hidden">
-      <div class="h-48 bg-cover bg-center relative" :style="{ backgroundImage: `url(${user?.background || 'https://picsum.photos/1200/400'})` }">
+      <div class="h-48 bg-cover bg-center relative" :style="{ backgroundImage: `url(${user?.background || getUserBackground(user?.username)})` }">
         <div class="flex justify-end p-4">
           <input
             ref="backgroundInput"
@@ -54,7 +54,7 @@
           </div>
           <div v-if="isCurrentUser" class="mb-2">
             <button 
-              @click="showEditDialog = true"
+              @click="openEditDialog"
               class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600"
             >
               编辑资料
@@ -92,7 +92,7 @@
               <h3 class="font-medium text-gray-900">个人资料</h3>
               <button 
                 v-if="isCurrentUser"
-                @click="showEditDialog = true"
+                @click="openEditDialog"
                 class="text-blue-500 text-sm hover:underline"
               >
                 编辑资料
@@ -231,6 +231,19 @@ function getUserAvatar(userData) {
   }
   const username = userData?.username || 'default'
   return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(username)}`
+}
+
+function getUserBackground(username) {
+  if (!username) {
+    return 'https://picsum.photos/id/1015/1200/400'
+  }
+  let hash = 0
+  for (let i = 0; i < username.length; i++) {
+    hash = ((hash << 5) - hash) + username.charCodeAt(i)
+    hash = hash & hash
+  }
+  const imageId = (Math.abs(hash) % 1000) + 1
+  return `https://picsum.photos/id/${imageId}/1200/400`
 }
 
 function formatTime(time) {
@@ -387,6 +400,12 @@ async function handleSaveProfile() {
   try {
     await updateProfile(editForm.value)
     user.value = { ...user.value, ...editForm.value }
+    
+    if (isCurrentUser.value) {
+      userStore.user = { ...userStore.user, ...editForm.value }
+      localStorage.setItem('user', JSON.stringify(userStore.user))
+    }
+    
     showEditDialog.value = false
     ElMessage.success('资料更新成功')
   } catch (error) {

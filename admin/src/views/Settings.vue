@@ -78,9 +78,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Sliders, ToggleLeft, Coins, Save } from 'lucide-vue-next'
+import api from '@/api'
 
 const settings = ref({
   allow_register: true,
@@ -94,29 +95,49 @@ const settings = ref({
 const saving = ref(false)
 const formRef = ref(null)
 
-function resetSettings() {
-  settings.value = {
-    allow_register: true,
-    allow_post: true,
-    allow_comment: true,
-    credits_topic: 10,
-    credits_post: 5,
-    credits_signin: 10
+async function loadSettings() {
+  try {
+    const config = await api.get('/config')
+    settings.value = {
+      allow_register: config.allow_register !== 'false',
+      allow_post: config.allow_post !== 'false',
+      allow_comment: config.allow_comment !== 'false',
+      credits_topic: parseInt(config.credits_topic) || 10,
+      credits_post: parseInt(config.credits_post) || 5,
+      credits_signin: parseInt(config.credits_signin) || 10
+    }
+  } catch (e) {
+    console.error('加载设置失败', e)
   }
+}
+
+function resetSettings() {
+  loadSettings()
 }
 
 async function saveSettings() {
   saving.value = true
   try {
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await api.put('/admin/config', {
+      allow_register: settings.value.allow_register ? 'true' : 'false',
+      allow_post: settings.value.allow_post ? 'true' : 'false',
+      allow_comment: settings.value.allow_comment ? 'true' : 'false',
+      credits_topic: String(settings.value.credits_topic),
+      credits_post: String(settings.value.credits_post),
+      credits_signin: String(settings.value.credits_signin)
+    })
     ElMessage.success('设置已保存')
   } catch (e) {
-    console.error('保存失败', e)
+    console.error('保存设置失败', e)
     ElMessage.error('保存失败')
   } finally {
     saving.value = false
   }
 }
+
+onMounted(() => {
+  loadSettings()
+})
 </script>
 
 <style scoped>

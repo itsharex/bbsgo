@@ -5,12 +5,7 @@
         <div class="flex justify-between h-16">
           <div class="flex items-center">
             <router-link to="/" class="flex items-center">
-              <img v-if="siteConfig.site_logo" :src="siteConfig.site_logo" class="w-8 h-8">
-              <svg v-else class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                </path>
-              </svg>
+              <img :src="siteConfig.site_logo || defaultLogo" class="w-8 h-8 object-contain">
               <span class="ml-2 text-xl font-bold text-gray-800">{{ siteConfig.site_name || '彩虹BBS' }}</span>
             </router-link>
           </div>
@@ -42,7 +37,7 @@
               </button>
               <div class="relative" ref="userMenuRef">
                 <button @click="toggleUserMenu" class="flex items-center space-x-2 hover:bg-gray-50 rounded-lg px-3 py-2 transition-colors">
-                  <img :src="userStore.user?.avatar || 'https://via.placeholder.com/40'" class="w-8 h-8 rounded-full">
+                  <img :src="getUserAvatar()" class="w-8 h-8 rounded-full bg-gray-200">
                   <span class="text-sm font-medium text-gray-700">{{ userStore.user?.nickname || userStore.user?.username }}</span>
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -191,6 +186,14 @@ function updatePageTitle(title) {
   if (title) {
     document.title = title
   }
+}
+
+function getUserAvatar() {
+  if (userStore.user?.avatar) {
+    return userStore.user.avatar
+  }
+  const username = userStore.user?.username || 'default'
+  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(username)}`
 }
 
 async function loadSiteConfig() {

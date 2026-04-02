@@ -97,3 +97,43 @@ func GetUserFollowers(w http.ResponseWriter, r *http.Request) {
 		"page_size": pageSize,
 	})
 }
+
+func GetUserTopics(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		log.Printf("获取用户帖子失败: 无效的用户ID, id=%s", vars["id"])
+		utils.Error(w, 400, "无效的用户ID")
+		return
+	}
+
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	if page < 1 {
+		page = 1
+	}
+	pageSize, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+
+	var topics []models.Topic
+	var total int64
+
+	offset := (page - 1) * pageSize
+
+	database.DB.Model(&models.Topic{}).Where("user_id = ?", id).Count(&total)
+	database.DB.Where("user_id = ?", id).
+		Preload("User").
+		Preload("Forum").
+		Order("created_at DESC").
+		Offset(offset).
+		Limit(pageSize).
+		Find(&topics)
+
+	utils.Success(w, map[string]interface{}{
+		"list":      topics,
+		"total":     total,
+		"page":      page,
+		"page_size": pageSize,
+	})
+}
