@@ -59,7 +59,7 @@
               <Ban :size="14" />
               {{ row.is_banned ? '解禁' : '禁用' }}
             </el-button>
-            <el-button link type="purple" @click="openMergeModal(row)">
+            <el-button link type="info" @click="openMergeModal(row)">
               <GitMerge :size="14" />
               合并
             </el-button>

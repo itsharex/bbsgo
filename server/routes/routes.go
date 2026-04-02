@@ -27,6 +27,10 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/tags/{id}", handlers.GetTag).Methods("GET")
 	api.HandleFunc("/announcements", handlers.GetAnnouncements).Methods("GET")
 	api.HandleFunc("/users/credit", handlers.GetCreditUsers).Methods("GET")
+	api.HandleFunc("/users/{id}", handlers.GetUser).Methods("GET")
+	api.HandleFunc("/users/{id}/stats", handlers.GetUserStats).Methods("GET")
+	api.HandleFunc("/users/{id}/followers", handlers.GetUserFollowers).Methods("GET")
+	api.HandleFunc("/users/{id}/topics", handlers.GetUserTopics).Methods("GET")
 	api.HandleFunc("/search", handlers.Search).Methods("GET")
 
 	auth := api.PathPrefix("").Subrouter()

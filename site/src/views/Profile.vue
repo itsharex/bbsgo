@@ -37,15 +37,15 @@
                 <div class="text-xs text-gray-400">积分</div>
               </div>
               <div>
-                <div class="text-2xl font-bold text-gray-700">643</div>
+                <div class="text-2xl font-bold text-gray-700">{{ userStats.topic_count || 0 }}</div>
                 <div class="text-xs text-gray-400">帖子</div>
               </div>
               <div>
-                <div class="text-2xl font-bold text-gray-700">1167</div>
+                <div class="text-2xl font-bold text-gray-700">{{ userStats.post_count || 0 }}</div>
                 <div class="text-xs text-gray-400">评论</div>
               </div>
               <div>
-                <div class="text-2xl font-bold text-gray-700">1</div>
+                <div class="text-2xl font-bold text-gray-700">{{ userStats.rank || 0 }}</div>
                 <div class="text-xs text-gray-400">注册排名</div>
               </div>
             </div>
@@ -58,7 +58,7 @@
             <div class="space-y-3">
               <div class="flex">
                 <span class="w-20 text-gray-500 text-sm">昵称</span>
-                <span class="text-gray-900 text-sm">{{ user?.username }}</span>
+                <span class="text-gray-900 text-sm">{{ user?.nickname || user?.username }}</span>
               </div>
               <div class="flex">
                 <span class="w-20 text-gray-500 text-sm">签名</span>
@@ -66,17 +66,16 @@
               </div>
               <div class="flex">
                 <span class="w-20 text-gray-500 text-sm">主页</span>
-                <span class="text-blue-500 text-sm">{{ user?.intro ? user.intro : 'https://mlog.club/user/' + (user?.id
-                  || '') }}</span>
+                <span class="text-blue-500 text-sm">{{ user?.intro ? user.intro : 'https://mlog.club/user/' + (user?.id || '') }}</span>
               </div>
             </div>
           </div>
           <div class="bg-white rounded-lg shadow-sm p-4">
             <div class="flex justify-between items-center mb-4">
-              <h3 class="font-medium text-gray-900">粉丝 34</h3>
+              <h3 class="font-medium text-gray-900">粉丝 {{ followers.length }}</h3>
               <button class="text-blue-500 text-sm hover:underline">更多</button>
             </div>
-            <div class="space-y-3">
+            <div v-if="followers.length > 0" class="space-y-3">
               <div v-for="follower in followers" :key="follower.id" class="flex items-center space-x-3">
                 <img :src="follower.avatar || 'https://via.placeholder.com/40'" class="w-10 h-10 rounded-full">
                 <div class="flex-1 min-w-0">
@@ -86,13 +85,16 @@
                 <button class="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-blue-600">+ 关注</button>
               </div>
             </div>
+            <div v-else class="text-center text-gray-400 py-4 text-sm">
+              暂无粉丝
+            </div>
           </div>
         </div>
       </aside>
       <div class="flex-1 min-w-0">
         <div class="bg-white rounded-lg shadow-sm">
           <div class="p-4">
-            <div v-if="currentTab === 'topics'" class="space-y-4">
+            <div v-if="userTopics.length > 0" class="space-y-4">
               <div v-for="topic in userTopics" :key="topic.id" class="border-b pb-4 last:border-b-0">
                 <div class="flex items-center justify-between mb-1">
                   <span class="text-sm text-gray-500">{{ topic.user?.username }}</span>
@@ -103,12 +105,15 @@
                 </router-link>
                 <p class="text-gray-600 text-sm mb-3 line-clamp-3">{{ topic.content.substring(0, 200) }}</p>
                 <div class="flex items-center space-x-4 text-xs text-gray-500">
-                  <span>心赞 4</span>
-                  <span>评论 3</span>
-                  <span>浏览 149</span>
+                  <span>心赞 {{ topic.like_count || 0 }}</span>
+                  <span>评论 {{ topic.reply_count || 0 }}</span>
+                  <span>浏览 {{ topic.view_count || 0 }}</span>
                   <span v-if="topic.forum" class="bg-gray-100 px-2 py-0.5 rounded">{{ topic.forum.name }}</span>
                 </div>
               </div>
+            </div>
+            <div v-else class="text-center text-gray-400 py-12">
+              暂无帖子
             </div>
           </div>
         </div>
@@ -118,24 +123,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '@/api'
 
 const route = useRoute()
 const user = ref(null)
-const currentTab = ref('topics')
+const userStats = ref({
+  topic_count: 0,
+  post_count: 0,
+  rank: 0
+})
 const userTopics = ref([])
-
-const followers = ref([
-  { id: 1, username: 'user/profile', avatar: '', signature: '这家伙很懒，什么都没留下' },
-  { id: 2, username: 'abc123', avatar: '', signature: '这家伙很懒，什么都没留下' },
-  { id: 3, username: 'geraint', avatar: '', signature: 'boyboyboy' },
-  { id: 4, username: 'Ame', avatar: '', signature: '这家伙很懒，什么都没留下' },
-  { id: 5, username: 'wolfCoder', avatar: '', signature: '这家伙很懒，什么都没留下' },
-  { id: 6, username: '哈哈', avatar: '', signature: '这家伙很懒，什么都没留下' },
-  { id: 7, username: '糖果屋里', avatar: '', signature: '糖果屋里' }
-])
+const followers = ref([])
 
 function formatTime(time) {
   const date = new Date(time)
@@ -149,54 +149,54 @@ function formatTime(time) {
 
 async function loadUser() {
   try {
-    user.value = {
-      id: 1,
-      username: '小码哥',
-      avatar: 'https://via.placeholder.com/128',
-      signature: '一个爱折腾的老码农。',
-      credits: 3098,
-      level: 10
-    }
-    userTopics.value = [
-      {
-        id: 1,
-        title: '热心的朋友问："bbs-go最近有没有计划更新新的功能"，我的回答："重构！"',
-        content: '为什么要不断的进行重构呢？我认为主要有以下几点：作为一个开源程序，大家关注他最主要的目的是为了交流和学习，所以要确保自己的代码与时俱进（至少代码不能太丑）。之前的架构并不一定是最优的，随着技术的进步会觉得之前的代码可能换一种方式实现更加美观、合理...',
-        user: { username: '小码哥' },
-        forum: { name: '交流' },
-        created_at: new Date(Date.now() - 6 * 3600000).toISOString()
-      },
-      {
-        id: 2,
-        title: 'bbs-go v3.5.0 发布，升级go1.18',
-        content: '文档地址: 帮助文档: https://docs.bbs-go.com/ 官网交流: https://mlog.club 问题反馈: https://mlog.club/topic/node/3 功能建议收集: https://mlog.club/topic/60...',
-        user: { username: '小码哥' },
-        forum: { name: '开源' },
-        created_at: new Date(Date.now() - 7 * 3600000).toISOString()
-      },
-      {
-        id: 3,
-        title: '构建 Go 应用 docker 镜像的十八种姿势',
-        content: '转载自: https://mp.weixin.qq.com/s/cJcOsCDL_XHG4QpcRWIqYg 夜以继日，加班加点开发了一个最简单的 Go Hello world 应用 通宵熬夜，夜以继日，加班加点开发了一个最简单的 Go Hello ...',
-        user: { username: '小码哥' },
-        forum: { name: '分享' },
-        created_at: new Date(Date.now() - 13 * 24 * 3600000).toISOString()
-      },
-      {
-        id: 4,
-        title: '我计划将bbs-go的服务端接口修改为由Java实现，各位觉得怎么样。',
-        content: '',
-        user: { username: '小码哥' },
-        forum: { name: '交流' },
-        created_at: new Date(Date.now() - 15 * 24 * 3600000).toISOString()
-      }
-    ]
+    const userId = route.params.id
+    const res = await api.get(`/users/${userId}`)
+    user.value = res
   } catch (e) {
-    console.error(e)
+    console.error('加载用户信息失败', e)
   }
 }
 
-onMounted(() => {
-  loadUser()
+async function loadUserTopics() {
+  try {
+    const userId = route.params.id
+    const res = await api.get(`/users/${userId}/topics`)
+    userTopics.value = res?.list || []
+  } catch (e) {
+    console.error('加载用户帖子失败', e)
+  }
+}
+
+async function loadFollowers() {
+  try {
+    const userId = route.params.id
+    const res = await api.get(`/users/${userId}/followers`)
+    followers.value = res?.list || []
+  } catch (e) {
+    console.error('加载粉丝列表失败', e)
+  }
+}
+
+async function loadUserStats() {
+  try {
+    const userId = route.params.id
+    const res = await api.get(`/users/${userId}/stats`)
+    userStats.value = res || {
+      topic_count: 0,
+      post_count: 0,
+      rank: 0
+    }
+  } catch (e) {
+    console.error('加载用户统计失败', e)
+  }
+}
+
+onMounted(async () => {
+  await Promise.all([
+    loadUser(),
+    loadUserTopics(),
+    loadFollowers(),
+    loadUserStats()
+  ])
 })
 </script>

@@ -24,29 +24,77 @@
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="网站 Logo URL">
-                  <el-input v-model="config.site_logo" placeholder="请输入 Logo 图片 URL">
-                    <template #prefix>
-                      <Image :size="16" />
-                    </template>
-                  </el-input>
+                <el-form-item label="网站描述">
+                  <el-input v-model="config.site_description" type="textarea" :rows="2" placeholder="请输入网站描述" />
                 </el-form-item>
               </el-col>
             </el-row>
 
             <el-row :gutter="24">
               <el-col :span="12">
-                <el-form-item label="网站 Icon URL">
-                  <el-input v-model="config.site_icon" placeholder="请输入 Icon 图片 URL">
-                    <template #prefix>
-                      <Image :size="16" />
-                    </template>
-                  </el-input>
+                <el-form-item label="网站 Logo">
+                  <div class="upload-container">
+                    <el-upload
+                      class="image-uploader"
+                      :action="uploadUrl"
+                      :headers="uploadHeaders"
+                      :show-file-list="false"
+                      :on-success="handleLogoSuccess"
+                      :before-upload="beforeUpload"
+                      accept="image/*"
+                    >
+                      <div v-if="config.site_logo" class="image-preview">
+                        <img :src="config.site_logo" class="preview-img" />
+                        <div class="image-actions">
+                          <el-button type="primary" size="small" @click.stop="config.site_logo = ''">
+                            更换图片
+                          </el-button>
+                        </div>
+                      </div>
+                      <div v-else class="upload-placeholder">
+                        <el-icon class="upload-icon"><Plus /></el-icon>
+                        <div class="upload-text">点击上传 Logo</div>
+                      </div>
+                    </el-upload>
+                    <div v-if="config.site_logo" class="url-display">
+                      <el-input v-model="config.site_logo" placeholder="Logo URL" readonly>
+                        <template #prepend>URL</template>
+                      </el-input>
+                    </div>
+                  </div>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="网站描述">
-                  <el-input v-model="config.site_description" type="textarea" :rows="2" placeholder="请输入网站描述" />
+                <el-form-item label="网站 Icon">
+                  <div class="upload-container">
+                    <el-upload
+                      class="image-uploader icon-uploader"
+                      :action="uploadUrl"
+                      :headers="uploadHeaders"
+                      :show-file-list="false"
+                      :on-success="handleIconSuccess"
+                      :before-upload="beforeUpload"
+                      accept="image/*"
+                    >
+                      <div v-if="config.site_icon" class="image-preview icon-preview">
+                        <img :src="config.site_icon" class="preview-img icon-img" />
+                        <div class="image-actions">
+                          <el-button type="primary" size="small" @click.stop="config.site_icon = ''">
+                            更换图片
+                          </el-button>
+                        </div>
+                      </div>
+                      <div v-else class="upload-placeholder icon-placeholder">
+                        <el-icon class="upload-icon"><Plus /></el-icon>
+                        <div class="upload-text">点击上传 Icon</div>
+                      </div>
+                    </el-upload>
+                    <div v-if="config.site_icon" class="url-display">
+                      <el-input v-model="config.site_icon" placeholder="Icon URL" readonly>
+                        <template #prepend>URL</template>
+                      </el-input>
+                    </div>
+                  </div>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -178,10 +226,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 import api from '@/api'
-import { Settings, Globe, Image, Save } from 'lucide-vue-next'
+import { Settings, Globe, Save } from 'lucide-vue-next'
 
 const activeTab = ref('basic')
 const config = ref({
@@ -205,6 +254,51 @@ const config = ref({
 })
 
 const saving = ref(false)
+
+const uploadUrl = computed(() => {
+  const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1'
+  return `${baseURL}/upload`
+})
+
+const uploadHeaders = computed(() => {
+  const token = localStorage.getItem('token')
+  return {
+    Authorization: `Bearer ${token}`
+  }
+})
+
+function beforeUpload(file) {
+  const isImage = file.type.startsWith('image/')
+  const isLt50M = file.size / 1024 / 1024 < 50
+
+  if (!isImage) {
+    ElMessage.error('只能上传图片文件!')
+    return false
+  }
+  if (!isLt50M) {
+    ElMessage.error('图片大小不能超过 50MB!')
+    return false
+  }
+  return true
+}
+
+function handleLogoSuccess(response) {
+  if (response.code === 200 && response.data?.url) {
+    config.value.site_logo = response.data.url
+    ElMessage.success('Logo 上传成功')
+  } else {
+    ElMessage.error('上传失败')
+  }
+}
+
+function handleIconSuccess(response) {
+  if (response.code === 200 && response.data?.url) {
+    config.value.site_icon = response.data.url
+    ElMessage.success('Icon 上传成功')
+  } else {
+    ElMessage.error('上传失败')
+  }
+}
 
 async function loadConfig() {
   try {
@@ -280,6 +374,93 @@ onMounted(() => {
   margin: 0;
 }
 
+.upload-container {
+  width: 100%;
+}
+
+.image-uploader {
+  width: 100%;
+  border: 1px dashed #d9d9d9;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.image-uploader:hover {
+  border-color: #409eff;
+}
+
+.icon-uploader {
+  width: 200px;
+  height: 200px;
+}
+
+.upload-placeholder {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #fafafa;
+}
+
+.icon-placeholder {
+  width: 200px;
+  height: 200px;
+}
+
+.upload-icon {
+  font-size: 48px;
+  color: #8c939d;
+  margin-bottom: 8px;
+}
+
+.upload-text {
+  color: #8c939d;
+  font-size: 14px;
+}
+
+.image-preview {
+  width: 100%;
+  height: 200px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f7fa;
+}
+
+.icon-preview {
+  width: 200px;
+  height: 200px;
+}
+
+.preview-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.icon-img {
+  width: 128px;
+  height: 128px;
+  object-fit: contain;
+}
+
+.image-actions {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.url-display {
+  margin-top: 12px;
+}
+
 .form-footer {
   margin-top: 24px;
   padding-top: 24px;
@@ -300,5 +481,17 @@ onMounted(() => {
 
 :deep(.el-tabs__item) {
   font-weight: 500;
+}
+
+:deep(.el-upload) {
+  width: 100%;
+  height: 100%;
+}
+
+:deep(.el-upload-dragger) {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
 }
 </style>

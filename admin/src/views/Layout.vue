@@ -4,9 +4,7 @@
     <aside class="sidebar no-scrollbar">
       <!-- Logo 区域 -->
       <div class="logo-area">
-        <div class="logo-icon">
-          <LayoutDashboard :size="28" />
-        </div>
+        <img src="/src/assets/bbs.png" class="logo-icon" alt="logo" />
         <span class="logo-text">BBS Go</span>
       </div>
 
@@ -20,31 +18,31 @@
             </span>
             <span class="menu-text">仪表盘</span>
           </router-link>
-          <router-link to="/users" class="menu-item" :class="{ active: route.name === 'Users' }">
+          <router-link to="users" class="menu-item" :class="{ active: route.name === 'Users' }">
             <span class="menu-icon purple">
               <Users :size="18" />
             </span>
             <span class="menu-text">用户管理</span>
           </router-link>
-          <router-link to="/forums" class="menu-item" :class="{ active: route.name === 'Forums' }">
+          <router-link to="forums" class="menu-item" :class="{ active: route.name === 'Forums' }">
             <span class="menu-icon pink">
               <FolderOpen :size="18" />
             </span>
             <span class="menu-text">版块管理</span>
           </router-link>
-          <router-link to="/topics" class="menu-item" :class="{ active: route.name === 'Topics' }">
+          <router-link to="topics" class="menu-item" :class="{ active: route.name === 'Topics' }">
             <span class="menu-icon green">
               <FileText :size="18" />
             </span>
             <span class="menu-text">帖子管理</span>
           </router-link>
-          <router-link to="/posts" class="menu-item" :class="{ active: route.name === 'Posts' }">
+          <router-link to="posts" class="menu-item" :class="{ active: route.name === 'Posts' }">
             <span class="menu-icon cyan">
               <MessageSquare :size="18" />
             </span>
             <span class="menu-text">评论管理</span>
           </router-link>
-          <router-link to="/tags" class="menu-item" :class="{ active: route.name === 'Tags' }">
+          <router-link to="tags" class="menu-item" :class="{ active: route.name === 'Tags' }">
             <span class="menu-icon orange">
               <Tag :size="18" />
             </span>
@@ -54,26 +52,26 @@
 
         <div class="menu-group">
           <span class="menu-label">系统</span>
-          <router-link to="/reports" class="menu-item" :class="{ active: route.name === 'Reports' }">
+          <router-link to="reports" class="menu-item" :class="{ active: route.name === 'Reports' }">
             <span class="menu-icon red">
               <AlertTriangle :size="18" />
             </span>
             <span class="menu-text">举报管理</span>
             <span v-if="reportCount > 0" class="badge badge-red">{{ reportCount }}</span>
           </router-link>
-          <router-link to="/announcements" class="menu-item" :class="{ active: route.name === 'Announcements' }">
+          <router-link to="announcements" class="menu-item" :class="{ active: route.name === 'Announcements' }">
             <span class="menu-icon yellow">
               <Bell :size="18" />
             </span>
             <span class="menu-text">公告管理</span>
           </router-link>
-          <router-link to="/config" class="menu-item" :class="{ active: route.name === 'Config' }">
+          <router-link to="config" class="menu-item" :class="{ active: route.name === 'Config' }">
             <span class="menu-icon blue">
               <Settings :size="18" />
             </span>
             <span class="menu-text">网站配置</span>
           </router-link>
-          <router-link to="/settings" class="menu-item" :class="{ active: route.name === 'Settings' }">
+          <router-link to="settings" class="menu-item" :class="{ active: route.name === 'Settings' }">
             <span class="menu-icon gray">
               <Sliders :size="18" />
             </span>
@@ -83,7 +81,7 @@
 
         <div class="menu-group">
           <span class="menu-label">账户</span>
-          <router-link to="/change-password" class="menu-item" :class="{ active: route.name === 'ChangePassword' }">
+          <router-link to="change-password" class="menu-item" :class="{ active: route.name === 'ChangePassword' }">
             <span class="menu-icon teal">
               <Key :size="18" />
             </span>
@@ -183,7 +181,7 @@ async function loadReportCount() {
 
 function handleLogout() {
   adminStore.logout()
-  router.push('/login')
+  router.push('/console/login')
 }
 
 onMounted(() => {

@@ -96,7 +96,7 @@ const reports = ref([])
 const filterStatus = ref('')
 const loading = ref(false)
 
-const pendingCount = computed(() => reports.value.filter(r => r.status === 0).length)
+const pendingCount = computed(() => (Array.isArray(reports.value) ? reports.value.filter(r => r.status === 0).length : 0))
 
 function getTargetType(type) {
   const types = { topic: '帖子', post: '评论', message: '私信' }
@@ -130,7 +130,7 @@ async function loadReports() {
       params.status = filterStatus.value
     }
     const res = await api.get('/admin/reports', { params })
-    reports.value = res || []
+    reports.value = Array.isArray(res) ? res : []
   } catch (e) {
     console.error('加载举报列表失败', e)
     ElMessage.error('加载举报列表失败')

@@ -1,7 +1,10 @@
 <template>
   <div class="bg-white rounded-lg shadow-sm p-6">
     <h1 class="text-2xl font-bold text-gray-900 mb-6">搜索: {{ keyword }}</h1>
-    <div v-if="topics.length > 0" class="space-y-4">
+    <div v-if="loading" class="text-center py-12">
+      <div class="text-gray-500">搜索中...</div>
+    </div>
+    <div v-else-if="topics.length > 0" class="space-y-4">
       <div v-for="topic in topics" :key="topic.id" class="border-b pb-4 last:border-b-0">
         <router-link :to="`/topic/${topic.id}`" class="block">
           <h3 class="text-lg font-medium text-gray-900 mb-2 hover:text-blue-500">{{ topic.title }}</h3>
@@ -21,12 +24,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import api from '@/api'
 
 const route = useRoute()
 const keyword = computed(() => route.query.keyword || '')
 const topics = ref([])
+const loading = ref(false)
 
 function formatTime(time) {
   const date = new Date(time)
@@ -38,16 +43,27 @@ function formatTime(time) {
   return Math.floor(diff / 86400000) + '天前'
 }
 
-onMounted(() => {
-  topics.value = [
-    {
-      id: 1,
-      title: 'bbs-go 相关搜索结果',
-      content: '这是关于 ' + keyword.value + ' 的搜索结果...',
-      user: { username: '小码哥' },
-      created_at: new Date().toISOString(),
-      view_count: 100
-    }
-  ]
-})
+async function searchTopics() {
+  if (!keyword.value) {
+    topics.value = []
+    return
+  }
+
+  loading.value = true
+  try {
+    const res = await api.get('/search', {
+      params: { keyword: keyword.value }
+    })
+    topics.value = res?.list || []
+  } catch (e) {
+    console.error('搜索失败', e)
+    topics.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+watch(keyword, () => {
+  searchTopics()
+}, { immediate: true })
 </script>

@@ -3,67 +3,67 @@ import { useAdminStore } from "@/stores/admin";
 
 const routes = [
   {
-    path: "/login",
+    path: "/console/login",
     name: "Login",
     component: () => import("@/views/Login.vue"),
   },
   {
-    path: "/",
+    path: "/console",
     component: () => import("@/views/Layout.vue"),
     meta: { requiresAuth: true },
     children: [
       {
-        path: "",
+        path: "/",
         name: "Dashboard",
         component: () => import("@/views/Dashboard.vue"),
       },
       {
-        path: "users",
+        path: "/users",
         name: "Users",
         component: () => import("@/views/Users.vue"),
       },
       {
-        path: "forums",
+        path: "/forums",
         name: "Forums",
         component: () => import("@/views/Forums.vue"),
       },
       {
-        path: "topics",
+        path: "/topics",
         name: "Topics",
         component: () => import("@/views/Topics.vue"),
       },
       {
-        path: "posts",
+        path: "/posts",
         name: "Posts",
         component: () => import("@/views/Posts.vue"),
       },
       {
-        path: "tags",
+        path: "/tags",
         name: "Tags",
         component: () => import("@/views/Tags.vue"),
       },
       {
-        path: "reports",
+        path: "/reports",
         name: "Reports",
         component: () => import("@/views/Reports.vue"),
       },
       {
-        path: "announcements",
+        path: "/announcements",
         name: "Announcements",
         component: () => import("@/views/Announcements.vue"),
       },
       {
-        path: "config",
+        path: "/config",
         name: "Config",
         component: () => import("@/views/Config.vue"),
       },
       {
-        path: "settings",
+        path: "/settings",
         name: "Settings",
         component: () => import("@/views/Settings.vue"),
       },
       {
-        path: "change-password",
+        path: "/change-password",
         name: "ChangePassword",
         component: () => import("@/views/ChangePassword.vue"),
       },
@@ -72,16 +72,16 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory('/console'),
   routes,
 });
 
 router.beforeEach((to, from, next) => {
   const adminStore = useAdminStore();
   if (to.meta.requiresAuth && !adminStore.isLoggedIn) {
-    next("/login");
-  } else if (to.path === "/login" && adminStore.isLoggedIn) {
-    next("/");
+    next("/console/login");
+  } else if (to.path === "/console/login" && adminStore.isLoggedIn) {
+    next("/console");
   } else {
     next();
   }
