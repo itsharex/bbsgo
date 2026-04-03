@@ -37,7 +37,7 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/config", handlers.GetSiteConfig).Methods("GET")                  // 获取网站配置
 	api.HandleFunc("/topics", handlers.GetTopics).Methods("GET")                      // 获取话题列表
 	api.HandleFunc("/topics/{id}", handlers.GetTopic).Methods("GET")                  // 获取话题详情
-	api.HandleFunc("/topics/{id}/posts", handlers.GetPosts).Methods("GET")            // 获取话题回复
+	api.HandleFunc("/topics/{id}/comments", handlers.GetComments).Methods("GET")            // 获取话题评论
 	api.HandleFunc("/tags", handlers.GetTags).Methods("GET")                          // 获取标签列表
 	api.HandleFunc("/tags/search", handlers.SearchTags).Methods("GET")                // 搜索标签
 	api.HandleFunc("/tags/{id}", handlers.GetTag).Methods("GET")                      // 获取标签详情
@@ -74,11 +74,13 @@ func SetupRoutes() *mux.Router {
 	auth.HandleFunc("/topics", handlers.CreateTopic).Methods("POST")        // 创建话题
 	auth.HandleFunc("/topics/{id}", handlers.UpdateTopic).Methods("PUT")    // 更新话题
 	auth.HandleFunc("/topics/{id}", handlers.DeleteTopic).Methods("DELETE") // 删除话题
+	auth.HandleFunc("/topics/{id}/pin", handlers.UserPinTopic).Methods("PUT") // 作者置顶/取消置顶
 
-	// 回复操作
-	auth.HandleFunc("/topics/{id}/posts", handlers.CreatePost).Methods("POST") // 创建回复
-	auth.HandleFunc("/posts/{id}", handlers.UpdatePost).Methods("PUT")         // 更新回复
-	auth.HandleFunc("/posts/{id}", handlers.DeletePost).Methods("DELETE")      // 删除回复
+	// 评论操作
+	auth.HandleFunc("/topics/{id}/comments", handlers.CreateComment).Methods("POST") // 创建评论
+	auth.HandleFunc("/comments/{id}", handlers.UpdateComment).Methods("PUT")         // 更新评论
+	auth.HandleFunc("/comments/{id}", handlers.DeleteComment).Methods("DELETE")      // 删除评论
+	auth.HandleFunc("/topics/{topic_id}/comments/{comment_id}/pin", handlers.PinComment).Methods("PUT") // 置顶/取消置顶评论
 
 	// 点赞操作
 	auth.HandleFunc("/likes", handlers.CreateLike).Methods("POST")      // 创建点赞
@@ -154,10 +156,11 @@ func SetupRoutes() *mux.Router {
 	// 话题管理
 	admin.HandleFunc("/topics", handlers.GetAdminTopics).Methods("GET")           // 获取话题列表
 	admin.HandleFunc("/topics/{id}", handlers.DeleteAdminTopic).Methods("DELETE") // 删除话题
+	admin.HandleFunc("/topics/{id}/pin", handlers.AdminPinTopic).Methods("PUT")   // 管理员置顶/取消置顶
 
-	// 回复管理
-	admin.HandleFunc("/posts", handlers.GetAdminPosts).Methods("GET")           // 获取回复列表
-	admin.HandleFunc("/posts/{id}", handlers.DeleteAdminPost).Methods("DELETE") // 删除回复
+	// 评论管理
+	admin.HandleFunc("/comments", handlers.GetAdminComments).Methods("GET")           // 获取评论列表
+	admin.HandleFunc("/comments/{id}", handlers.DeleteAdminComment).Methods("DELETE") // 删除评论
 
 	// 举报管理
 	admin.HandleFunc("/reports", handlers.GetAdminReports).Methods("GET")          // 获取举报列表

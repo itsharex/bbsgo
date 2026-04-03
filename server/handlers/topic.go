@@ -276,6 +276,7 @@ func UpdateTopic(w http.ResponseWriter, r *http.Request) {
 	delete(updates, "user_id")
 	delete(updates, "created_at")
 	delete(updates, "is_pinned")
+	delete(updates, "is_user_pinned")
 	delete(updates, "is_locked")
 	delete(updates, "is_essence")
 	delete(updates, "like_count")
@@ -344,4 +345,94 @@ func DeleteTopic(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("delete topic: topic deleted successfully, id: %d, userID: %d", id, userID)
 	utils.Success(w, nil)
+}
+
+// AdminPinTopic 管理员置顶/取消置顶话题处理器
+// 影响首页帖子列表排序
+func AdminPinTopic(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	// 解析请求体
+	var req struct {
+		Pinned bool `json:"pinned"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("admin pin topic: failed to decode request body, id: %d, error: %v", id, err)
+		utils.Error(w, 400, "无效的请求参数")
+		return
+	}
+
+	// 查询话题
+	var topic models.Topic
+	if err := database.DB.First(&topic, id).Error; err != nil {
+		log.Printf("admin pin topic: topic not found, id: %d, error: %v", id, err)
+		utils.Error(w, 404, "话题不存在")
+		return
+	}
+
+	// 更新置顶状态
+	if err := database.DB.Model(&topic).UpdateColumn("is_pinned", req.Pinned).Error; err != nil {
+		log.Printf("admin pin topic: failed to update pin status, id: %d, error: %v", id, err)
+		utils.Error(w, 500, "操作失败")
+		return
+	}
+
+	log.Printf("admin pin topic: topic pin updated, id: %d, pinned: %v", id, req.Pinned)
+	utils.Success(w, map[string]interface{}{
+		"id":         topic.ID,
+		"is_pinned": req.Pinned,
+	})
+}
+
+// UserPinTopic 作者置顶/取消置顶话题处理器
+// 影响个人主页帖子排序
+func UserPinTopic(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		log.Printf("user pin topic: user not authenticated")
+		utils.Error(w, 401, "未认证")
+		return
+	}
+
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	// 查询话题
+	var topic models.Topic
+	if err := database.DB.First(&topic, id).Error; err != nil {
+		log.Printf("user pin topic: topic not found, id: %d, error: %v", id, err)
+		utils.Error(w, 404, "话题不存在")
+		return
+	}
+
+	// 验证权限：仅作者可以操作
+	if topic.UserID != userID {
+		log.Printf("user pin topic: permission denied, topicID: %d, userID: %d", id, userID)
+		utils.Error(w, 403, "无权限操作")
+		return
+	}
+
+	// 解析请求体
+	var req struct {
+		Pinned bool `json:"pinned"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("user pin topic: failed to decode request body, id: %d, error: %v", id, err)
+		utils.Error(w, 400, "无效的请求参数")
+		return
+	}
+
+	// 更新作者置顶状态
+	if err := database.DB.Model(&topic).UpdateColumn("is_user_pinned", req.Pinned).Error; err != nil {
+		log.Printf("user pin topic: failed to update user pin status, id: %d, error: %v", id, err)
+		utils.Error(w, 500, "操作失败")
+		return
+	}
+
+	log.Printf("user pin topic: topic user pin updated, id: %d, is_user_pinned: %v", id, req.Pinned)
+	utils.Success(w, map[string]interface{}{
+		"id":             topic.ID,
+		"is_user_pinned": req.Pinned,
+	})
 }

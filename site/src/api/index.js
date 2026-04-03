@@ -51,12 +51,22 @@ export const pollApi = {
   submitVote: (data) => api.post('/polls/vote', data),
 }
 
-export const topicApi = {
-  deleteTopic: (id) => api.delete(`/topics/${id}`),
+export const commentApi = {
+  deleteComment: (id) => api.delete(`/comments/${id}`),
 }
 
-export const postApi = {
-  deletePost: (id) => api.delete(`/posts/${id}`),
+export const topicApi = {
+  deleteTopic: (id) => api.delete(`/topics/${id}`),
+  pinTopic: (id, pinned) => api.put(`/topics/${id}/pin`, { pinned }),
+}
+
+export const commentPinApi = {
+  pinComment: (topicId, commentId, pinned) => api.put(`/topics/${topicId}/comments/${commentId}/pin`, { pinned }),
+}
+
+export const reportApi = {
+  createReport: (data) => api.post('/reports', data),
+  getMyReports: () => api.get('/user/reports'),
 }
 
 export default api;

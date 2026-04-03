@@ -16,7 +16,8 @@ type Topic struct {
 	User         User           `gorm:"foreignKey:UserID" json:"user"`        // 发布者用户信息
 	ForumID      uint           `gorm:"not null;index" json:"forum_id"`       // 所属版块ID
 	Forum        Forum          `gorm:"foreignKey:ForumID" json:"forum"`      // 所属版块信息
-	IsPinned     bool           `gorm:"default:false;index" json:"is_pinned"` // 是否置顶
+	IsPinned     bool           `gorm:"default:false;index" json:"is_pinned"` // 是否置顶（管理员）
+	IsUserPinned bool           `gorm:"default:false;index" json:"is_user_pinned"` // 作者是否置顶
 	IsLocked     bool           `gorm:"default:false" json:"is_locked"`       // 是否锁定（禁止回复）
 	IsEssence    bool           `gorm:"default:false" json:"is_essence"`      // 是否加精
 	LikeCount    int            `gorm:"default:0" json:"like_count"`          // 点赞数
@@ -29,7 +30,7 @@ type Topic struct {
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`                       // 软删除时间
 
 	// 关联关系
-	Posts     []Post     `gorm:"foreignKey:TopicID" json:"-"`       // 话题下的所有回复
+	Comments  []Comment  `gorm:"foreignKey:TopicID" json:"-"`      // 话题下的所有评论
 	Likes     []Like     `gorm:"foreignKey:TargetID" json:"-"`      // 话题的点赞记录
 	Favorites []Favorite `gorm:"foreignKey:TopicID" json:"-"`       // 话题的收藏记录
 	Tags      []Tag      `gorm:"many2many:topic_tags;" json:"tags"` // 话题关联的标签

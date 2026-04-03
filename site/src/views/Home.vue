@@ -54,14 +54,17 @@
                 <span class="text-xs text-gray-400">{{ formatTime(topic.created_at) }}</span>
               </div>
               <router-link :to="`/topic/${topic.id}`" class="block">
-                <h3 class="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-500 line-clamp-2">
-                  {{ topic.title }}
+                <h3 class="text-lg font-semibold mb-2 hover:text-blue-500 line-clamp-2 flex items-center flex-wrap gap-1">
+                  <span v-if="topic.is_pinned" class="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-medium">置顶</span>
+                  <span v-if="topic.is_essence" class="text-xs bg-yellow-500 text-white px-1.5 py-0.5 rounded font-medium">精华</span>
+                  <span v-if="topic.is_locked" class="text-xs bg-gray-500 text-white px-1.5 py-0.5 rounded font-medium">锁定</span>
+                  <span class="text-gray-900">{{ topic.title }}</span>
                 </h3>
-                <p class="text-gray-600 text-sm mb-3 line-clamp-3" v-html="topic.content.substring(0, 200)"></p>
+                <p class="text-gray-600 text-sm mb-3 line-clamp-3">{{ stripMarkdown(topic.content).substring(0, 200) }}</p>
               </router-link>
               <div class="flex items-center flex-wrap gap-2 mb-2" v-if="topic.tags && topic.tags.length > 0">
                 <router-link v-for="tag in topic.tags" :key="tag.id" :to="`/?tag=${tag.id}`"
-                  class="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded hover:bg-blue-100 hover:text-blue-600">
+                  class="px-2 py-0.5 text-xs bg-blue-100 text-blue-600 rounded hover:bg-blue-200 hover:text-blue-700">
                   #{{ tag.name }}
                 </router-link>
               </div>
@@ -167,6 +170,7 @@ import { ElMessage } from 'element-plus'
 import api from '@/api'
 import { useUserStore } from '@/stores/user'
 import { getUserAvatar, getUserDisplayName } from '@/utils/user'
+import { stripMarkdown } from '@/utils/markdown'
 
 const route = useRoute()
 const router = useRouter()

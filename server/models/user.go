@@ -28,7 +28,7 @@ type User struct {
 
 	// 关联关系
 	Topics           []Topic        `gorm:"foreignKey:UserID" json:"-"`            // 用户发布的话题
-	Posts            []Post         `gorm:"foreignKey:UserID" json:"-"`            // 用户发布的帖子/回复
+	Comments         []Comment      `gorm:"foreignKey:UserID" json:"-"`            // 用户发布的评论
 	Likes            []Like         `gorm:"foreignKey:UserID" json:"-"`            // 用户点赞记录
 	Favorites        []Favorite     `gorm:"foreignKey:UserID" json:"-"`            // 用户收藏记录
 	Follows          []Follow       `gorm:"foreignKey:UserID" json:"-"`            // 用户关注的人（正向）

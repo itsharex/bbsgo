@@ -12,7 +12,7 @@
       <nav class="menu-nav">
         <div class="menu-group">
           <span class="menu-label">主菜单</span>
-          <router-link to="/" class="menu-item" :class="{ active: route.name === 'Dashboard' }">
+          <router-link to="/console/dashboard" class="menu-item" :class="{ active: route.name === 'Dashboard' }">
             <span class="menu-icon blue">
               <LayoutDashboard :size="18" />
             </span>
@@ -36,7 +36,7 @@
             </span>
             <span class="menu-text">帖子管理</span>
           </router-link>
-          <router-link to="posts" class="menu-item" :class="{ active: route.name === 'Posts' }">
+          <router-link to="comments" class="menu-item" :class="{ active: route.name === 'Comments' }">
             <span class="menu-icon cyan">
               <MessageSquare :size="18" />
             </span>

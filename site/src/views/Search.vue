@@ -9,7 +9,7 @@
         <router-link :to="`/topic/${topic.id}`" class="block">
           <h3 class="text-lg font-medium text-gray-900 mb-2 hover:text-blue-500">{{ topic.title }}</h3>
         </router-link>
-        <p class="text-gray-600 text-sm mb-2 line-clamp-2">{{ topic.content.substring(0, 150) }}</p>
+        <p class="text-gray-600 text-sm mb-2 line-clamp-2">{{ stripMarkdown(topic.content).substring(0, 150) }}</p>
         <div class="flex items-center space-x-4 text-sm text-gray-500">
           <span>{{ topic.user?.username }}</span>
           <span>{{ formatTime(topic.created_at) }}</span>
@@ -27,6 +27,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '@/api'
+import { stripMarkdown } from '@/utils/markdown'
 
 const route = useRoute()
 const keyword = computed(() => route.query.keyword || '')

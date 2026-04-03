@@ -6,69 +6,70 @@ const routes = [
     path: "/console/login",
     name: "Login",
     component: () => import("@/views/Login.vue"),
+    meta: { requiresAuth: false },
   },
   {
-    path: "/console",
+    path: "/console/",
     component: () => import("@/views/Layout.vue"),
     meta: { requiresAuth: true },
     children: [
       {
-        path: "",
+        path: "dashboard",
         name: "Dashboard",
         component: () => import("@/views/Dashboard.vue"),
       },
       {
-        path: "/users",
+        path: "users",
         name: "Users",
         component: () => import("@/views/Users.vue"),
       },
       {
-        path: "/forums",
+        path: "forums",
         name: "Forums",
         component: () => import("@/views/Forums.vue"),
       },
       {
-        path: "/topics",
+        path: "topics",
         name: "Topics",
         component: () => import("@/views/Topics.vue"),
       },
       {
-        path: "/posts",
-        name: "Posts",
-        component: () => import("@/views/Posts.vue"),
+        path: "comments",
+        name: "Comments",
+        component: () => import("@/views/Comments.vue"),
       },
       {
-        path: "/tags",
+        path: "tags",
         name: "Tags",
         component: () => import("@/views/Tags.vue"),
       },
       {
-        path: "/polls",
+        path: "polls",
         name: "Polls",
         component: () => import("@/views/Polls.vue"),
       },
       {
-        path: "/reports",
+        path: "reports",
         name: "Reports",
         component: () => import("@/views/Reports.vue"),
       },
       {
-        path: "/announcements",
+        path: "announcements",
         name: "Announcements",
         component: () => import("@/views/Announcements.vue"),
       },
       {
-        path: "/config",
+        path: "config",
         name: "Config",
         component: () => import("@/views/Config.vue"),
       },
       {
-        path: "/settings",
+        path: "settings",
         name: "Settings",
         component: () => import("@/views/Settings.vue"),
       },
       {
-        path: "/change-password",
+        path: "change-password",
         name: "ChangePassword",
         component: () => import("@/views/ChangePassword.vue"),
       },
@@ -77,7 +78,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory('/console'),
+  history: createWebHistory(),
   routes,
 });
 
@@ -86,7 +87,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !adminStore.isLoggedIn) {
     next("/console/login");
   } else if (to.path === "/console/login" && adminStore.isLoggedIn) {
-    next("/console");
+    next("/console/dashboard");
   } else {
     next();
   }

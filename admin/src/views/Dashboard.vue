@@ -30,13 +30,13 @@
         </div>
       </div>
 
-      <div class="stat-card stat-posts">
+      <div class="stat-card stat-comments">
         <div class="stat-icon">
           <MessageCircle :size="24" />
         </div>
         <div class="stat-content">
           <span class="stat-label">评论总数</span>
-          <span class="stat-value">{{ stats.posts }}</span>
+          <span class="stat-value">{{ stats.comments }}</span>
         </div>
         <div class="stat-trend up">
           <TrendingUp :size="14" />
@@ -174,7 +174,7 @@ import {
 const stats = ref({
   users: 0,
   topics: 0,
-  posts: 0,
+  comments: 0,
   reports: 0
 })
 
@@ -184,7 +184,7 @@ onMounted(() => {
   stats.value = {
     users: 156,
     topics: 1024,
-    posts: 3567,
+    comments: 3567,
     reports: 5
   }
   uptime.value = '15天 8小时'
@@ -227,7 +227,7 @@ onMounted(() => {
 
 .stat-users::before { background: linear-gradient(90deg, #667eea, #764ba2); }
 .stat-topics::before { background: linear-gradient(90deg, #34d399, #10b981); }
-.stat-posts::before { background: linear-gradient(90deg, #22d3ee, #06b6d4); }
+.stat-comments::before { background: linear-gradient(90deg, #22d3ee, #06b6d4); }
 .stat-reports::before { background: linear-gradient(90deg, #f87171, #ef4444); }
 
 .stat-card:hover {
@@ -247,7 +247,7 @@ onMounted(() => {
 
 .stat-users .stat-icon { background: rgba(102, 126, 234, 0.1); color: #667eea; }
 .stat-topics .stat-icon { background: rgba(52, 211, 153, 0.1); color: #34d399; }
-.stat-posts .stat-icon { background: rgba(34, 211, 238, 0.1); color: #22d3ee; }
+.stat-comments .stat-icon { background: rgba(34, 211, 238, 0.1); color: #22d3ee; }
 .stat-reports .stat-icon { background: rgba(248, 113, 113, 0.1); color: #f87171; }
 
 .stat-content {

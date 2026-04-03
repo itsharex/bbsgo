@@ -92,6 +92,9 @@ func seedData() {
 			}
 		}
 		log.Println("default forums created")
+
+		// 设置版块自增起始值（确保新版块从10000开始）
+		database.DB.Exec("INSERT INTO sqlite_sequence (name, seq) VALUES ('forums', 9999)")
 	}
 
 	// ========== 初始化网站配置 ==========
@@ -171,91 +174,98 @@ func seedData() {
 			}
 		}
 		log.Println("default tags created")
+
+		// 设置标签自增起始值（确保新标签从10000开始）
+		database.DB.Exec("INSERT INTO sqlite_sequence (name, seq) VALUES ('tags', 9999)")
 	}
 
 	// ========== 初始化管理员和测试用户 ==========
 	var userCount int64
 	database.DB.Model(&struct{}{}).Table("users").Count(&userCount)
 	if userCount == 0 {
-		// 设置用户自增起始值
-		database.DB.Exec("INSERT INTO sqlite_sequence (name, seq) VALUES ('users', 9999)")
-
-		// 创建管理员账号
+		// 创建管理员账号（ID=10000）
 		adminPassword, _ := utils.HashPassword("12345678")
-		if err := database.DB.Exec(`INSERT INTO users (username, email, nickname, password_hash, role, credits, created_at, updated_at)
-			VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
-			"admin", "admin@example.com", "管理员", adminPassword, 2, 10000).Error; err != nil {
+		if err := database.DB.Exec(`INSERT INTO users (id, username, email, nickname, password_hash, role, credits, created_at, updated_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+			10000, "admin", "admin@example.com", "管理员", adminPassword, 2, 10000).Error; err != nil {
 			log.Printf("failed to create admin user: %v", err)
 		} else {
-			log.Println("admin user created (username: admin, password: 12345678)")
+			log.Println("admin user created (username: admin, password: 12345678, id: 10000)")
 		}
 
-		// 创建测试用户
+		// 创建测试用户（ID=10001~10010）
 		users := []struct {
-			Username string // 用户名
-			Email    string // 邮箱
-			Nickname string // 昵称
+			ID       int
+			Username string
+			Email    string
+			Nickname string
 		}{
-			{"testuser1", "test1@example.com", "测试用户1"},
-			{"testuser2", "test2@example.com", "测试用户2"},
-			{"testuser3", "test3@example.com", "测试用户3"},
-			{"testuser4", "test4@example.com", "测试用户4"},
-			{"testuser5", "test5@example.com", "测试用户5"},
-			{"testuser6", "test6@example.com", "测试用户6"},
-			{"testuser7", "test7@example.com", "测试用户7"},
-			{"testuser8", "test8@example.com", "测试用户8"},
-			{"testuser9", "test9@example.com", "测试用户9"},
-			{"testuser10", "test10@example.com", "测试用户10"},
+			{10001, "testuser1", "test1@example.com", "测试用户1"},
+			{10002, "testuser2", "test2@example.com", "测试用户2"},
+			{10003, "testuser3", "test3@example.com", "测试用户3"},
+			{10004, "testuser4", "test4@example.com", "测试用户4"},
+			{10005, "testuser5", "test5@example.com", "测试用户5"},
+			{10006, "testuser6", "test6@example.com", "测试用户6"},
+			{10007, "testuser7", "test7@example.com", "测试用户7"},
+			{10008, "testuser8", "test8@example.com", "测试用户8"},
+			{10009, "testuser9", "test9@example.com", "测试用户9"},
+			{10010, "testuser10", "test10@example.com", "测试用户10"},
 		}
 
 		for _, u := range users {
 			hashedPassword, _ := utils.HashPassword("123456")
-			if err := database.DB.Exec(`INSERT INTO users (username, email, nickname, password_hash, credits, created_at, updated_at)
-				VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
-				u.Username, u.Email, u.Nickname, hashedPassword, 1000).Error; err != nil {
+			if err := database.DB.Exec(`INSERT INTO users (id, username, email, nickname, password_hash, credits, created_at, updated_at)
+				VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+				u.ID, u.Username, u.Email, u.Nickname, hashedPassword, 1000).Error; err != nil {
 				log.Printf("failed to create test user: %s, error: %v", u.Username, err)
 			}
 		}
 		log.Println("test users created")
+
+		// 设置用户自增起始值（确保新用户从10011开始）
+		database.DB.Exec("INSERT INTO sqlite_sequence (name, seq) VALUES ('users', 10010)")
 	}
 
 	// ========== 初始化测试话题 ==========
 	var topicCount int64
 	database.DB.Model(&struct{}{}).Table("topics").Count(&topicCount)
 	if topicCount == 0 {
-		// 设置话题自增起始值
-		database.DB.Exec("INSERT INTO sqlite_sequence (name, seq) VALUES ('topics', 9999)")
-
-		// 定义测试话题
+		// 定义测试话题（用户ID从10000开始，版块ID从1开始）
 		topics := []struct {
-			Title      string // 话题标题
-			Content    string // 话题内容
-			UserID     uint   // 发布者用户ID
-			ForumID    uint   // 所属版块ID
-			LikeCount  int    // 点赞数
-			ReplyCount int    // 回复数
-			ViewCount  int    // 浏览数
+			Title      string
+			Content    string
+			UserID     uint
+			ForumID    uint
+			LikeCount  int
+			ReplyCount int
+			ViewCount  int
 		}{
-			{"bbs-go v3.5.0 发布，升级 go1.18", "文档地址：https://docs.bbs-go.com/\n官网交流：https://mlog.club\n问题反馈：https://mlog.club/topic/node/3\n\n本次更新内容：\n1. 升级 Go 1.18 版本\n2. 优化数据库查询性能\n3. 修复已知 bug\n4. 新增配置管理功能", 1, 4, 12, 8, 352},
-			{"Vue3 + TypeScript 项目实践分享", "最近用 Vue3 + TypeScript 做了一个项目，分享一些实践经验：\n\n1. 组合式 API 真的很香，逻辑复用更方便了\n2. TypeScript 的类型推导需要好好配置\n3. Pinia 比 Vuex 更简洁好用\n\n有问题的朋友欢迎留言讨论~", 2, 4, 45, 18, 892},
-			{"今天天气不错，适合摸鱼", "周末到了，阳光明媚，正是摸鱼好时节。大家最近都在看什么书？有什么好剧推荐吗？\n\n我最近在看《三体》，真的很精彩！强烈推荐给还没看过的朋友。", 3, 9, 32, 21, 687},
-			{"求助：MySQL 慢查询优化", "公司有个 MySQL 表数据量大概 500 万，查询越来越慢了。\n\n表结构大概是：\n- id (主键)\n- user_id (索引)\n- created_at (索引)\n- content (text)\n\n查询语句：SELECT * FROM table WHERE user_id = ? ORDER BY created_at DESC LIMIT 20\n\n请问有什么优化建议吗？", 4, 5, 8, 12, 234},
-			{"分享一些 Linux 常用命令", "整理了一些常用的 Linux 命令，希望对大家有帮助：\n\n查看端口占用情况：\nnetstat -tunlp | grep 端口号\n\n通过 ssh 将远程端口映射到本地端口：\nssh -L 13306:127.0.0.1:3306 用户名@远程地址 -N\n\n这样远程服务器就不需要开放需要的端口到公网了，更安全。", 5, 7, 18, 5, 221},
-			{"C++ 程序返回 value 3221226356 求教！", "return value 3221226356 求教求教！\n\n#include <iostream>\nusing namespace std;\nint main() {\n    int n; \n    double *p=new double[n]; \n    cin>>n;\n    for(int i=0;i<n;i++) { cin>>p[i]; }\n    for(int i=0;i<n;i++) { cout<<p[i]<<\" \"; }\n    return 0;\n}\n\n程序运行时出现这个错误，请问是什么原因？", 6, 5, 3, 7, 126},
-			{"分享一张今天拍的美照", "今天去公园玩了，随手拍了一张照片，分享给大家~\n\n[图片]\n\n摄影器材：Sony A7M3\n参数：f/2.8, 1/500s, ISO100", 7, 10, 156, 43, 2341},
-			{"网站有个 BUG 反馈", "在使用网站时发现一个问题：\n\n当我在移动端浏览帖子时，点击回复按钮后键盘会遮挡输入框，需要手动收起键盘才能看到输入内容。\n\n浏览器：Safari\n系统：iOS 16\n设备：iPhone 13 Pro\n\n希望能修复一下，谢谢！", 8, 11, 5, 3, 89},
-			{"推荐一个很好用的开源项目", "最近发现一个很棒的开源项目：\n\n项目名称：VSCode\nGitHub 地址：https://github.com/microsoft/vscode\n\n功能强大，插件生态丰富，支持几乎所有编程语言。强烈推荐给各位开发者！\n\n大家还有什么好用的工具欢迎分享~", 9, 7, 67, 29, 1523},
-			{"2024 年前端技术趋势预测", "随着 AI 的快速发展，前端领域也在不断变化。以下是我对 2024 年前端技术趋势的一些预测：\n\n1. AI 辅助开发将成为标配\n2. Server Components 会更加流行\n3. TypeScript 使用率继续上升\n4. Rust 在前端工具链中的应用会更广泛\n5. Web Components 可能会迎来第二春\n\n大家怎么看？欢迎讨论！", 10, 6, 89, 32, 1523},
+			{"bbs-go v3.5.0 发布，升级 go1.18", "文档地址：https://docs.bbs-go.com/\n官网交流：https://mlog.club\n问题反馈：https://mlog.club/topic/node/3\n\n本次更新内容：\n1. 升级 Go 1.18 版本\n2. 优化数据库查询性能\n3. 修复已知 bug\n4. 新增配置管理功能", 10001, 2, 12, 8, 352},
+			{"Vue3 + TypeScript 项目实践分享", "最近用 Vue3 + TypeScript 做了一个项目，分享一些实践经验：\n\n1. 组合式 API 真的很香，逻辑复用更方便了\n2. TypeScript 的类型推导需要好好配置\n3. Pinia 比 Vuex 更简洁好用\n\n有问题的朋友欢迎留言讨论~", 10002, 2, 45, 18, 892},
+			{"今天天气不错，适合摸鱼", "周末到了，阳光明媚，正是摸鱼好时节。大家最近都在看什么书？有什么好剧推荐吗？\n\n我最近在看《三体》，真的很精彩！强烈推荐给还没看过的朋友。", 10003, 7, 32, 21, 687},
+			{"求助：MySQL 慢查询优化", "公司有个 MySQL 表数据量大概 500 万，查询越来越慢了。\n\n表结构大概是：\n- id (主键)\n- user_id (索引)\n- created_at (索引)\n- content (text)\n\n查询语句：SELECT * FROM table WHERE user_id = ? ORDER BY created_at DESC LIMIT 20\n\n请问有什么优化建议吗？", 10004, 3, 8, 12, 234},
+			{"分享一些 Linux 常用命令", "整理了一些常用的 Linux 命令，希望对大家有帮助：\n\n查看端口占用情况：\nnetstat -tunlp | grep 端口号\n\n通过 ssh 将远程端口映射到本地端口：\nssh -L 13306:127.0.0.1:3306 用户名@远程地址 -N\n\n这样远程服务器就不需要开放需要的端口到公网了，更安全。", 10005, 5, 18, 5, 221},
+			{"C++ 程序返回 value 3221226356 求教！", "return value 3221226356 求教求教！\n\n#include <iostream>\nusing namespace std;\nint main() {\n    int n;\n    double *p=new double[n];\n    cin>>n;\n    for(int i=0;i<n;i++) { cin>>p[i]; }\n    for(int i=0;i<n;i++) { cout<<p[i]<<\" \"; }\n    return 0;\n}\n\n程序运行时出现这个错误，请问是什么原因？", 10006, 3, 3, 7, 126},
+			{"分享一张今天拍的美照", "今天去公园玩了，随手拍了一张照片，分享给大家~\n\n[图片]\n\n摄影器材：Sony A7M3\n参数：f/2.8, 1/500s, ISO100", 10007, 8, 156, 43, 2341},
+			{"网站有个 BUG 反馈", "在使用网站时发现一个问题：\n\n当我在移动端浏览帖子时，点击回复按钮后键盘会遮挡输入框，需要手动收起键盘才能看到输入内容。\n\n浏览器：Safari\n系统：iOS 16\n设备：iPhone 13 Pro\n\n希望能修复一下，谢谢！", 10008, 8, 5, 3, 89},
+			{"推荐一个很好用的开源项目", "最近发现一个很棒的开源项目：\n\n项目名称：VSCode\nGitHub 地址：https://github.com/microsoft/vscode\n\n功能强大，插件生态丰富，支持几乎所有编程语言。强烈推荐给各位开发者！\n\n大家还有什么好用的工具欢迎分享~", 10009, 5, 67, 29, 1523},
+			{"2024 年前端技术趋势预测", "随着 AI 的快速发展，前端领域也在不断变化。以下是我对 2024 年前端技术趋势的一些预测：\n\n1. AI 辅助开发将成为标配\n2. Server Components 会更加流行\n3. TypeScript 使用率继续上升\n4. Rust 在前端工具链中的应用会更广泛\n5. Web Components 可能会迎来第二春\n\n大家怎么看？欢迎讨论！", 10010, 4, 89, 32, 1523},
 		}
 
-		// 插入测试话题
-		for _, t := range topics {
-			if err := database.DB.Exec(`INSERT INTO topics (title, content, user_id, forum_id, like_count, reply_count, view_count, created_at, updated_at)
-				VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now', '-'||abs(random())%72||' hours'), datetime('now', '-'||abs(random())%72||' hours'))`,
-				t.Title, t.Content, t.UserID, t.ForumID, t.LikeCount, t.ReplyCount, t.ViewCount).Error; err != nil {
+		// 插入测试话题（指定ID从10000开始）
+		for i, t := range topics {
+			if err := database.DB.Exec(`INSERT INTO topics (id, title, content, user_id, forum_id, like_count, reply_count, view_count, created_at, updated_at)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now', '-'||abs(random())%72||' hours'), datetime('now', '-'||abs(random())%72||' hours'))`,
+				10000+i, t.Title, t.Content, t.UserID, t.ForumID, t.LikeCount, t.ReplyCount, t.ViewCount).Error; err != nil {
 				log.Printf("failed to create topic: %s, error: %v", t.Title, err)
 			}
 		}
 		log.Println("test topics created")
+
+		// 设置话题自增起始值（确保新话题从10011开始）
+		database.DB.Exec("INSERT INTO sqlite_sequence (name, seq) VALUES ('topics', 10010)")
+
+		// 设置评论自增起始值（确保新评论从10000开始）
+		database.DB.Exec("INSERT INTO sqlite_sequence (name, seq) VALUES ('comments', 9999)")
 	}
 }

@@ -1,0 +1,347 @@
+package handlers
+
+import (
+	"bbsgo/database"
+	"bbsgo/middleware"
+	"bbsgo/models"
+	"bbsgo/utils"
+	"encoding/json"
+	"log"
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/gorilla/mux"
+)
+
+// GetComments 获取话题的评论列表处理器
+// 支持分页，返回话题下的一级评论
+func GetComments(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	topicID, _ := strconv.Atoi(vars["id"])
+
+	// 解析分页参数
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	if page < 1 {
+		page = 1
+	}
+	pageSize, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+
+	var comments []models.Comment
+	var total int64
+
+	offset := (page - 1) * pageSize
+
+	// 统计一级评论数量
+	if err := database.DB.Model(&models.Comment{}).Where("topic_id = ? AND parent_id IS NULL", topicID).Count(&total).Error; err != nil {
+		log.Printf("get comments: failed to count comments, topicID: %d, error: %v", topicID, err)
+	}
+
+	// 查询一级评论，按置顶和创建时间排序
+	if err := database.DB.Where("topic_id = ? AND parent_id IS NULL", topicID).
+		Preload("User").
+		Order("is_pinned DESC, created_at ASC").
+		Offset(offset).Limit(pageSize).Find(&comments).Error; err != nil {
+		log.Printf("get comments: failed to query comments, topicID: %d, error: %v", topicID, err)
+		utils.Error(w, 500, "获取评论失败")
+		return
+	}
+
+	utils.Success(w, map[string]interface{}{
+		"list":      comments,
+		"total":     total,
+		"page":      page,
+		"page_size": pageSize,
+	})
+}
+
+// CreateComment 创建评论处理器
+// 在指定话题下创建评论
+func CreateComment(w http.ResponseWriter, r *http.Request) {
+	// 验证用户登录
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		log.Printf("create comment: user not authenticated")
+		utils.Error(w, 401, "未认证")
+		return
+	}
+
+	// 检查是否允许评论
+	if !utils.GetConfigBool("allow_comment", true) {
+		log.Printf("create comment: comment disabled")
+		utils.Error(w, 400, "评论功能已关闭")
+		return
+	}
+
+	vars := mux.Vars(r)
+	topicID, _ := strconv.Atoi(vars["id"])
+
+	// 解析请求体
+	var req struct {
+		Content  string `json:"content"`   // 评论内容
+		ParentID *uint  `json:"parent_id"` // 父评论ID（用于嵌套评论）
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("create comment: failed to decode request body, topicID: %d, error: %v", topicID, err)
+		utils.Error(w, 400, "无效的请求参数")
+		return
+	}
+
+	// 验证内容
+	if req.Content == "" {
+		log.Printf("create comment: content is empty, topicID: %d", topicID)
+		utils.Error(w, 400, "请填写内容")
+		return
+	}
+
+	// 查询话题
+	var topic models.Topic
+	if err := database.DB.First(&topic, topicID).Error; err != nil {
+		log.Printf("create comment: topic not found, topicID: %d, error: %v", topicID, err)
+		utils.Error(w, 404, "话题不存在")
+		return
+	}
+
+	// 检查话题是否允许评论
+	if topic.IsLocked || !topic.AllowComment {
+		log.Printf("create comment: topic is locked or not allowing comments, topicID: %d", topicID)
+		utils.Error(w, 400, "该话题已关闭评论")
+		return
+	}
+
+	// 创建评论
+	comment := models.Comment{
+		TopicID:  uint(topicID),
+		UserID:   userID,
+		Content:  req.Content,
+		ParentID: req.ParentID,
+	}
+
+	if err := database.DB.Create(&comment).Error; err != nil {
+		log.Printf("create comment: failed to create comment, topicID: %d, userID: %d, error: %v", topicID, userID, err)
+		utils.Error(w, 500, "发布失败")
+		return
+	}
+
+	// 更新话题的评论数和最后回复时间
+	now := time.Now()
+	if err := database.DB.Model(&topic).Updates(map[string]interface{}{
+		"reply_count":   topic.ReplyCount + 1,
+		"last_reply_at": now,
+	}).Error; err != nil {
+		log.Printf("create comment: failed to update topic reply count, topicID: %d, error: %v", topicID, err)
+	}
+
+	// 给评论用户增加积分
+	var user models.User
+	if err := database.DB.First(&user, userID).Error; err == nil {
+		creditAmount := utils.GetConfigInt("credit_post", 5)
+		user.Credits += creditAmount
+		if err := database.DB.Save(&user).Error; err != nil {
+			log.Printf("create comment: failed to add credits, userID: %d, error: %v", userID, err)
+		}
+	}
+
+	// 重新加载评论关联数据
+	if err := database.DB.Preload("User").First(&comment, comment.ID).Error; err != nil {
+		log.Printf("create comment: failed to reload comment, id: %d, error: %v", comment.ID, err)
+	}
+
+	log.Printf("create comment: comment created successfully, id: %d, topicID: %d, userID: %d", comment.ID, topicID, userID)
+	utils.Success(w, comment)
+}
+
+// UpdateComment 更新评论处理器
+// 仅评论作者可以更新
+func UpdateComment(w http.ResponseWriter, r *http.Request) {
+	// 验证用户登录
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		log.Printf("update comment: user not authenticated")
+		utils.Error(w, 401, "未认证")
+		return
+	}
+
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	// 查询评论
+	var comment models.Comment
+	if err := database.DB.First(&comment, id).Error; err != nil {
+		log.Printf("update comment: comment not found, id: %d, error: %v", id, err)
+		utils.Error(w, 404, "评论不存在")
+		return
+	}
+
+	// 验证权限：仅作者可以更新
+	if comment.UserID != userID {
+		log.Printf("update comment: permission denied, commentID: %d, userID: %d", id, userID)
+		utils.Error(w, 403, "无权限编辑")
+		return
+	}
+
+	// 解析请求体
+	var updates map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&updates); err != nil {
+		log.Printf("update comment: failed to decode request body, id: %d, error: %v", id, err)
+		utils.Error(w, 400, "无效的请求参数")
+		return
+	}
+
+	// 过滤不允许更新的字段
+	delete(updates, "id")
+	delete(updates, "user_id")
+	delete(updates, "topic_id")
+	delete(updates, "parent_id")
+	delete(updates, "created_at")
+	delete(updates, "like_count")
+	delete(updates, "is_pinned")
+
+	// 执行更新
+	if err := database.DB.Model(&comment).Updates(updates).Error; err != nil {
+		log.Printf("update comment: failed to update comment, id: %d, userID: %d, error: %v", id, userID, err)
+		utils.Error(w, 500, "更新失败")
+		return
+	}
+
+	// 重新加载数据
+	if err := database.DB.Preload("User").First(&comment, id).Error; err != nil {
+		log.Printf("update comment: failed to reload comment, id: %d, error: %v", id, err)
+	}
+
+	log.Printf("update comment: comment updated successfully, id: %d, userID: %d", id, userID)
+	utils.Success(w, comment)
+}
+
+// DeleteComment 删除评论处理器
+// 作者或管理员可以删除
+func DeleteComment(w http.ResponseWriter, r *http.Request) {
+	// 验证用户登录
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		log.Printf("delete comment: user not authenticated")
+		utils.Error(w, 401, "未认证")
+		return
+	}
+
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	// 查询评论
+	var comment models.Comment
+	if err := database.DB.First(&comment, id).Error; err != nil {
+		log.Printf("delete comment: comment not found, id: %d, error: %v", id, err)
+		utils.Error(w, 404, "评论不存在")
+		return
+	}
+
+	// 查询用户信息用于权限判断
+	var user models.User
+	if err := database.DB.First(&user, userID).Error; err != nil {
+		log.Printf("delete comment: user not found, userID: %d, error: %v", userID, err)
+		utils.Error(w, 404, "用户不存在")
+		return
+	}
+
+	// 验证权限：作者或管理员(role>=1)可以删除
+	if comment.UserID != userID && user.Role < 1 {
+		log.Printf("delete comment: permission denied, commentID: %d, userID: %d", id, userID)
+		utils.Error(w, 403, "无权限删除")
+		return
+	}
+
+	// 查询关联话题用于更新评论数
+	var topic models.Topic
+	if err := database.DB.First(&topic, comment.TopicID).Error; err != nil {
+		log.Printf("delete comment: topic not found, topicID: %d, error: %v", comment.TopicID, err)
+	}
+
+	// 物理删除评论
+	if err := database.DB.Unscoped().Delete(&comment).Error; err != nil {
+		log.Printf("delete comment: failed to delete comment, id: %d, error: %v", id, err)
+		utils.Error(w, 500, "删除失败")
+		return
+	}
+
+	// 更新话题评论数
+	if topic.ID != 0 && topic.ReplyCount > 0 {
+		if err := database.DB.Model(&topic).UpdateColumn("reply_count", topic.ReplyCount-1).Error; err != nil {
+			log.Printf("delete comment: failed to update topic reply count, topicID: %d, error: %v", topic.ID, err)
+		}
+	}
+
+	log.Printf("delete comment: comment deleted successfully, id: %d, userID: %d", id, userID)
+	utils.Success(w, nil)
+}
+
+// PinComment 置顶/取消置顶评论处理器
+// 仅帖子作者可以操作
+func PinComment(w http.ResponseWriter, r *http.Request) {
+	// 验证用户登录
+	userID, ok := middleware.GetUserIDFromContext(r.Context())
+	if !ok {
+		log.Printf("pin comment: user not authenticated")
+		utils.Error(w, 401, "未认证")
+		return
+	}
+
+	vars := mux.Vars(r)
+	topicID, _ := strconv.Atoi(vars["topic_id"])
+	commentID, _ := strconv.Atoi(vars["comment_id"])
+
+	// 查询评论
+	var comment models.Comment
+	if err := database.DB.First(&comment, commentID).Error; err != nil {
+		log.Printf("pin comment: comment not found, commentID: %d, error: %v", commentID, err)
+		utils.Error(w, 404, "评论不存在")
+		return
+	}
+
+	// 验证评论属于指定话题
+	if comment.TopicID != uint(topicID) {
+		log.Printf("pin comment: comment does not belong to topic, commentID: %d, topicID: %d", commentID, topicID)
+		utils.Error(w, 400, "评论不属于该话题")
+		return
+	}
+
+	// 查询话题，验证是否为帖子作者
+	var topic models.Topic
+	if err := database.DB.First(&topic, topicID).Error; err != nil {
+		log.Printf("pin comment: topic not found, topicID: %d, error: %v", topicID, err)
+		utils.Error(w, 404, "话题不存在")
+		return
+	}
+
+	// 仅帖子作者可以置顶评论
+	if topic.UserID != userID {
+		log.Printf("pin comment: permission denied, topicID: %d, userID: %d", topicID, userID)
+		utils.Error(w, 403, "无权限操作")
+		return
+	}
+
+	// 解析请求体
+	var req struct {
+		Pinned bool `json:"pinned"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("pin comment: failed to decode request body, commentID: %d, error: %v", commentID, err)
+		utils.Error(w, 400, "无效的请求参数")
+		return
+	}
+
+	// 更新置顶状态
+	if err := database.DB.Model(&comment).UpdateColumn("is_pinned", req.Pinned).Error; err != nil {
+		log.Printf("pin comment: failed to update pin status, commentID: %d, error: %v", commentID, err)
+		utils.Error(w, 500, "操作失败")
+		return
+	}
+
+	log.Printf("pin comment: comment pin updated, commentID: %d, pinned: %v", commentID, req.Pinned)
+	utils.Success(w, map[string]interface{}{
+		"id":        comment.ID,
+		"is_pinned": req.Pinned,
+	})
+}

@@ -1,5 +1,5 @@
 <template>
-  <div class="posts-page">
+  <div class="comments-page">
     <el-card class="main-card">
       <template #header>
         <div class="card-header">
@@ -15,15 +15,15 @@
               v-model="searchKeyword"
               placeholder="搜索评论内容"
               clearable
-              @clear="loadPosts"
-              @keyup.enter="loadPosts"
+              @clear="loadComments"
+              @keyup.enter="loadComments"
               style="width: 220px"
             >
               <template #prefix>
                 <Search :size="16" />
               </template>
             </el-input>
-            <el-button type="primary" @click="loadPosts">
+            <el-button type="primary" @click="loadComments">
               <Search :size="16" />
               搜索
             </el-button>
@@ -31,9 +31,9 @@
         </div>
       </template>
 
-      <el-table :data="posts" stripe style="width: 100%" v-loading="loading">
+      <el-table :data="comments" stripe style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="内容" min-width="250">
+        <el-table-column label="内容" min-width="200">
           <template #default="{ row }">
             <el-tooltip :content="row.content" placement="top" :disabled="row.content.length < 60">
               <span class="content-text">{{ row.content }}</span>
@@ -52,10 +52,10 @@
         </el-table-column>
         <el-table-column label="所属帖子" width="120">
           <template #default="{ row }">
-            <el-link :href="`/topic/${row.topic_id}`" target="_blank" type="primary">
+            <el-button link type="primary" @click="viewTopic(row.topic_id)">
               <ExternalLink :size="12" />
               查看
-            </el-link>
+            </el-button>
           </template>
         </el-table-column>
         <el-table-column label="点赞" width="80">
@@ -71,9 +71,9 @@
             <span class="date-text">{{ formatDate(row.created_at) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100" fixed="right">
+        <el-table-column label="操作" width="120" fixed="right">
           <template #default="{ row }">
-            <el-button link type="danger" @click="deletePost(row)">
+            <el-button link type="danger" @click="deleteComment(row)">
               <Trash2 :size="14" />
               删除
             </el-button>
@@ -87,7 +87,7 @@
           :page-size="pageSize"
           :total="total"
           layout="total, prev, pager, next"
-          @current-change="loadPosts"
+          @current-change="loadComments"
         />
       </div>
     </el-card>
@@ -100,7 +100,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/api'
 import { MessageCircle, Search, User, ExternalLink, Heart, Trash2 } from 'lucide-vue-next'
 
-const posts = ref([])
+const comments = ref([])
 const searchKeyword = ref('')
 const page = ref(1)
 const pageSize = 20
@@ -111,17 +111,17 @@ function formatDate(date) {
   return new Date(date).toLocaleDateString('zh-CN')
 }
 
-async function loadPosts() {
+async function loadComments() {
   loading.value = true
   try {
-    const res = await api.get('/admin/posts', {
+    const res = await api.get('/admin/comments', {
       params: {
         page: page.value,
         page_size: pageSize,
         keyword: searchKeyword.value
       }
     })
-    posts.value = res?.list || []
+    comments.value = res?.list || []
     total.value = res?.total || 0
   } catch (e) {
     console.error('加载评论失败', e)
@@ -131,7 +131,11 @@ async function loadPosts() {
   }
 }
 
-async function deletePost(post) {
+function viewTopic(topicId) {
+  window.open(`/topic/${topicId}`, '_blank')
+}
+
+async function deleteComment(comment) {
   try {
     await ElMessageBox.confirm('确定要删除这条评论吗？', '删除评论', {
       confirmButtonText: '删除',
@@ -139,8 +143,8 @@ async function deletePost(post) {
       type: 'warning'
     })
 
-    await api.delete(`/admin/posts/${post.id}`)
-    posts.value = posts.value.filter(p => p.id !== post.id)
+    await api.delete(`/admin/comments/${comment.id}`)
+    comments.value = comments.value.filter(c => c.id !== comment.id)
     total.value--
     ElMessage.success('评论已删除')
   } catch (e) {
@@ -152,12 +156,12 @@ async function deletePost(post) {
 }
 
 onMounted(() => {
-  loadPosts()
+  loadComments()
 })
 </script>
 
 <style scoped>
-.posts-page {
+.comments-page {
   max-width: 1400px;
 }
 

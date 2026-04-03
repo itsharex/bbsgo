@@ -351,10 +351,19 @@ onMounted(() => {
 }
 
 .role-option {
-  display: block;
+  display: flex;
+  align-items: center;
   margin-bottom: 16px;
   height: 32px;
-  line-height: 32px;
+}
+
+:deep(.role-option .el-radio) {
+  display: flex;
+  align-items: center;
+}
+
+:deep(.role-option .el-radio__label) {
+  margin-left: 8px;
 }
 
 .role-option:last-child {

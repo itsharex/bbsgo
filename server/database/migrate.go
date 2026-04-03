@@ -13,7 +13,7 @@ func AutoMigrate() {
 		&models.User{},             // 用户表
 		&models.Forum{},            // 版块表
 		&models.Topic{},            // 话题表
-		&models.Post{},             // 帖子表
+		&models.Comment{},          // 评论表
 		&models.Like{},             // 点赞表
 		&models.Favorite{},         // 收藏表
 		&models.Follow{},           // 关注表

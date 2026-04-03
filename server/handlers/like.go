@@ -13,7 +13,7 @@ import (
 
 // LikeRequest 点赞请求结构
 type LikeRequest struct {
-	TargetType string `json:"target_type"` // 目标类型：topic=话题, post=帖子
+	TargetType string `json:"target_type"` // 目标类型：topic=话题, comment=评论
 	TargetID   uint   `json:"target_id"`   // 目标ID
 }
 
@@ -37,7 +37,7 @@ func CreateLike(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 验证目标类型
-	if req.TargetType != "topic" && req.TargetType != "post" {
+	if req.TargetType != "topic" && req.TargetType != "comment" {
 		log.Printf("create like: invalid target type, targetType: %s", req.TargetType)
 		utils.Error(w, 400, "无效的目标类型")
 		return
@@ -74,13 +74,13 @@ func CreateLike(w http.ResponseWriter, r *http.Request) {
 				log.Printf("create like: failed to increment topic like count, topicID: %d, error: %v", req.TargetID, err)
 			}
 		}
-	} else if req.TargetType == "post" {
-		var post models.Post
-		if err := database.DB.First(&post, req.TargetID).Error; err != nil {
-			log.Printf("create like: post not found, postID: %d, error: %v", req.TargetID, err)
+	} else if req.TargetType == "comment" {
+		var comment models.Comment
+		if err := database.DB.First(&comment, req.TargetID).Error; err != nil {
+			log.Printf("create like: comment not found, commentID: %d, error: %v", req.TargetID, err)
 		} else {
-			if err := database.DB.Model(&post).UpdateColumn("like_count", post.LikeCount+1).Error; err != nil {
-				log.Printf("create like: failed to increment post like count, postID: %d, error: %v", req.TargetID, err)
+			if err := database.DB.Model(&comment).UpdateColumn("like_count", comment.LikeCount+1).Error; err != nil {
+				log.Printf("create like: failed to increment comment like count, commentID: %d, error: %v", req.TargetID, err)
 			}
 		}
 	}
@@ -136,13 +136,13 @@ func DeleteLike(w http.ResponseWriter, r *http.Request) {
 				log.Printf("delete like: failed to decrement topic like count, topicID: %d, error: %v", targetID, err)
 			}
 		}
-	} else if targetType == "post" {
-		var post models.Post
-		if err := database.DB.First(&post, targetID).Error; err != nil {
-			log.Printf("delete like: post not found, postID: %d, error: %v", targetID, err)
-		} else if post.LikeCount > 0 {
-			if err := database.DB.Model(&post).UpdateColumn("like_count", post.LikeCount-1).Error; err != nil {
-				log.Printf("delete like: failed to decrement post like count, postID: %d, error: %v", targetID, err)
+	} else if targetType == "comment" {
+		var comment models.Comment
+		if err := database.DB.First(&comment, targetID).Error; err != nil {
+			log.Printf("delete like: comment not found, commentID: %d, error: %v", targetID, err)
+		} else if comment.LikeCount > 0 {
+			if err := database.DB.Model(&comment).UpdateColumn("like_count", comment.LikeCount-1).Error; err != nil {
+				log.Printf("delete like: failed to decrement comment like count, commentID: %d, error: %v", targetID, err)
 			}
 		}
 	}

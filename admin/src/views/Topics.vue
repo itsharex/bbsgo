@@ -89,16 +89,23 @@
             <span class="date-text">{{ formatDate(row.created_at) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="140" fixed="right">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click="viewTopic(row)">
-              <ExternalLink :size="14" />
-              查看
-            </el-button>
-            <el-button link type="danger" @click="deleteTopic(row)">
-              <Trash2 :size="14" />
-              删除
-            </el-button>
+            <div class=" inline-flex">
+              <el-button link type="primary" @click="togglePin(row)">
+                <Pin :size="14" />
+                {{ row.is_pinned ? '取消置顶' : '置顶' }}
+              </el-button>
+              <el-button link type="primary" @click="viewTopic(row)">
+                <ExternalLink :size="14" />
+                查看
+              </el-button>
+              <el-button link type="danger" @click="deleteTopic(row)">
+                <Trash2 :size="14" />
+                删除
+              </el-button>
+            </div>
+
           </template>
         </el-table-column>
       </el-table>
@@ -120,7 +127,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/api'
-import { FileText, Search, User, Eye, Heart, MessageCircle, ExternalLink, Trash2 } from 'lucide-vue-next'
+import { FileText, Search, User, Eye, Heart, MessageCircle, ExternalLink, Trash2, Pin } from 'lucide-vue-next'
 
 const topics = ref([])
 const searchKeyword = ref('')
@@ -155,6 +162,27 @@ async function loadTopics() {
 
 function viewTopic(topic) {
   window.open(`/topic/${topic.id}`, '_blank')
+}
+
+async function togglePin(topic) {
+  try {
+    await ElMessageBox.confirm(
+      topic.is_pinned ? '确定要取消置顶这条帖子吗？' : '确定要置顶这条帖子吗？',
+      topic.is_pinned ? '取消置顶' : '置顶帖子',
+      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+    )
+
+    await api.put(`/admin/topics/${topic.id}/pin`, {
+      pinned: !topic.is_pinned
+    })
+    topic.is_pinned = !topic.is_pinned
+    ElMessage.success(topic.is_pinned ? '帖子已置顶' : '帖子已取消置顶')
+  } catch (e) {
+    if (e !== 'cancel') {
+      console.error('操作失败', e)
+      ElMessage.error('操作失败')
+    }
+  }
 }
 
 async function deleteTopic(topic) {

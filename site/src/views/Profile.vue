@@ -60,7 +60,7 @@
                 <div class="text-xs text-gray-400">帖子</div>
               </div>
               <div>
-                <div class="text-2xl font-bold text-gray-700">{{ userStats.post_count || 0 }}</div>
+                <div class="text-2xl font-bold text-gray-700">{{ userStats.comment_count || 0 }}</div>
                 <div class="text-xs text-gray-400">评论</div>
               </div>
               <div>
@@ -124,13 +124,22 @@
             <div v-if="userTopics.length > 0" class="space-y-4">
               <div v-for="topic in userTopics" :key="topic.id" class="border-b pb-4 last:border-b-0">
                 <div class="flex items-center justify-between mb-1">
-                  <span class="text-sm text-gray-500">{{ getUserDisplayName(topic.user) }}</span>
-                  <span class="text-xs text-gray-400">{{ formatTime(topic.created_at) }}</span>
+                  <div class="flex items-center space-x-2">
+                    <span v-if="topic.is_user_pinned" class="text-xs text-red-500 font-medium">置顶</span>
+                    <span class="text-sm text-gray-500">{{ getUserDisplayName(topic.user) }}</span>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <button v-if="isCurrentUser" @click="toggleTopicPin(topic)"
+                      :class="['text-xs transition-colors', topic.is_user_pinned ? 'text-red-500 hover:text-red-600' : 'text-gray-400 hover:text-red-500']">
+                      {{ topic.is_user_pinned ? '取消置顶' : '置顶' }}
+                    </button>
+                    <span class="text-xs text-gray-400">{{ formatTime(topic.created_at) }}</span>
+                  </div>
                 </div>
                 <router-link :to="`/topic/${topic.id}`" class="block">
                   <h3 class="text-lg font-medium text-gray-900 mb-2 hover:text-blue-500">{{ topic.title }}</h3>
                 </router-link>
-                <p class="text-gray-600 text-sm mb-3 line-clamp-3">{{ topic.content.substring(0, 200) }}</p>
+                <p class="text-gray-600 text-sm mb-3 line-clamp-3">{{ stripMarkdown(topic.content).substring(0, 200) }}</p>
                 <div class="flex items-center space-x-4 text-xs text-gray-500">
                   <span>👍 {{ topic.like_count || 0 }}</span>
                   <span>💬 {{ topic.comment_count || 0 }}</span>
@@ -171,11 +180,12 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/user'
-import api from '@/api'
+import api, { topicApi } from '@/api'
 import { uploadImage } from '@/utils/upload'
 import { getUserAvatar, getUserDisplayName } from '@/utils/user'
+import { stripMarkdown } from '@/utils/markdown'
 
 const route = useRoute()
 const router = useRouter()
@@ -183,7 +193,7 @@ const userStore = useUserStore()
 const user = ref(null)
 const userStats = ref({
   topic_count: 0,
-  post_count: 0,
+  comment_count: 0,
   rank: 0
 })
 const userTopics = ref([])
@@ -331,6 +341,49 @@ async function handleSaveProfile() {
   }
 }
 
+async function toggleTopicPin(topic) {
+  try {
+    await ElMessageBox.confirm(
+      topic.is_user_pinned ? '确定要取消置顶这篇帖子吗？' : '确定要置顶这篇帖子吗？',
+      topic.is_user_pinned ? '取消置顶' : '置顶帖子',
+      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+    )
+    await topicApi.pinTopic(topic.id, !topic.is_user_pinned)
+
+    // 记录原始索引
+    const originalIndex = userTopics.value.findIndex(t => t.id === topic.id)
+    if (originalIndex === -1) return
+
+    // 更新置顶状态
+    topic.is_user_pinned = !topic.is_user_pinned
+
+    // 从原位置移除
+    userTopics.value.splice(originalIndex, 1)
+
+    if (topic.is_user_pinned) {
+      // 置顶：插入到最前面
+      userTopics.value.unshift(topic)
+    } else {
+      // 取消置顶：插入到非置顶帖子之后
+      let insertIndex = userTopics.value.length
+      for (let i = 0; i < userTopics.value.length; i++) {
+        if (!userTopics.value[i].is_user_pinned) {
+          insertIndex = i
+          break
+        }
+      }
+      userTopics.value.splice(insertIndex, 0, topic)
+    }
+
+    ElMessage.success(topic.is_user_pinned ? '帖子已置顶' : '帖子已取消置顶')
+  } catch (e) {
+    if (e !== 'cancel') {
+      console.error('操作失败', e)
+      ElMessage.error('操作失败')
+    }
+  }
+}
+
 async function loadUser() {
   try {
     const userId = route.params.id
@@ -367,7 +420,7 @@ async function loadUserStats() {
     const res = await api.get(`/users/${userId}/stats`)
     userStats.value = res || {
       topic_count: 0,
-      post_count: 0,
+      comment_count: 0,
       rank: 0
     }
   } catch (e) {

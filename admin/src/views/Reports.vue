@@ -30,28 +30,72 @@
 
       <el-table :data="reports" stripe style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="举报人" width="140">
+        <el-table-column label="举报人" width="120">
           <template #default="{ row }">
             <div class="reporter-cell">
-              <el-avatar :size="28" :src="row.reporter?.avatar">
-                <User :size="14" />
+              <el-avatar :size="24" :src="row.reporter?.avatar">
+                <User :size="12" />
               </el-avatar>
-              <span>{{ row.reporter?.username || '-' }}</span>
+              <span class="text-sm">{{ row.reporter?.username || '-' }}</span>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="类型" width="100">
+        <el-table-column label="被举报人" width="120">
+          <template #default="{ row }">
+            <div v-if="row.target_user" class="flex items-center">
+              <el-avatar :size="24" :src="row.target_user.avatar">
+                <User :size="12" />
+              </el-avatar>
+              <span class="text-sm ml-1">{{ row.target_user.username }}</span>
+            </div>
+            <span v-else class="text-gray-400">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="类型" width="80">
           <template #default="{ row }">
             <el-tag :type="getTypeType(row.target_type)" size="small">
               {{ getTargetType(row.target_type) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="举报原因">
+        <el-table-column label="被举报内容" min-width="200">
           <template #default="{ row }">
-            <el-tooltip :content="row.reason" placement="top" :disabled="row.reason.length < 50">
-              <span class="reason-text">{{ row.reason }}</span>
-            </el-tooltip>
+            <template v-if="row.target_type === 'topic'">
+              <div>
+                <el-tooltip :content="row.topic_title || '帖子'" placement="top">
+                  <span class="text-sm line-clamp-1">{{ row.topic_title || '帖子' }}</span>
+                </el-tooltip>
+                <br>
+                <a :href="`/topic/${row.target_id}`" target="_blank" class="text-blue-500 hover:text-blue-700 text-xs">
+                  查看帖子 →
+                </a>
+              </div>
+            </template>
+            <template v-else-if="row.target_type === 'comment'">
+              <div>
+                <el-tooltip :content="row.comment_content || '[内容已删除]'" placement="top">
+                  <span class="text-sm line-clamp-2 text-gray-700">{{ row.comment_content ? row.comment_content.substring(0, 50) +
+                    (row.comment_content.length > 50 ? '...' : '') : '[内容已删除]' }}</span>
+                </el-tooltip>
+                <br>
+                <a v-if="row.topic_id" :href="`/topic/${row.topic_id}#post-${row.target_id}`" target="_blank"
+                  class="text-blue-500 hover:text-blue-700 text-xs">
+                  查看评论 →
+                </a>
+                <span v-else class="text-gray-400 text-xs">评论ID: {{ row.target_id }}</span>
+              </div>
+            </template>
+          </template>
+        </el-table-column>
+        <el-table-column label="举报原因" width="100">
+          <template #default="{ row }">
+            <span class="text-sm">{{ getReasonText(row.reason) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="说明" min-width="120">
+          <template #default="{ row }">
+            <span v-if="row.detail" class="text-sm text-gray-600">{{ row.detail }}</span>
+            <span v-else class="text-gray-400">-</span>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="100">
@@ -99,12 +143,12 @@ const loading = ref(false)
 const pendingCount = computed(() => (Array.isArray(reports.value) ? reports.value.filter(r => r.status === 0).length : 0))
 
 function getTargetType(type) {
-  const types = { topic: '帖子', post: '评论', message: '私信' }
+  const types = { topic: '帖子', comment: '评论', message: '私信' }
   return types[type] || type
 }
 
 function getTypeType(type) {
-  const types = { topic: 'primary', post: 'info', message: 'warning' }
+  const types = { topic: 'primary', comment: 'primary', message: 'warning' }
   return types[type] || 'info'
 }
 
@@ -116,6 +160,17 @@ function getStatusName(status) {
 function getStatusType(status) {
   const types = { 0: 'warning', 1: 'success', 2: 'info' }
   return types[status] || 'info'
+}
+
+function getReasonText(reason) {
+  const reasons = {
+    spam: '垃圾广告',
+    illegal: '违规内容',
+    attack: '人身攻击',
+    rumor: '谣言虚假信息',
+    other: '其他'
+  }
+  return reasons[reason] || reason
 }
 
 function formatDate(date) {
@@ -130,7 +185,7 @@ async function loadReports() {
       params.status = filterStatus.value
     }
     const res = await api.get('/admin/reports', { params })
-    reports.value = Array.isArray(res) ? res : []
+    reports.value = Array.isArray(res) ? res : (res?.list || [])
   } catch (e) {
     console.error('加载举报列表失败', e)
     ElMessage.error('加载举报列表失败')
@@ -148,7 +203,7 @@ async function handleReport(report, approved) {
       { confirmButtonText: action, cancelButtonText: '取消', type: approved ? 'warning' : 'info' }
     )
 
-    await api.put(`/admin/reports/${report.id}/handle`, { approved })
+    await api.put(`/admin/reports/${report.id}/handle`, { status: approved ? 1 : 2 })
     report.status = approved ? 1 : 2
     ElMessage.success(approved ? '举报已通过，相关内容已删除' : '举报已驳回')
   } catch (e) {

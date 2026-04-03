@@ -187,11 +187,11 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 删除用户的帖子
-	if err := tx.Unscoped().Where("user_id = ?", id).Delete(&models.Post{}).Error; err != nil {
+	// 删除用户的评论
+	if err := tx.Unscoped().Where("user_id = ?", id).Delete(&models.Comment{}).Error; err != nil {
 		tx.Rollback()
-		log.Printf("delete user: failed to delete user posts, userId: %d, error: %v", id, err)
-		utils.Error(w, 500, "删除用户帖子失败")
+		log.Printf("delete user: failed to delete user comments, userId: %d, error: %v", id, err)
+		utils.Error(w, 500, "删除用户评论失败")
 		return
 	}
 
@@ -394,10 +394,10 @@ func DeleteAdminTopic(w http.ResponseWriter, r *http.Request) {
 	utils.Success(w, nil)
 }
 
-// ========== 帖子管理 ==========
+// ========== 评论管理 ==========
 
-// GetAdminPosts 获取帖子列表处理器（管理员）
-func GetAdminPosts(w http.ResponseWriter, r *http.Request) {
+// GetAdminComments 获取评论列表处理器（管理员）
+func GetAdminComments(w http.ResponseWriter, r *http.Request) {
 	// 解析分页参数
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	if page < 1 {
@@ -408,52 +408,52 @@ func GetAdminPosts(w http.ResponseWriter, r *http.Request) {
 		pageSize = 20
 	}
 
-	var posts []models.Post
+	var comments []models.Comment
 	var total int64
 
 	offset := (page - 1) * pageSize
 
-	// 统计帖子总数
-	if err := database.DB.Model(&models.Post{}).Count(&total).Error; err != nil {
-		log.Printf("get admin posts: failed to count posts, error: %v", err)
+	// 统计评论总数
+	if err := database.DB.Model(&models.Comment{}).Count(&total).Error; err != nil {
+		log.Printf("get admin comments: failed to count comments, error: %v", err)
 	}
 
-	// 查询帖子列表
-	if err := database.DB.Offset(offset).Limit(pageSize).Preload("User").Find(&posts).Error; err != nil {
-		log.Printf("get admin posts: failed to query posts, error: %v", err)
-		utils.Error(w, 500, "获取帖子列表失败")
+	// 查询评论列表
+	if err := database.DB.Offset(offset).Limit(pageSize).Preload("User").Find(&comments).Error; err != nil {
+		log.Printf("get admin comments: failed to query comments, error: %v", err)
+		utils.Error(w, 500, "获取评论列表失败")
 		return
 	}
 
 	utils.Success(w, map[string]interface{}{
-		"list":      posts,
+		"list":      comments,
 		"total":     total,
 		"page":      page,
 		"page_size": pageSize,
 	})
 }
 
-// DeleteAdminPost 删除帖子处理器（管理员）
-func DeleteAdminPost(w http.ResponseWriter, r *http.Request) {
+// DeleteAdminComment 删除评论处理器（管理员）
+func DeleteAdminComment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
 
-	// 查询要删除的帖子
-	var post models.Post
-	if err := database.DB.First(&post, id).Error; err != nil {
-		log.Printf("delete admin post: post not found, id: %d, error: %v", id, err)
-		utils.Error(w, 404, "帖子不存在")
+	// 查询要删除的评论
+	var comment models.Comment
+	if err := database.DB.First(&comment, id).Error; err != nil {
+		log.Printf("delete admin comment: comment not found, id: %d, error: %v", id, err)
+		utils.Error(w, 404, "评论不存在")
 		return
 	}
 
-	// 物理删除帖子
-	if err := database.DB.Unscoped().Delete(&post).Error; err != nil {
-		log.Printf("delete admin post: failed to delete post, id: %d, error: %v", id, err)
+	// 物理删除评论
+	if err := database.DB.Unscoped().Delete(&comment).Error; err != nil {
+		log.Printf("delete admin comment: failed to delete comment, id: %d, error: %v", id, err)
 		utils.Error(w, 500, "删除失败")
 		return
 	}
 
-	log.Printf("delete admin post: post deleted successfully, id: %d", id)
+	log.Printf("delete admin comment: comment deleted successfully, id: %d", id)
 	utils.Success(w, nil)
 }
 
@@ -488,8 +488,46 @@ func GetAdminReports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 对于评论举报，获取关联的话题ID
+	reportsResponse := make([]map[string]interface{}, len(reports))
+	for i, report := range reports {
+		reportMap := map[string]interface{}{
+			"id":          report.ID,
+			"reporter_id": report.ReporterID,
+			"target_type": report.TargetType,
+			"target_id":   report.TargetID,
+			"reason":      report.Reason,
+			"detail":      report.Detail,
+			"status":      report.Status,
+			"created_at":  report.CreatedAt,
+			"reporter":    report.Reporter,
+		}
+
+		// 如果是帖子举报，获取帖子标题和作者
+		if report.TargetType == "topic" {
+			var topic models.Topic
+			if err := database.DB.Preload("User").First(&topic, report.TargetID).Error; err == nil {
+				reportMap["topic_id"] = topic.ID
+				reportMap["topic_title"] = topic.Title
+				reportMap["target_user"] = topic.User
+			}
+		}
+
+		// 如果是评论举报，获取评论内容和作者
+		if report.TargetType == "comment" {
+			var comment models.Comment
+			if err := database.DB.Preload("User").First(&comment, report.TargetID).Error; err == nil {
+				reportMap["topic_id"] = comment.TopicID
+				reportMap["comment_content"] = comment.Content
+				reportMap["target_user"] = comment.User
+			}
+		}
+
+		reportsResponse[i] = reportMap
+	}
+
 	utils.Success(w, map[string]interface{}{
-		"list":      reports,
+		"list":      reportsResponse,
 		"total":     total,
 		"page":      page,
 		"page_size": pageSize,
@@ -522,6 +560,58 @@ func HandleReport(w http.ResponseWriter, r *http.Request) {
 	// 获取当前管理员ID
 	userID, _ := middleware.GetUserIDFromContext(r.Context())
 	now := time.Now()
+
+	// 如果是"通过"操作，删除被举报的内容
+	if req.Status == 1 {
+		switch report.TargetType {
+		case "comment":
+			// 删除评论关联的点赞（硬删除）
+			if err := database.DB.Unscoped().Where("target_type = ? AND target_id = ?", "comment", report.TargetID).Delete(&models.Like{}).Error; err != nil {
+				log.Printf("handle report: failed to delete comment likes, commentID: %d, error: %v", report.TargetID, err)
+				utils.Error(w, 500, "删除评论点赞失败")
+				return
+			}
+			// 删除评论（硬删除）
+			if err := database.DB.Unscoped().Delete(&models.Comment{}, report.TargetID).Error; err != nil {
+				log.Printf("handle report: failed to delete comment, targetID: %d, error: %v", report.TargetID, err)
+				utils.Error(w, 500, "删除评论失败")
+				return
+			}
+			log.Printf("handle report: comment and likes deleted, commentID: %d", report.TargetID)
+		case "topic":
+			// 删除帖子前先删除关联的评论、收藏和点赞（硬删除）
+			if err := database.DB.Unscoped().Where("topic_id = ?", report.TargetID).Delete(&models.Comment{}).Error; err != nil {
+				log.Printf("handle report: failed to delete topic comments, topicID: %d, error: %v", report.TargetID, err)
+				utils.Error(w, 500, "删除帖子评论失败")
+				return
+			}
+			if err := database.DB.Unscoped().Where("topic_id = ?", report.TargetID).Delete(&models.Favorite{}).Error; err != nil {
+				log.Printf("handle report: failed to delete topic favorites, topicID: %d, error: %v", report.TargetID, err)
+				utils.Error(w, 500, "删除帖子收藏记录失败")
+				return
+			}
+			if err := database.DB.Unscoped().Where("target_type = ? AND target_id = ?", "topic", report.TargetID).Delete(&models.Like{}).Error; err != nil {
+				log.Printf("handle report: failed to delete topic likes, topicID: %d, error: %v", report.TargetID, err)
+				utils.Error(w, 500, "删除帖子点赞失败")
+				return
+			}
+			// 删除帖子（硬删除）
+			if err := database.DB.Unscoped().Delete(&models.Topic{}, report.TargetID).Error; err != nil {
+				log.Printf("handle report: failed to delete topic, targetID: %d, error: %v", report.TargetID, err)
+				utils.Error(w, 500, "删除帖子失败")
+				return
+			}
+			log.Printf("handle report: topic, comments, favorites and likes deleted, topicID: %d", report.TargetID)
+		case "user":
+			// 删除用户（硬删除）
+			if err := database.DB.Unscoped().Delete(&models.User{}, report.TargetID).Error; err != nil {
+				log.Printf("handle report: failed to delete user, targetID: %d, error: %v", report.TargetID, err)
+				utils.Error(w, 500, "删除用户失败")
+				return
+			}
+			log.Printf("handle report: user deleted, targetID: %d", report.TargetID)
+		}
+	}
 
 	// 更新举报状态
 	updates := map[string]interface{}{

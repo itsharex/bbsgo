@@ -51,9 +51,9 @@ func GetUserStats(w http.ResponseWriter, r *http.Request) {
 		log.Printf("get user stats: failed to count topics, id: %d, error: %v", id, err)
 	}
 
-	// 统计用户回复数
-	if err := database.DB.Model(&models.Post{}).Where("user_id = ?", id).Count(&postCount).Error; err != nil {
-		log.Printf("get user stats: failed to count posts, id: %d, error: %v", id, err)
+	// 统计用户评论数
+	if err := database.DB.Model(&models.Comment{}).Where("user_id = ?", id).Count(&postCount).Error; err != nil {
+		log.Printf("get user stats: failed to count comments, id: %d, error: %v", id, err)
 	}
 
 	// 计算用户排名（根据ID顺序估算）
@@ -62,9 +62,9 @@ func GetUserStats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.Success(w, map[string]interface{}{
-		"topic_count": topicCount,
-		"post_count":  postCount,
-		"rank":        rank,
+		"topic_count":   topicCount,
+		"comment_count": postCount,
+		"rank":          rank,
 	})
 }
 
@@ -158,7 +158,7 @@ func GetUserTopics(w http.ResponseWriter, r *http.Request) {
 	if err := database.DB.Where("user_id = ?", id).
 		Preload("User").
 		Preload("Forum").
-		Order("created_at DESC").
+		Order("is_user_pinned DESC, created_at DESC").
 		Offset(offset).
 		Limit(pageSize).
 		Find(&topics).Error; err != nil {
