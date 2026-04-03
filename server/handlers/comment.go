@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bbsgo/antispam"
 	"bbsgo/database"
 	"bbsgo/middleware"
 	"bbsgo/models"
@@ -150,8 +151,8 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 
 	// 解析请求体
 	var req struct {
-		Content string `json:"content"` // 评论内容
-		ReplyToID *uint `json:"reply_to_id"` // 回复给哪个评论的ID
+		Content   string `json:"content"`     // 评论内容
+		ReplyToID *uint  `json:"reply_to_id"` // 回复给哪个评论的ID
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Printf("create comment: failed to decode request body, topicID: %d, error: %v", topicID, err)
@@ -181,11 +182,20 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 防刷检查
+	antispamMiddleware := antispam.GetAntiSpamMiddleware()
+	checkResult := antispamMiddleware.CheckCommentCreate(userID, req.Content)
+	if !checkResult.Allowed {
+		log.Printf("create comment: antispam check failed, userID: %d, reason: %s", userID, checkResult.Reason)
+		utils.Error(w, 400, checkResult.Reason)
+		return
+	}
+
 	// 创建评论
 	comment := models.Comment{
-		TopicID:  uint(topicID),
-		UserID:   userID,
-		Content:  req.Content,
+		TopicID:   uint(topicID),
+		UserID:    userID,
+		Content:   req.Content,
 		ReplyToID: req.ReplyToID,
 	}
 
@@ -194,6 +204,9 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		utils.Error(w, 500, "发布失败")
 		return
 	}
+
+	// 记录用户操作（用于防刷统计）
+	antispamMiddleware.RecordUserOperation(userID, "comment", comment.ID, req.Content)
 
 	// 更新话题的评论数和最后回复时间
 	now := time.Now()
@@ -502,7 +515,7 @@ func BestComment(w http.ResponseWriter, r *http.Request) {
 		// 最佳评论积分奖励
 		var bestUser models.User
 		if err := database.DB.First(&bestUser, comment.UserID).Error; err == nil {
-			creditAmount := utils.GetConfigInt("credit_best_comment", 5)
+			creditAmount := utils.GetConfigInt("credit_best_comment", 1)
 			bestUser.Credits += creditAmount
 			if err := database.DB.Save(&bestUser).Error; err != nil {
 				log.Printf("best comment: failed to add credits, userID: %d, error: %v", comment.UserID, err)

@@ -335,6 +335,12 @@ func GetBadgeUsers(w http.ResponseWriter, r *http.Request) {
 
 // InitBadges 初始化系统勋章
 func InitBadges(w http.ResponseWriter, r *http.Request) {
+	SeedBadges()
+	utils.Success(w, map[string]string{"message": "勋章初始化成功"})
+}
+
+// SeedBadges 初始化系统勋章（供启动时调用）
+func SeedBadges() {
 	badges := []models.Badge{
 		{
 			Name:           "初来乍到",
@@ -441,10 +447,9 @@ func InitBadges(w http.ResponseWriter, r *http.Request) {
 		var existing models.Badge
 		if err := database.DB.Where("name = ?", badge.Name).First(&existing).Error; err != nil {
 			database.DB.Create(&badge)
-			log.Printf("init badges: created badge: %s", badge.Name)
+			log.Printf("seed badges: created badge: %s", badge.Name)
 		}
 	}
 
-	log.Printf("init badges: badges initialized successfully")
-	utils.Success(w, map[string]string{"message": "勋章初始化成功"})
+	log.Printf("seed badges: initialization completed")
 }

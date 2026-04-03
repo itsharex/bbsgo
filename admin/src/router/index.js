@@ -69,6 +69,11 @@ const routes = [
         component: () => import("@/views/FollowManagement.vue"),
       },
       {
+        path: "antispam",
+        name: "AntiSpam",
+        component: () => import("@/views/AntiSpamConfig.vue"),
+      },
+      {
         path: "config",
         name: "Config",
         component: () => import("@/views/Config.vue"),

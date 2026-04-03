@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bbsgo/antispam"
 	"bbsgo/database"
 	"bbsgo/middleware"
 	"bbsgo/models"
@@ -123,14 +124,14 @@ func GetTopics(w http.ResponseWriter, r *http.Request) {
 	// 构建返回数据，添加 has_poll 和 author_badges
 	type TopicWithPoll struct {
 		models.Topic
-		HasPoll      bool                    `json:"has_poll"`
-		AuthorBadges []models.UserBadge      `json:"author_badges"`
+		HasPoll      bool               `json:"has_poll"`
+		AuthorBadges []models.UserBadge `json:"author_badges"`
 	}
 	var response []TopicWithPoll
 	for _, t := range topics {
 		response = append(response, TopicWithPoll{
-			Topic:       t,
-			HasPoll:     hasPollMap[t.ID],
+			Topic:        t,
+			HasPoll:      hasPollMap[t.ID],
 			AuthorBadges: userBadgesMap[t.UserID],
 		})
 	}
@@ -216,6 +217,15 @@ func CreateTopic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 防刷检查
+	antispamMiddleware := antispam.GetAntiSpamMiddleware()
+	checkResult := antispamMiddleware.CheckTopicCreate(userID, req.Content)
+	if !checkResult.Allowed {
+		log.Printf("create topic: antispam check failed, userID: %d, reason: %s", userID, checkResult.Reason)
+		utils.Error(w, 400, checkResult.Reason)
+		return
+	}
+
 	// 创建话题
 	topic := models.Topic{
 		Title:        req.Title,
@@ -231,6 +241,9 @@ func CreateTopic(w http.ResponseWriter, r *http.Request) {
 		utils.Error(w, 500, "发布失败")
 		return
 	}
+
+	// 记录用户操作（用于防刷统计）
+	antispamMiddleware.RecordUserOperation(userID, "topic", topic.ID, req.Content)
 
 	// 处理标签关联
 	if len(req.TagNames) > 0 {

@@ -95,9 +95,9 @@ const settings = ref({
   allow_post: true,
   allow_comment: true,
   allow_poll: true,
-  credits_topic: 10,
-  credits_post: 5,
-  credits_signin: 10
+  credits_topic: 5,
+  credits_post: 1,
+  credits_signin: 2
 })
 
 const saving = ref(false)
@@ -111,9 +111,9 @@ async function loadSettings() {
       allow_post: config.allow_post !== 'false',
       allow_comment: config.allow_comment !== 'false',
       allow_poll: config.allow_poll !== 'false',
-      credits_topic: parseInt(config.credit_topic) || 10,
-      credits_post: parseInt(config.credit_post) || 5,
-      credits_signin: parseInt(config.credit_signin) || 10
+      credits_topic: parseInt(config.credit_topic) || 5,
+      credits_post: parseInt(config.credit_post) || 1,
+      credits_signin: parseInt(config.credit_signin) || 2
     }
   } catch (e) {
     console.error('加载设置失败', e)

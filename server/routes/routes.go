@@ -178,6 +178,16 @@ func SetupRoutes() *mux.Router {
 	// 网站配置
 	admin.HandleFunc("/config", handlers.UpdateSiteConfig).Methods("PUT") // 更新配置
 
+	// 防刷系统配置
+	admin.HandleFunc("/antispam/config", handlers.GetAntiSpamConfig).Methods("GET")        // 获取防刷配置
+	admin.HandleFunc("/antispam/config", handlers.UpdateAntiSpamConfig).Methods("POST")   // 更新防刷配置
+	admin.HandleFunc("/antispam/stats", handlers.GetAntiSpamStats).Methods("GET")         // 获取防刷统计
+	admin.HandleFunc("/users/{id}/reputation", handlers.AdjustUserReputation).Methods("POST") // 调整用户信誉分
+	admin.HandleFunc("/users/{id}/unban", handlers.UnbanUser).Methods("POST")             // 解禁用户
+	admin.HandleFunc("/users/{id}/ban-status", handlers.GetUserBanStatus).Methods("GET")  // 获取用户禁言状态
+	admin.HandleFunc("/users/{id}/reputation-logs", handlers.GetUserReputationLogs).Methods("GET") // 获取信誉分日志
+	admin.HandleFunc("/users/{id}/ban", handlers.AdminBanUser).Methods("POST")            // 管理员禁言用户
+
 	// 版块分类管理
 	admin.HandleFunc("/forum-categories", handlers.GetAllForumCategories).Methods("GET")       // 获取分类列表
 	admin.HandleFunc("/forum-categories", handlers.CreateForumCategory).Methods("POST")        // 创建分类
@@ -203,12 +213,12 @@ func SetupRoutes() *mux.Router {
 	admin.HandleFunc("/badges/award", handlers.AwardBadge).Methods("POST")        // 授予勋章
 	admin.HandleFunc("/badges/{id}/revoke", handlers.RevokeBadge).Methods("PUT")  // 撤销勋章
 
-	admin.HandleFunc("/follows", handlers.GetAdminFollows).Methods("GET")              // 获取关注列表
-	admin.HandleFunc("/followers", handlers.GetAdminFollowers).Methods("GET")          // 获取粉丝列表
-	admin.HandleFunc("/follows/{id}", handlers.DeleteAdminFollow).Methods("DELETE")    // 删除关注
+	admin.HandleFunc("/follows", handlers.GetAdminFollows).Methods("GET")           // 获取关注列表
+	admin.HandleFunc("/followers", handlers.GetAdminFollowers).Methods("GET")       // 获取粉丝列表
+	admin.HandleFunc("/follows/{id}", handlers.DeleteAdminFollow).Methods("DELETE") // 删除关注
 
-	admin.HandleFunc("/best-comments", handlers.GetAdminBestComments).Methods("GET")            // 获取最佳评论列表
-	admin.HandleFunc("/comments/{id}/best", handlers.UpdateCommentBest).Methods("PUT")          // 更新最佳评论状态
+	admin.HandleFunc("/best-comments", handlers.GetAdminBestComments).Methods("GET")   // 获取最佳评论列表
+	admin.HandleFunc("/comments/{id}/best", handlers.UpdateCommentBest).Methods("PUT") // 更新最佳评论状态
 
 	return r
 }

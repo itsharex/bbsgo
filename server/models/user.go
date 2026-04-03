@@ -21,6 +21,7 @@ type User struct {
 	Intro        string         `gorm:"type:text" json:"intro"`                       // 个人简介
 	Credits      int            `gorm:"default:0" json:"credits"`                     // 积分
 	Level        int            `gorm:"default:1" json:"level"`                       // 等级
+	Reputation   int            `gorm:"default:100" json:"reputation"`                // 信誉分（0-100）
 	LastSignAt   *time.Time     `json:"last_sign_at"`                                 // 最后签到时间
 	CreatedAt    time.Time      `json:"created_at"`                                   // 创建时间
 	UpdatedAt    time.Time      `json:"updated_at"`                                   // 更新时间

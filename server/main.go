@@ -4,6 +4,7 @@ import (
 	"bbsgo/cache"
 	"bbsgo/config"
 	"bbsgo/database"
+	"bbsgo/handlers"
 	"bbsgo/routes"
 	"bbsgo/utils"
 	"log"
@@ -28,8 +29,9 @@ func main() {
 	// 初始化配置缓存
 	config.InitConfigCache()
 
-	// 初始化默认数据（版块、配置、标签、管理员等）
+	// 初始化默认数据（版块、配置、标签、管理员、勋章等）
 	seedData()
+	handlers.SeedBadges()
 
 	// 配置路由
 	r := routes.SetupRoutes()
@@ -126,6 +128,8 @@ func seedData() {
 			{"qiniu_domain", ""},                        // 七牛云 CDN 域名
 			{"jwt_secret", "change-this-secret-in-production"}, // JWT 密钥
 			{"jwt_expire_days", "7"},                   // JWT 过期天数
+			{"credit_signin", "10"},                    // 签到积分
+			{"credit_signin_consecutive", "15"},        // 连续签到积分
 			{"cache_num_counters", "10000"},            // 缓存计数器数量
 			{"cache_max_cost", "10000000"},             // 缓存最大成本
 		}

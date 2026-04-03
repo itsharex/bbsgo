@@ -66,6 +66,12 @@
             </span>
             <span class="menu-text">关注管理</span>
           </router-link>
+          <router-link to="antispam" class="menu-item" :class="{ active: route.name === 'AntiSpam' }">
+            <span class="menu-icon red">
+              <Shield :size="18" />
+            </span>
+            <span class="menu-text">防刷配置</span>
+          </router-link>
         </div>
 
         <div class="menu-group">
@@ -154,7 +160,7 @@ import { useAdminStore } from '@/stores/admin'
 import api from '@/api'
 import {
   LayoutDashboard, User, Users, FolderOpen, FileText, MessageSquare,
-  Tag, AlertTriangle, Bell, Settings, Sliders, Key, LogOut, Calendar, Vote, Award, Heart, Star
+  Tag, AlertTriangle, Bell, Settings, Sliders, Key, LogOut, Calendar, Vote, Award, Heart, Star, Shield
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -225,7 +231,7 @@ onMounted(() => {
 
 /* 侧边栏 */
 .sidebar {
-  width: 260px;
+  width: 200px;
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
   color: #fff;
   display: flex;

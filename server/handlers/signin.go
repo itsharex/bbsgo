@@ -31,8 +31,8 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 计算签到积分
-	credits := 10
+	// 计算签到积分（从数据库配置读取）
+	credits := utils.GetConfigInt("credit_signin", 10)
 
 	var lastSign time.Time
 	if user.LastSignAt != nil {
@@ -41,7 +41,7 @@ func SignIn(w http.ResponseWriter, r *http.Request) {
 	yesterday := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
 	// 如果昨天也签到了，获得连续签到奖励
 	if lastSign.Format("2006-01-02") == yesterday {
-		credits = 15
+		credits = utils.GetConfigInt("credit_signin_consecutive", 15)
 	}
 
 	// 更新用户签到信息

@@ -30,6 +30,11 @@ func AutoMigrate() {
 		&models.Poll{},             // 投票表
 		&models.PollOption{},       // 投票选项表
 		&models.PollVote{},         // 投票记录表
+		&models.AntiSpamConfig{},   // 防刷配置表
+		&models.UserOperation{},    // 用户操作记录表
+		&models.ReputationLog{},    // 信誉分日志表
+		&models.ContentQuality{},   // 内容质量表
+		&models.UserBan{},          // 用户禁言表
 	)
 	if err != nil {
 		log.Fatalf("failed to migrate database: %v", err)

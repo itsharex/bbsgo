@@ -20,6 +20,8 @@ type Topic struct {
 	IsUserPinned bool           `gorm:"default:false;index" json:"is_user_pinned"` // 作者是否置顶
 	IsLocked     bool           `gorm:"default:false" json:"is_locked"`       // 是否锁定（禁止回复）
 	IsEssence    bool           `gorm:"default:false" json:"is_essence"`      // 是否加精
+	IsHidden     bool           `gorm:"default:false;index" json:"is_hidden"` // 是否隐藏（被举报）
+	HotScore     float64        `gorm:"default:0;index" json:"hot_score"`     // 热度分数
 	LikeCount    int            `gorm:"default:0" json:"like_count"`          // 点赞数
 	ViewCount    int            `gorm:"default:0" json:"view_count"`          // 浏览数
 	ReplyCount   int            `gorm:"default:0" json:"reply_count"`         // 回复数
