@@ -1,8 +1,8 @@
 <template>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 bg-white rounded-lg shadow-sm">
+  <div class="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 bg-white rounded-lg shadow-sm">
     <div v-if="topic" class="mb-6">
-      <div class="flex items-start justify-between mb-4">
-        <h1 class="text-2xl font-bold text-gray-900">{{ topic.title }}</h1>
+      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-3">
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 break-words">{{ topic.title }}</h1>
         <button v-if="canDeleteTopic" @click="handleDeleteTopic"
           class="flex items-center space-x-1 px-3 py-1.5 text-sm text-red-600 hover:text-white hover:bg-red-500 border border-red-300 rounded-lg transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,20 +19,20 @@
           #{{ tag.name }}
         </router-link>
       </div>
-      <div class="flex items-center space-x-4 mb-6 pb-6 border-b">
+      <div class="flex items-center space-x-3 sm:space-x-4 mb-6 pb-6 border-b">
         <router-link :to="`/user/${topic.user_id}`">
-          <img :src="getUserAvatar(topic.user)" class="w-12 h-12 rounded-full">
+          <img :src="getUserAvatar(topic.user)" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0">
         </router-link>
-        <div class="flex-1">
-          <div class="flex items-center gap-2">
-            <router-link :to="`/user/${topic.user_id}`" class="font-medium text-gray-900 hover:text-blue-500">{{
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center flex-wrap gap-1 sm:gap-2">
+            <router-link :to="`/user/${topic.user_id}`" class="font-medium text-gray-900 hover:text-blue-500 text-sm sm:text-base truncate">{{
               getUserDisplayName(topic.user) }}</router-link>
-            <div v-if="displayAuthorBadges.length > 0" class="flex items-center gap-1">
+            <div v-if="displayAuthorBadges.length > 0" class="flex items-center gap-0.5 sm:gap-1">
               <SvgBadge v-for="badge in displayAuthorBadges" :key="badge.id"
-                :type="badge.icon" :size="24" :title="badge.name" />
+                :type="badge.icon" :size="20" :title="badge.name" />
             </div>
           </div>
-          <div class="text-sm text-gray-500">{{ formatTime(topic.created_at) }} · {{ topic.view_count }} 浏览</div>
+          <div class="text-xs sm:text-sm text-gray-500">{{ formatTime(topic.created_at) }} · {{ topic.view_count }} 浏览</div>
         </div>
       </div>
       <div class="prose max-w-none mb-6 topic-content" v-html="renderMarkdown(topic.content)"></div>
@@ -99,41 +99,41 @@
         </div>
       </div>
 
-      <div class="flex items-center space-x-4 pt-4 border-t">
+      <div class="flex flex-wrap items-center gap-2 sm:space-x-4 pt-4 border-t">
         <button @click="toggleLike"
-          :class="['flex items-center space-x-2 transition-colors', liked ? 'text-red-500' : 'text-gray-500 hover:text-red-500']">
+          :class="['flex items-center space-x-1 sm:space-x-2 transition-colors', liked ? 'text-red-500' : 'text-gray-500 hover:text-red-500']">
           <svg class="w-5 h-5" :fill="liked ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
             </path>
           </svg>
-          <span>{{ topic.like_count }}</span>
+          <span class="text-sm sm:text-base">{{ topic.like_count }}</span>
         </button>
         <button @click="toggleFavorite"
-          :class="['flex items-center space-x-2 transition-colors', favorited ? 'text-yellow-500' : 'text-gray-500 hover:text-yellow-500']">
+          :class="['flex items-center space-x-1 sm:space-x-2 transition-colors', favorited ? 'text-yellow-500' : 'text-gray-500 hover:text-yellow-500']">
           <svg class="w-5 h-5" :fill="favorited ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
           </svg>
-          <span>{{ favorited ? '已收藏' : '收藏' }}</span>
+          <span class="text-sm sm:text-base">{{ favorited ? '已收藏' : '收藏' }}</span>
         </button>
         <button @click="shareTopic"
-          class="flex items-center space-x-2 text-gray-500 hover:text-green-500 transition-colors">
+          class="flex items-center space-x-1 sm:space-x-2 text-gray-500 hover:text-green-500 transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z">
             </path>
           </svg>
-          <span>分享</span>
+          <span class="text-sm sm:text-base">分享</span>
         </button>
         <button @click="openReportDialog('topic', topic.id, topic.title)"
-          class="flex items-center space-x-2 text-gray-500 hover:text-red-500 transition-colors">
+          class="flex items-center space-x-1 sm:space-x-2 text-gray-500 hover:text-red-500 transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9">
             </path>
           </svg>
-          <span>举报</span>
+          <span class="text-sm sm:text-base">举报</span>
         </button>
       </div>
     </div>
@@ -162,26 +162,26 @@
       <div class="space-y-4">
         <div v-for="post in sortedPosts" :key="post.id" :id="'post-' + post.id"
           :class="[
-            'flex space-x-4 p-4 rounded-lg transition-all',
+            'flex space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-lg transition-all',
             post.is_best ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 shadow-md' : 'bg-gray-50'
           ]">
           
           <div class="flex-1">
-            <div class="flex items-center justify-between mb-1">
-              <div class="flex items-center space-x-2">
-                <img :src="getUserAvatar(post.user)" class="w-10 h-10 rounded-full">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1 gap-2">
+              <div class="flex items-center flex-wrap gap-1 sm:gap-2">
+                <img :src="getUserAvatar(post.user)" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0">
                 <span v-if="post.is_best" class="px-2 py-0.5 text-xs font-bold bg-yellow-500 text-white rounded-full animate-pulse">最佳</span>
                 <span v-if="post.is_pinned" class="text-xs text-red-500 font-medium">置顶</span>
-                <SvgBadge v-if="post.is_best" type="gold-comment" :size="20" title="最佳评论" />
-                <span class="font-medium text-gray-900">{{ getUserDisplayName(post.user) }}</span>
-                <span v-if="post.reply_user" class="text-gray-400 text-sm">回复 @{{ post.reply_user.nickname || post.reply_user.username }}</span>
+                <SvgBadge v-if="post.is_best" type="gold-comment" :size="16" :title="'最佳评论'" />
+                <span class="font-medium text-gray-900 text-sm sm:text-base">{{ getUserDisplayName(post.user) }}</span>
+                <span v-if="post.reply_user" class="text-gray-400 text-xs sm:text-sm">回复 @{{ post.reply_user.nickname || post.reply_user.username }}</span>
                 <span v-if="post.user_id === topic?.user_id" class="px-1.5 py-0.5 text-xs bg-red-500 text-white rounded">楼主</span>
-                <div v-if="getCommentAuthorTopBadge(post)" class="flex items-center gap-0.5 ml-1">
-                  <SvgBadge :type="getCommentAuthorTopBadge(post).icon" :size="16" :title="getCommentAuthorTopBadge(post).name" />
+                <div v-if="getCommentAuthorTopBadge(post)" class="flex items-center gap-0.5">
+                  <SvgBadge :type="getCommentAuthorTopBadge(post).icon" :size="14" :title="getCommentAuthorTopBadge(post).name" />
                 </div>
-                <span class="text-sm text-gray-500">{{ formatTime(post.created_at) }}</span>
+                <span class="text-xs sm:text-sm text-gray-500">{{ formatTime(post.created_at) }}</span>
               </div>
-              <div class="flex gap-2">
+              <div class="flex flex-wrap gap-1 sm:gap-2">
                 <button v-if="canBestComment(post)" @click="toggleCommentBest(post)"
                   :class="['text-xs transition-colors', post.is_best ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500']">
                   {{ post.is_best ? '取消最佳' : '标记最佳' }}
@@ -191,15 +191,15 @@
                   {{ post.is_pinned ? '取消置顶' : '置顶' }}
                 </button>
                 <button v-if="canDeletePost(post)" @click="handleDeletePost(post)"
-                  class="text-xs text-gray-400 hover:text-red-500 transition-colors ml-2">删除</button>
+                  class="text-xs text-gray-400 hover:text-red-500 transition-colors">删除</button>
                 <button v-if="canReportPost(post)"
                   @click="openReportDialog('comment', post.id, post.content.substring(0, 50))"
-                  class="text-xs text-gray-400 hover:text-red-500 transition-colors ml-2">举报</button>
+                  class="text-xs text-gray-400 hover:text-red-500 transition-colors">举报</button>
               </div>
             </div>
 
-            <p class="text-gray-700">{{ post.content }}</p>
-            <div class="flex items-center space-x-4 mt-2 text-sm">
+            <p class="text-gray-700 text-sm sm:text-base mt-2">{{ post.content }}</p>
+            <div class="flex items-center gap-3 sm:space-x-4 mt-2 text-sm">
               <button @click="togglePostLike(post)"
                 :class="['transition-colors', getPostLiked(post.id) ? 'text-red-500' : 'text-gray-500 hover:text-red-500']">
                 {{ getPostLiked(post.id) ? '❤️' : '🤍' }} {{ post.like_count }}

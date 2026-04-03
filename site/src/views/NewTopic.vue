@@ -1,49 +1,50 @@
 <template>
-  <div class="max-w-5xl mx-auto px-4 py-8">
-    <div v-if="!configStore.state.allow_post" class="bg-white rounded-2xl shadow-sm p-12 text-center">
-      <svg class="w-20 h-20 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div class="max-w-5xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-8">
+    <div v-if="!configStore.state.allow_post" class="bg-white rounded-2xl shadow-sm p-8 sm:p-12 text-center">
+      <svg class="w-16 h-16 sm:w-20 sm:h-20 text-gray-300 mx-auto mb-4 sm:mb-6" fill="none" stroke="currentColor"
+        viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
       </svg>
-      <h2 class="text-2xl font-bold text-gray-900 mb-3">发帖功能已关闭</h2>
-      <p class="text-gray-500 text-lg">管理员暂时关闭了发帖功能，请稍后再试。</p>
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">发帖功能已关闭</h2>
+      <p class="text-gray-500 text-base sm:text-lg">管理员暂时关闭了发帖功能，请稍后再试。</p>
       <router-link to="/"
-        class="inline-block mt-6 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors">
+        class="inline-block mt-4 sm:mt-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors">
         返回首页
       </router-link>
     </div>
     <div v-else>
-      <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">发表新帖</h1>
-        <p class="text-gray-500">分享你的想法和见解</p>
+      <div class="mb-6 sm:mb-8">
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">发表新帖</h1>
+        <p class="text-gray-500 text-sm sm:text-base">分享你的想法和见解</p>
       </div>
 
-      <form @submit.prevent="handleSubmit" class="space-y-6">
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div class="mb-6">
+      <form @submit.prevent="handleSubmit" class="space-y-4 sm:space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div class="mb-4 sm:mb-6">
             <label class="block text-gray-800 text-sm font-semibold mb-2">标题</label>
             <input type="text" v-model="form.title"
-              class="w-full px-5 py-2 text-[1rem]  border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all"
+              class="w-full px-4 sm:px-5 py-2 text-[1rem] border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all"
               placeholder="给你的帖子起一个吸引人的标题..." required>
           </div>
 
-          <div class="mb-6">
+          <div class="mb-4 sm:mb-6">
             <label class="block text-gray-800 text-sm font-semibold mb-2">选择版块</label>
             <select v-model="form.forum_id"
-              class="w-full px-5 py-2 text-[1rem] border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all bg-white"
+              class="w-full px-4 sm:px-5 py-2 text-[1rem] border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all bg-white"
               required>
               <option value="" disabled selected>请选择版块</option>
               <option v-for="forum in forums" :key="forum.id" :value="forum.id">{{ forum.name }}</option>
             </select>
           </div>
 
-          <div class="mb-6">
+          <div class="mb-4 sm:mb-6">
             <label class="block text-gray-800 text-sm font-semibold mb-3">话题标签 <span
                 class="text-gray-400 font-normal">（可选，最多3个）</span></label>
             <div class="relative">
               <div class="flex flex-wrap gap-2 mb-3">
                 <span v-for="(tag, index) in selectedTags" :key="index"
-                  class="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+                  class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
                   #{{ tag }}
                   <button type="button" @click="removeTag(index)"
                     class="ml-2 text-blue-400 hover:text-blue-600 transition-colors">
@@ -57,13 +58,13 @@
               <input type="text" v-model="tagInput" @input="searchTags" @keydown.enter.prevent="addTag"
                 @keydown.down="navigateSuggestion(1)" @keydown.up="navigateSuggestion(-1)"
                 @keydown.escape="showSuggestions = false"
-                class="w-full px-5 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all"
+                class="w-full px-4 sm:px-5 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all"
                 placeholder="输入话题名称，按回车添加" :disabled="selectedTags.length >= 3">
               <div v-if="showSuggestions && suggestions.length > 0"
                 class="absolute z-20 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto">
                 <div v-for="(suggestion, index) in suggestions" :key="suggestion.id"
                   @click="selectSuggestion(suggestion.name)"
-                  :class="['px-5 py-3 cursor-pointer transition-colors', index === suggestionIndex ? 'bg-blue-50' : 'hover:bg-gray-50']">
+                  :class="['px-4 sm:px-5 py-3 cursor-pointer transition-colors', index === suggestionIndex ? 'bg-blue-50' : 'hover:bg-gray-50']">
                   <span class="font-medium text-gray-800">#{{ suggestion.name }}</span>
                   <span class="text-xs text-gray-400 ml-3">{{ suggestion.usage_count }}次使用</span>
                 </div>
@@ -78,20 +79,23 @@
             <label class="text-gray-800 text-sm font-semibold">添加投票</label>
             <button type="button" @click="showPoll = !showPoll"
               :class="['relative inline-flex h-6 w-11 items-center rounded-full transition-colors', showPoll ? 'bg-blue-500' : 'bg-gray-200']">
-              <span :class="['inline-block h-4 w-4 transform rounded-full bg-white transition-transform', showPoll ? 'translate-x-6' : 'translate-x-1']"></span>
+              <span
+                :class="['inline-block h-4 w-4 transform rounded-full bg-white transition-transform', showPoll ? 'translate-x-6' : 'translate-x-1']"></span>
             </button>
           </div>
 
           <div v-if="showPoll" class="space-y-4 pt-4 border-t border-gray-100">
             <div>
-              <label class="block text-gray-700 text-sm font-medium mb-2">投票标题 <span class="text-gray-400 font-normal">（可选，默认使用帖子标题）</span></label>
+              <label class="block text-gray-700 text-sm font-medium mb-2">投票标题 <span
+                  class="text-gray-400 font-normal">（可选，默认使用帖子标题）</span></label>
               <input type="text" v-model="pollForm.title"
                 class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
                 placeholder="输入投票标题">
             </div>
 
             <div>
-              <label class="block text-gray-700 text-sm font-medium mb-2">投票选项 <span class="text-gray-400 font-normal">（2-10个）</span></label>
+              <label class="block text-gray-700 text-sm font-medium mb-2">投票选项 <span
+                  class="text-gray-400 font-normal">（2-10个）</span></label>
               <div class="space-y-2">
                 <div v-for="(option, index) in pollForm.options" :key="index" class="flex gap-2">
                   <input type="text" v-model="pollForm.options[index]"
@@ -100,7 +104,9 @@
                   <button type="button" @click="removePollOption(index)" v-if="pollForm.options.length > 2"
                     class="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                      </path>
                     </svg>
                   </button>
                 </div>
@@ -128,7 +134,8 @@
             </div>
 
             <div>
-              <label class="block text-gray-700 text-sm font-medium mb-2">截止时间 <span class="text-gray-400 font-normal">（可选，不设置则永久有效）</span></label>
+              <label class="block text-gray-700 text-sm font-medium mb-2">截止时间 <span
+                  class="text-gray-400 font-normal">（可选，不设置则永久有效）</span></label>
               <input type="datetime-local" v-model="pollForm.end_time"
                 class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500">
             </div>
@@ -140,8 +147,8 @@
             <div class="flex items-center justify-between">
               <label class="text-gray-800 text-sm font-semibold">帖子内容</label>
               <div class="flex flex-wrap items-center gap-3 mt-2">
-                <div class="text-xs text-gray-500 flex items-center gap-4">
-                  <span class="inline-flex items-center gap-1">
+                <div class="text-xs text-gray-500 flex items-center gap-4 md:flex">
+                  <span class="inline-flex items-center gap-1 hidden md:inline-flex">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
@@ -150,26 +157,38 @@
                     支持图片和视频
                   </span>
                 </div>
-                <button type="button" @click="openVideoUpload"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all shadow-sm">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z">
-                    </path>
-                  </svg>
-                  上传视频
-                </button>
+                <div class="flex items-center gap-2">
+                  <button type="button" @click="openImageUpload"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm md:hidden">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                      </path>
+                    </svg>
+                    插入图片
+                  </button>
+                  <button type="button" @click="openVideoUpload"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2z">
+                      </path>
+                    </svg>
+                    上传视频
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
           <input type="file" ref="videoInputRef" accept="video/*" class="hidden" @change="handleVideoFileSelect" />
+          <input type="file" ref="imageInputRef" accept="image/*" class="hidden" @change="handleImageFileSelect" />
 
           <Editor ref="editorRef" :value="form.content" @change="handleEditorChange" :plugins="plugins" :locale="zhHans"
             placeholder="开始编写你的精彩内容..." :upload-images="handleUploadImage" :upload-files="handleUploadVideo"
             :mode="editorMode" :sanitize="sanitizeSchema" class="bytemd-editor" />
 
-          <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
+          <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 hidden md:block">
             <div class="flex items-center gap-4 text-sm text-gray-500">
               <div class="flex items-center gap-1.5">
                 <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,13 +220,13 @@
           </div>
         </div>
 
-        <div class="flex justify-end gap-4 pt-4">
+        <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4">
           <button type="button" @click="$router.back()"
-            class="px-8 py-3.5 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 font-semibold transition-all">
+            class="px-6 sm:px-8 py-2.5 sm:py-3.5 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 font-semibold transition-all order-2 sm:order-1">
             取消
           </button>
           <button type="submit" :disabled="submitting"
-            class="px-10 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg shadow-blue-500/25 transition-all hover:shadow-xl hover:shadow-blue-500/30">
+            class="px-6 sm:px-10 py-2.5 sm:py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg shadow-blue-500/25 transition-all hover:shadow-xl hover:shadow-blue-500/30 order-1 sm:order-2">
             <span v-if="submitting" class="inline-flex items-center gap-2">
               <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none">
@@ -286,13 +305,13 @@ function createResizePlugin() {
         container.style.borderRadius = '8px'
         container.style.padding = '2px'
         container.style.transition = 'all 0.2s ease'
-        
+
         // 移动元素到容器中
         if (element.parentNode) {
           element.parentNode.insertBefore(container, element)
           container.appendChild(element)
         }
-        
+
         // 创建尺寸显示
         const sizeDisplay = document.createElement('div')
         sizeDisplay.className = 'size-display'
@@ -309,11 +328,11 @@ function createResizePlugin() {
         sizeDisplay.style.pointerEvents = 'none'
         sizeDisplay.textContent = `${element.offsetWidth} x ${element.offsetHeight}`
         container.appendChild(sizeDisplay)
-        
+
         // 创建四个角的调整点
         const corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right']
         const cursors = ['nwse-resize', 'nesw-resize', 'nesw-resize', 'nwse-resize']
-        
+
         corners.forEach((corner, index) => {
           const handle = document.createElement('div')
           handle.className = `resize-handle ${corner}`
@@ -326,7 +345,7 @@ function createResizePlugin() {
           handle.style.cursor = cursors[index]
           handle.style.zIndex = '20'
           handle.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)'
-          
+
           // 设置位置
           if (corner.includes('top')) {
             handle.style.top = '-6px'
@@ -338,13 +357,13 @@ function createResizePlugin() {
           } else {
             handle.style.right = '-6px'
           }
-          
+
           container.appendChild(handle)
-          
+
           // 添加拖拽功能
           let isResizing = false
           let startX, startY, startWidth, startHeight
-          
+
           handle.addEventListener('mousedown', (e) => {
             e.stopPropagation()
             isResizing = true
@@ -352,30 +371,30 @@ function createResizePlugin() {
             startY = e.clientY
             startWidth = element.offsetWidth
             startHeight = element.offsetHeight
-            
+
             document.body.style.cursor = cursors[index]
             document.body.style.userSelect = 'none'
           })
-          
+
           document.addEventListener('mousemove', (e) => {
             if (!isResizing) return
-            
+
             const width = startWidth + (e.clientX - startX) * (corner.includes('left') ? -1 : 1)
             const height = startHeight + (e.clientY - startY) * (corner.includes('top') ? -1 : 1)
-            
+
             if (width > 100 && height > 100) {
               element.style.width = `${width}px`
               element.style.height = `${height}px`
               sizeDisplay.textContent = `${Math.round(width)} x ${Math.round(height)}`
             }
           })
-          
+
           document.addEventListener('mouseup', () => {
             if (isResizing) {
               isResizing = false
               document.body.style.cursor = ''
               document.body.style.userSelect = ''
-              
+
               updateMarkdownSize(element)
             }
           })
@@ -392,13 +411,13 @@ function createResizePlugin() {
         if (element.tagName === 'IMG') {
           const src = element.getAttribute('src')
           const alt = element.getAttribute('alt') || ''
-          
+
           console.log('调整图片大小:', { src, alt, width, height })
 
           // 使用正则表达式匹配 Markdown 图片语法 ![alt](src) 或 ![alt](src "title")
           const mdRegex = new RegExp(`!\\[([^\\]]*)\\]\\(${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\s+"[^"]*")?\\)`, 'i')
           const mdMatch = currentContent.match(mdRegex)
-          
+
           if (mdMatch) {
             console.log('找到 Markdown 图片:', mdMatch[0])
             // 替换 Markdown 为 HTML img 标签
@@ -408,7 +427,7 @@ function createResizePlugin() {
             // 如果没有找到 Markdown，尝试匹配现有的 <img> 标签
             const imgRegex = new RegExp(`<img\\s+[^>]*src=["']${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*>`, 'i')
             const imgMatch = currentContent.match(imgRegex)
-            
+
             if (imgMatch) {
               console.log('找到 img 标签:', imgMatch[0])
               const imgTag = `<img src="${src}" alt="${alt}" width="${width}" height="${height}" style="max-width: 100%; border-radius: 8px; display: block; margin: 1rem 0;">`
@@ -419,13 +438,13 @@ function createResizePlugin() {
           }
         } else if (element.tagName === 'VIDEO') {
           const src = element.getAttribute('src')
-          
+
           console.log('调整视频大小:', { src, width, height })
 
           // 匹配 <video> 标签
           const videoRegex = new RegExp(`<video\\s+[^>]*src=["']${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*>\\s*</video>`, 'i')
           const videoMatch = currentContent.match(videoRegex)
-          
+
           if (videoMatch) {
             console.log('找到 video 标签:', videoMatch[0])
             const videoTag = `<video src="${src}" width="${width}" height="${height}" controls style="max-width: 100%; border-radius: 8px; display: block; margin: 1rem 0;"></video>`
@@ -505,9 +524,10 @@ const suggestions = ref([])
 const showSuggestions = ref(false)
 const suggestionIndex = ref(-1)
 const submitting = ref(false)
-const editorMode = ref('split')
+const editorMode = ref('auto')
 const editorRef = ref(null)
 const videoInputRef = ref(null)
+const imageInputRef = ref(null)
 let searchTimeout = null
 
 const showPoll = ref(false)
@@ -536,6 +556,33 @@ function removePollOption(index) {
 function openVideoUpload() {
   videoInputRef.value?.click()
 }
+
+function openImageUpload() {
+  imageInputRef.value?.click()
+}
+
+async function handleImageFileSelect(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  try {
+    const url = await uploadImage(file, {
+      dir: 'images',
+      onInstant: () => ElMessage.success('图片上传成功（秒传）')
+    })
+
+    ElMessage.success('图片上传成功')
+
+    const imgTag = `<img src="${url}" alt="${file.name}" style="max-width: 100%; border-radius: 8px; display: block; margin: 1rem 0;">`
+    form.value.content += `\n${imgTag}\n`
+  } catch (error) {
+    console.error('Image upload error:', error)
+    ElMessage.error('图片上传失败')
+  } finally {
+    event.target.value = ''
+  }
+}
+
 
 async function handleVideoFileSelect(event) {
   const file = event.target.files[0]
@@ -593,11 +640,11 @@ async function handleUploadImage(files) {
     })
 
     ElMessage.success('图片上传成功')
-    
+
     // 直接插入 HTML img 标签而不是 Markdown 语法
     const imgTag = `<img src="${url}" alt="${file.name}" style="max-width: 100%; border-radius: 8px; display: block; margin: 1rem 0;">`
     form.value.content += `\n${imgTag}\n`
-    
+
     // 返回空数组，因为我们已经手动插入了内容
     return []
   } catch (error) {
@@ -762,7 +809,7 @@ async function handleSubmit() {
 
   try {
     const res = await api.post('/topics', form.value)
-    
+
     if (showPoll.value) {
       try {
         const validOptions = pollForm.value.options.filter(opt => opt.trim() !== '')
@@ -773,18 +820,18 @@ async function handleSubmit() {
           max_choices: pollForm.value.poll_type === 'multiple' ? pollForm.value.max_choices : 1,
           options: validOptions.map(text => ({ text })),
         }
-        
+
         if (pollForm.value.end_time) {
           pollData.end_time = new Date(pollForm.value.end_time).toISOString()
         }
-        
+
         await pollApi.createPoll(pollData)
       } catch (pollError) {
         console.error('创建投票失败:', pollError)
         ElMessage.warning('帖子发布成功，但投票创建失败')
       }
     }
-    
+
     ElMessage.success('发布成功')
     setTimeout(() => {
       router.push(`/topic/${res.id}`)
@@ -801,7 +848,7 @@ onMounted(() => {
   loadForums()
   // 强制设置编辑器模式为双栏
   setTimeout(() => {
-    editorMode.value = 'split'
+    editorMode.value = 'auto'
   }, 100)
 })
 

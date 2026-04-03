@@ -21,7 +21,7 @@
         暂无{{ type === 'follows' ? '关注' : '粉丝' }}
       </div>
 
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div v-else class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <div v-for="item in list" :key="item.id" 
           class="flex items-center gap-3 p-4 rounded-lg border hover:shadow-md transition-shadow">
           <router-link :to="`/user/${getUserID(item)}`">

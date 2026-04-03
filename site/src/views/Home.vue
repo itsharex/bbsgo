@@ -1,24 +1,26 @@
 <template>
-  <div class="flex gap-6 max-w-6xl mx-auto">
-    <aside class="w-56 flex-shrink-0 hidden lg:block">
+  <div class="flex flex-col lg:flex-row gap-4 lg:gap-6 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+    <aside class="w-full lg:w-40 flex-shrink-0 lg:block mb-4 lg:mb-0">
       <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="px-4 py-3 border-b bg-gray-50">
           <h3 class="font-semibold text-gray-700">热门话题</h3>
         </div>
-        <router-link v-for="tag in tags" :key="tag.id" :to="tag.id ? `/?tag=${tag.id}` : '/'" :class="['px-4 py-3 flex items-center justify-between transition-colors',
-          currentTagId === tag.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50']">
-          <div class="flex items-center space-x-2">
-            <span v-if="tag.icon" class="text-lg">{{ tag.icon }}</span>
-            <span class="font-medium">{{ tag.name }}</span>
-          </div>
-          <span class="text-xs text-gray-400">{{ tag.usage_count }}</span>
-        </router-link>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1">
+          <router-link v-for="tag in tags" :key="tag.id" :to="tag.id ? `/?tag=${tag.id}` : '/'" :class="['px-4 py-3 flex items-center justify-between transition-colors',
+            currentTagId === tag.id ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50']">
+            <div class="flex items-center space-x-2">
+              <span v-if="tag.icon" class="text-lg">{{ tag.icon }}</span>
+              <span class="font-medium text-sm">{{ tag.name }}</span>
+            </div>
+            <span class="text-xs text-gray-400">{{ tag.usage_count }}</span>
+          </router-link>
+        </div>
       </div>
     </aside>
     <div class="flex-1 min-w-0">
       <div v-if="announcements.length > 0" class="mb-4">
         <div v-for="announcement in announcements" :key="announcement.id"
-          class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-2">
+          class="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 mb-2">
           <div class="flex items-start">
             <div class="flex-shrink-0">
               <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -28,30 +30,30 @@
               </svg>
             </div>
             <div class="ml-3 flex-1">
-              <h4 class="font-medium text-blue-900">{{ announcement.title }}</h4>
-              <p v-if="announcement.content" class="mt-1 text-sm text-blue-800">{{ announcement.content }}</p>
+              <h4 class="font-medium text-blue-900 text-sm sm:text-base">{{ announcement.title }}</h4>
+              <p v-if="announcement.content" class="mt-1 text-xs sm:text-sm text-blue-800">{{ announcement.content }}</p>
             </div>
           </div>
         </div>
       </div>
-      <div class="space-y-4">
+      <div class="space-y-3 sm:space-y-4">
         <div v-for="topic in topics" :key="topic.id"
-          class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
-          <div class="flex space-x-4">
+          class="bg-white rounded-lg shadow-sm p-3 sm:p-4 hover:shadow-md transition-shadow">
+          <div class="flex space-x-3 sm:space-x-4">
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between mb-1">
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-2 flex-wrap gap-1">
                   <router-link :to="`/user/${topic.user_id}`">
-                    <img :src="getUserAvatar(topic.user)" class="w-12 h-12 rounded-full">
+                    <img :src="getUserAvatar(topic.user)" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full">
                   </router-link>
-                  <router-link :to="`/user/${topic.user_id}`" class="font-medium text-gray-900 hover:text-blue-500">
+                  <router-link :to="`/user/${topic.user_id}`" class="font-medium text-gray-900 hover:text-blue-500 text-sm sm:text-base truncate">
                     {{ getUserDisplayName(topic.user) }}
                   </router-link>
                   <div v-if="getAuthorBadges(topic).length > 0" class="flex items-center gap-0.5">
                     <SvgBadge v-for="badge in getAuthorBadges(topic)" :key="badge.id"
-                      :type="badge.icon" :size="18" :title="badge.name" />
+                      :type="badge.icon" :size="16" :title="badge.name" />
                   </div>
-                  <span v-if="topic.forum" class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded">
+                  <span v-if="topic.forum" class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
                     {{ topic.forum.name }}
                   </span>
                 </div>
@@ -59,7 +61,7 @@
               </div>
               <router-link :to="`/topic/${topic.id}`" class="block">
                 <h3
-                  class="text-lg font-semibold mb-2 hover:text-blue-500 line-clamp-2 flex items-center flex-wrap gap-1">
+                  class="text-base sm:text-lg font-semibold mb-2 hover:text-blue-500 line-clamp-2 flex items-center flex-wrap gap-1">
                   <span v-if="topic.is_pinned"
                     class="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-medium">置顶</span>
                   <span v-if="topic.is_essence"
@@ -101,13 +103,13 @@
                   class="text-gray-600 text-sm mb-3 line-clamp-3">{{ stripMarkdown(topic.content).substring(0, 200) }}
                 </p>
               </router-link>
-              <div class="flex items-center flex-wrap gap-2 mb-2" v-if="topic.tags && topic.tags.length > 0">
+              <div class="flex items-center flex-wrap gap-1.5 mb-2" v-if="topic.tags && topic.tags.length > 0">
                 <router-link v-for="tag in topic.tags" :key="tag.id" :to="`/?tag=${tag.id}`"
                   class="px-2 py-0.5 text-xs bg-blue-100 text-blue-600 rounded hover:bg-blue-200 hover:text-blue-700">
                   #{{ tag.name }}
                 </router-link>
               </div>
-              <div class="flex items-center space-x-6 text-sm text-gray-500">
+              <div class="flex items-center space-x-4 sm:space-x-6 text-xs sm:text-sm text-gray-500">
                 <button @click="toggleLike(topic)"
                   :class="['flex items-center space-x-1 transition-colors', topic.liked ? 'text-red-500' : 'hover:text-red-500']">
                   <svg class="w-4 h-4" :fill="topic.liked ? 'currentColor' : 'none'" stroke="currentColor"
@@ -141,7 +143,7 @@
           </div>
         </div>
 
-        <div ref="loadMoreTrigger" class="py-8 text-center">
+        <div ref="loadMoreTrigger" class="py-6 sm:py-8 text-center">
           <div v-if="loading" class="flex items-center justify-center space-x-2">
             <svg class="animate-spin w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -149,7 +151,7 @@
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
               </path>
             </svg>
-            <span class="text-gray-500">加载中...</span>
+            <span class="text-gray-500 text-sm">加载中...</span>
           </div>
           <div v-else-if="noMore" class="text-gray-400 text-sm">
             已经到底啦~
@@ -157,7 +159,7 @@
         </div>
       </div>
     </div>
-    <aside class="w-52 flex-shrink-0 hidden xl:block">
+    <aside class="w-full xl:w-52 flex-shrink-0 hidden xl:block mt-4 lg:mt-0">
       <div class="bg-white rounded-lg shadow-sm p-3 mb-4" v-if="userStore.isLoggedIn">
         <h3 class="font-semibold text-gray-900 mb-2 text-sm">签到</h3>
         <div class="text-center">
@@ -176,7 +178,7 @@
         </div>
       </div>
       <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
-        <h3 class="font-semibold text-gray-900 mb-3">热门帖子</h3>
+        <h3 class="font-semibold text-gray-900 mb-3 text-sm">热门帖子</h3>
         <div class="space-y-3">
           <router-link v-for="t in hotTopics" :key="t.id" :to="`/topic/${t.id}`" class="block group">
             <div class="text-sm text-gray-700 group-hover:text-blue-500 line-clamp-2">{{ t.title }}</div>
@@ -185,7 +187,7 @@
         </div>
       </div>
       <div class="bg-white rounded-lg shadow-sm p-4">
-        <h3 class="font-semibold text-gray-900 mb-3">活跃用户</h3>
+        <h3 class="font-semibold text-gray-900 mb-3 text-sm">活跃用户</h3>
         <div class="space-y-3">
           <router-link v-for="(user, index) in creditUsers" :key="user.id" :to="`/user/${user.id}`"
             class="flex items-center justify-between hover:bg-gray-50 -mx-2 px-2 py-1 rounded transition-colors">
