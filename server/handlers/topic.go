@@ -116,6 +116,13 @@ func CreateTopic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 检查是否允许发帖
+	if !utils.GetConfigBool("allow_post", true) {
+		log.Printf("create topic: create topic disabled")
+		utils.Error(w, 400, "发帖功能已关闭")
+		return
+	}
+
 	// 解析请求体
 	var req struct {
 		Title    string   `json:"title"`     // 话题标题
@@ -162,9 +169,16 @@ func CreateTopic(w http.ResponseWriter, r *http.Request) {
 	if len(req.TagNames) > 0 {
 		var tags []models.Tag
 		for _, name := range req.TagNames {
+			if name == "" {
+				continue
+			}
 			tag, err := GetOrCreateTagByName(name)
-			if err != nil || tag == nil {
+			if err != nil {
 				log.Printf("create topic: failed to get or create tag, name: %s, error: %v", name, err)
+				continue
+			}
+			if tag == nil {
+				log.Printf("create topic: tag is nil, name: %s", name)
 				continue
 			}
 			if tag.IsBanned {
@@ -184,7 +198,8 @@ func CreateTopic(w http.ResponseWriter, r *http.Request) {
 	// 给发帖用户增加积分
 	var user models.User
 	if err := database.DB.First(&user, userID).Error; err == nil {
-		user.Credits += 20
+		creditAmount := utils.GetConfigInt("credit_topic", 20)
+		user.Credits += creditAmount
 		if err := database.DB.Save(&user).Error; err != nil {
 			log.Printf("create topic: failed to add credits, userID: %d, error: %v", userID, err)
 		}

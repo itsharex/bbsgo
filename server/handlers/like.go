@@ -152,6 +152,7 @@ func DeleteLike(w http.ResponseWriter, r *http.Request) {
 }
 
 // CheckLike 检查点赞状态处理器
+// 支持单条和批量检查
 func CheckLike(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserIDFromContext(r.Context())
 	if !ok {
@@ -159,12 +160,32 @@ func CheckLike(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req LikeRequest
+	var req struct {
+		TargetType string `json:"target_type"`
+		TargetIDs  []uint `json:"target_ids"` // 批量检查时使用
+		TargetID   uint   `json:"target_id"`  // 单条检查时使用
+	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		utils.Success(w, map[string]interface{}{"liked": false})
 		return
 	}
 
+	// 批量检查模式
+	if len(req.TargetIDs) > 0 {
+		var likes []models.Like
+		if err := database.DB.Where("user_id = ? AND target_type = ? AND target_id IN ?", userID, req.TargetType, req.TargetIDs).Find(&likes).Error; err != nil {
+			utils.Success(w, map[string]interface{}{"liked_map": map[uint]bool{}})
+			return
+		}
+		likedMap := make(map[uint]bool)
+		for _, like := range likes {
+			likedMap[like.TargetID] = true
+		}
+		utils.Success(w, map[string]interface{}{"liked_map": likedMap})
+		return
+	}
+
+	// 单条检查模式
 	var count int64
 	if err := database.DB.Model(&models.Like{}).
 		Where("user_id = ? AND target_type = ? AND target_id = ?", userID, req.TargetType, req.TargetID).

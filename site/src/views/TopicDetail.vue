@@ -48,7 +48,7 @@
     </div>
     <div class="mt-8">
       <h3 class="text-lg font-medium text-gray-900 mb-4">{{ posts.length }} 条评论</h3>
-      <div v-if="userStore.isLoggedIn" class="mb-6">
+      <div v-if="userStore.isLoggedIn && configStore.state.allow_comment && topic?.allow_comment" class="mb-6">
         <textarea v-model="newPost" rows="3"
           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
           placeholder="写下你的评论..."></textarea>
@@ -56,6 +56,12 @@
           <button @click="submitPost"
             class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">发表评论</button>
         </div>
+      </div>
+      <div v-else-if="!configStore.state.allow_comment" class="mb-6 p-4 bg-gray-100 rounded-lg text-center text-gray-500">
+        评论功能已关闭
+      </div>
+      <div v-else-if="topic && !topic.allow_comment" class="mb-6 p-4 bg-gray-100 rounded-lg text-center text-gray-500">
+        本话题已关闭评论
       </div>
       <div class="space-y-4">
         <div v-for="post in posts" :key="post.id" class="flex space-x-4 p-4 bg-gray-50 rounded-lg">
@@ -83,11 +89,13 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useConfigStore } from '@/stores/config'
 import api from '@/api'
 import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const userStore = useUserStore()
+const configStore = useConfigStore()
 const topic = ref(null)
 const posts = ref([])
 const newPost = ref('')

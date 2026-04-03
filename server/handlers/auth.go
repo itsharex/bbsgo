@@ -25,6 +25,13 @@ type LoginRequest struct {
 // Register 用户注册处理器
 // 处理用户注册请求，创建新用户并返回 JWT Token
 func Register(w http.ResponseWriter, r *http.Request) {
+	// 检查是否允许注册
+	if !utils.GetConfigBool("allow_register", true) {
+		log.Printf("register: registration disabled")
+		utils.Error(w, 400, "注册功能已关闭")
+		return
+	}
+
 	// 解析请求体
 	var req RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

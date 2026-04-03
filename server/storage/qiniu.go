@@ -95,6 +95,14 @@ func (s *QiniuStorage) Delete(key string) error {
 	return nil
 }
 
+// Exists 检查七牛云文件是否存在（暂未实现）
+// key: 文件存储键
+// 返回: 是否存在
+func (s *QiniuStorage) Exists(key string) bool {
+	// 暂未实现
+	return false
+}
+
 // GetURL 获取七牛云文件访问 URL
 // key: 文件存储键
 // 返回: 访问 URL

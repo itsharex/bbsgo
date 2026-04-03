@@ -1,6 +1,18 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+    <div v-if="!configStore.state.allow_register" class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
+      <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+      </svg>
+      <h2 class="text-2xl font-bold text-gray-900 mb-2">注册功能已关闭</h2>
+      <p class="text-gray-500 mb-6">管理员暂时关闭了注册功能，请稍后再试。</p>
+      <router-link to="/login" 
+        class="inline-block w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition-colors font-medium">
+        返回登录
+      </router-link>
+    </div>
+    <div v-else class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
       <div class="text-center mb-8">
         <h2 class="text-3xl font-bold text-gray-800">注册账号</h2>
         <p class="text-gray-500 mt-2">加入我们，开始您的社区之旅</p>
@@ -105,11 +117,13 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useConfigStore } from '@/stores/config'
 import { ElMessage } from 'element-plus'
 import api from '@/api'
 
 const router = useRouter()
 const userStore = useUserStore()
+const configStore = useConfigStore()
 
 const form = ref({
   username: '',

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bbsgo/cache"
+	"bbsgo/config"
 	"bbsgo/database"
 	"bbsgo/routes"
 	"bbsgo/utils"
@@ -23,6 +24,9 @@ func main() {
 
 	// 初始化缓存
 	cache.Init()
+
+	// 初始化配置缓存
+	config.InitConfigCache()
 
 	// 初始化默认数据（版块、配置、标签、管理员等）
 	seedData()
@@ -103,6 +107,9 @@ func seedData() {
 			{"site_logo", ""},                          // 网站 Logo
 			{"site_icon", ""},                          // 网站 Icon
 			{"site_description", "一个现代化的社区论坛系统"}, // 网站描述
+			{"allow_register", "true"},                  // 是否允许注册
+			{"allow_post", "true"},              // 是否允许发帖
+			{"allow_comment", "true"},                   // 是否允许评论
 			{"email_enabled", "false"},                 // 邮件服务开关
 			{"email_host", ""},                         // SMTP 服务器
 			{"email_port", "465"},                      // SMTP 端口

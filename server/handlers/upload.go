@@ -10,6 +10,62 @@ import (
 	"strings"
 )
 
+// CheckFileExists 检查文件是否已存在（用于秒传）
+// 通过文件内容hash生成相同key，如果文件存在则直接返回URL
+func CheckFileExists(w http.ResponseWriter, r *http.Request) {
+	filename := r.URL.Query().Get("filename")
+	contentHash := r.URL.Query().Get("content_hash") // 文件内容MD5
+	if filename == "" {
+		utils.Error(w, 400, "缺少文件名")
+		return
+	}
+	if contentHash == "" {
+		utils.Error(w, 400, "缺少文件内容hash")
+		return
+	}
+
+	// 获取存储服务实例
+	storageSvc, err := storage.GetStorage()
+	if err != nil {
+		log.Printf("[upload/exists] failed to get storage service, error: %v", err)
+		utils.Error(w, 500, "存储服务不可用")
+		return
+	}
+
+	// 根据文件扩展名确定目录
+	ext := strings.ToLower(filepath.Ext(filename))
+	imageExts := map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".gif": true, ".webp": true, ".svg": true, ".bmp": true}
+	videoExts := map[string]bool{".mp4": true, ".webm": true, ".ogg": true, ".mov": true, ".mkv": true, ".avi": true}
+
+	dir := ""
+	if imageExts[ext] {
+		dir = "images"
+	} else if videoExts[ext] {
+		dir = "videos"
+	}
+
+	// 生成文件key（使用content_hash确保相同内容生成相同key）
+	key := storage.GenerateFileKeyWithHash(dir, filename, contentHash)
+
+	// 检查文件是否存在
+	if storageSvc.Exists(key) {
+		url := storageSvc.GetURL(key)
+		log.Printf("[upload/exists] file exists, key: %s, url: %s", key, url)
+		utils.Success(w, map[string]interface{}{
+			"exists": true,
+			"url":    url,
+			"key":    key,
+		})
+		return
+	}
+
+	log.Printf("[upload/exists] file not exists, key: %s", key)
+	utils.Success(w, map[string]interface{}{
+		"exists": false,
+		"key":    key,
+	})
+}
+
 // UploadFile 文件上传处理器
 // 支持图片和视频上传到配置的存储服务（本地/七牛云/阿里云/腾讯云）
 // 最大文件大小：图片50MB，视频500MB
@@ -107,8 +163,20 @@ func UploadFile(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// 获取content_hash参数（可选，用于秒传）
+	contentHash := r.URL.Query().Get("content_hash")
+
 	// 生成存储文件key
-	key := storage.GenerateFileKey(dir, header.Filename)
+	// 如果提供了content_hash，使用GenerateFileKeyWithHash确保与秒传检查一致
+	var key string
+	if contentHash != "" {
+		key = storage.GenerateFileKeyWithHash(dir, header.Filename, contentHash)
+		log.Printf("[upload] using content hash for key, hash: %s", contentHash[:16])
+	} else {
+		key = storage.GenerateFileKey(dir, header.Filename)
+		log.Printf("[upload] using filename hash for key")
+	}
+
 	contentType := header.Header.Get("Content-Type")
 	if contentType == "" {
 		if isImage {

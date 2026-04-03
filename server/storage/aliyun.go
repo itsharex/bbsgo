@@ -130,6 +130,18 @@ func (s *AliyunStorage) Delete(key string) error {
 	return nil
 }
 
+// Exists 检查阿里云 OSS 文件是否存在
+// key: 文件存储键
+// 返回: 是否存在
+func (s *AliyunStorage) Exists(key string) bool {
+	bucket, err := s.getBucket()
+	if err != nil {
+		return false
+	}
+	_, err = bucket.GetObject(key, nil)
+	return err == nil
+}
+
 // GetURL 获取阿里云 OSS 文件访问 URL
 // key: 文件存储键
 // 返回: 访问 URL

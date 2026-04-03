@@ -22,7 +22,7 @@
               </button>
             </div>
             <template v-if="userStore.isLoggedIn">
-              <router-link to="/new-topic"
+              <router-link v-if="configStore.state.allow_post" to="/new-topic"
                 class="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm font-medium hover:bg-blue-600">
                 + 发表
               </router-link>
@@ -71,6 +71,15 @@
                     </svg>
                     系统通知
                   </router-link>
+                  <router-link 
+                    to="/favorites" 
+                    @click="closeUserMenu"
+                    class="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
+                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                    </svg>
+                    我的收藏
+                  </router-link>
                   <div class="border-t border-gray-100 my-2"></div>
                   <button 
                     @click="handleLogout"
@@ -85,7 +94,7 @@
             </template>
             <template v-else>
               <router-link to="/login" class="text-gray-600 hover:text-blue-500">登录</router-link>
-              <router-link to="/register"
+              <router-link v-if="configStore.state.allow_register" to="/register"
                 class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600">注册</router-link>
             </template>
           </div>
@@ -120,12 +129,14 @@
 import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useConfigStore } from '@/stores/config'
 import api from '@/api'
 import defaultLogo from '@/assets/bbs.png'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+const configStore = useConfigStore()
 const searchKeyword = ref('')
 const forums = ref([])
 const siteConfig = ref({
@@ -224,7 +235,12 @@ async function loadForums() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await configStore.loadConfig()
+  console.log('🔧 App onMount - 配置状态:', {
+    allow_post: configStore.state.allow_post,
+    loading: configStore.state.loading
+  })
   loadSiteConfig()
   loadForums()
   document.addEventListener('click', handleClickOutside)

@@ -20,6 +20,11 @@ type Storage interface {
 	// 返回: 访问 URL
 	GetURL(key string) string
 
+	// Exists 检查文件是否存在
+	// key: 文件存储键
+	// 返回: 是否存在
+	Exists(key string) bool
+
 	// Name 获取存储类型名称
 	// 返回: 存储类型名称
 	Name() string

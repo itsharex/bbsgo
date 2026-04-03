@@ -116,7 +116,8 @@ func SetupRoutes() *mux.Router {
 	auth.HandleFunc("/badges", handlers.GetBadges).Methods("GET") // 获取勋章列表
 
 	// 文件上传
-	auth.HandleFunc("/upload", handlers.UploadFile).Methods("POST") // 上传文件
+	auth.HandleFunc("/upload", handlers.UploadFile).Methods("POST")                      // 上传文件
+	auth.HandleFunc("/upload/check", handlers.CheckFileExists).Methods("GET") // 检查文件是否存在（秒传）
 
 	// ========== 管理后台接口（需要管理员权限）==========
 	admin := api.PathPrefix("/admin").Subrouter()

@@ -201,6 +201,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import api from '@/api'
+import { uploadImage } from '@/utils/upload'
 
 const route = useRoute()
 const router = useRouter()
@@ -260,117 +261,57 @@ function formatTime(time) {
 async function handleBackgroundUpload(event) {
   const file = event.target.files[0]
   if (!file) return
-  
+
   if (!file.type.startsWith('image/')) {
     ElMessage.error('只能上传图片文件')
     return
   }
-  
+
   try {
     ElMessage.info('正在上传背景图片...')
-    
-    const compressedFile = await compressImage(file, 1920, 480)
-    const formData = new FormData()
-    formData.append('file', compressedFile)
-    
-    const response = await fetch('/api/v1/upload', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      },
-      body: formData
+
+    const url = await uploadImage(file, {
+      dir: 'backgrounds',
+      onInstant: () => ElMessage.success('背景图片更新成功（秒传）')
     })
-    
-    const result = await response.json()
-    
-    if (result.code === 0 && result.data?.url) {
-      user.value.background = result.data.url
-      await updateProfile({ background: result.data.url })
-      ElMessage.success('背景图片更新成功')
-    } else {
-      ElMessage.error('上传失败')
-    }
+
+    ElMessage.success('背景图片更新成功')
+    user.value.background = url
+    await updateProfile({ background: url })
   } catch (error) {
     console.error('Background upload error:', error)
     ElMessage.error('背景图片上传失败')
   }
-  
+
   event.target.value = ''
 }
 
 async function handleAvatarUpload(event) {
   const file = event.target.files[0]
   if (!file) return
-  
+
   if (!file.type.startsWith('image/')) {
     ElMessage.error('只能上传图片文件')
     return
   }
-  
+
   try {
     ElMessage.info('正在上传头像...')
-    
-    const compressedFile = await compressImage(file, 256, 256)
-    const formData = new FormData()
-    formData.append('file', compressedFile)
-    
-    const response = await fetch('/api/v1/upload', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      },
-      body: formData
+
+    const url = await uploadImage(file, {
+      dir: 'avatars',
+      onInstant: () => ElMessage.success('头像更新成功（秒传）')
     })
-    
-    const result = await response.json()
-    
-    if (result.code === 0 && result.data?.url) {
-      user.value.avatar = result.data.url
-      await updateProfile({ avatar: result.data.url })
-      ElMessage.success('头像更新成功')
-    } else {
-      ElMessage.error('上传失败')
-    }
+
+    ElMessage.success('头像更新成功')
+    user.value.avatar = url
+    await updateProfile({ avatar: url })
   } catch (error) {
     console.error('Avatar upload error:', error)
     ElMessage.error('头像上传失败')
   }
-  
-  event.target.value = ''
-}
 
-function compressImage(file, maxWidth, maxHeight) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const img = new Image()
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        let width = img.width
-        let height = img.height
-        
-        if (width > maxWidth || height > maxHeight) {
-          const ratio = Math.min(maxWidth / width, maxHeight / height)
-          width = width * ratio
-          height = height * ratio
-        }
-        
-        canvas.width = width
-        canvas.height = height
-        
-        const ctx = canvas.getContext('2d')
-        ctx.drawImage(img, 0, 0, width, height)
-        
-        canvas.toBlob((blob) => {
-          resolve(new File([blob], file.name, { type: 'image/png' }))
-        }, 'image/png', 0.9)
-      }
-      img.onerror = reject
-      img.src = e.target.result
-    }
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
+  event.target.value = ''
 }
 
 async function updateProfile(data) {

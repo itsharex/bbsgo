@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 // 固定上传根目录
@@ -107,6 +106,18 @@ func (s *LocalStorage) Delete(key string) error {
 	return os.Remove(safePath)
 }
 
+// Exists 检查本地文件是否存在
+// key: 文件存储路径
+// 返回: 是否存在
+func (s *LocalStorage) Exists(key string) bool {
+	safePath, err := isPathSafe(key)
+	if err != nil {
+		return false
+	}
+	_, err = os.Stat(safePath)
+	return err == nil
+}
+
 // GetURL 获取本地文件访问 URL
 // key: 文件存储路径
 // 返回: 访问 URL
@@ -163,7 +174,7 @@ func SaveUploadedFile(file *multipart.FileHeader, key string, storage Storage) (
 // GenerateFileKey 生成文件存储键
 // dir: 存储目录（必须是相对路径，不含 ../），空表示直接保存在根目录
 // filename: 原文件名
-// 返回: 存储键
+// 返回: 存储键（基于文件名hash，同一文件名始终相同key）
 func GenerateFileKey(dir string, filename string) string {
 	// 安全检查：移除 dir 中的 ../
 	dir = strings.ReplaceAll(dir, "..", "")
@@ -172,11 +183,41 @@ func GenerateFileKey(dir string, filename string) string {
 	dir = strings.Trim(dir, "/")
 
 	ext := filepath.Ext(filename)
-	now := time.Now()
 
-	// 使用 MD5 哈希生成唯一文件名
-	hash := md5.Sum([]byte(fmt.Sprintf("%s%d%d", filename, now.UnixNano(), now.Unix())))
+	// 使用 MD5 哈希生成唯一文件名（只用filename，不含时间戳，保证同一文件始终相同key）
+	hash := md5.Sum([]byte(filename))
 	hashStr := fmt.Sprintf("%x", hash)[:16] // 取前16位
+
+	// 生成 key
+	var key string
+	if dir != "" {
+		key = fmt.Sprintf("%s/%s%s", dir, hashStr, ext)
+	} else {
+		// 直接保存在根目录
+		key = fmt.Sprintf("%s%s", hashStr, ext)
+	}
+	return key
+}
+
+// GenerateFileKeyWithHash 生成文件存储键（使用内容hash）
+// dir: 存储目录
+// filename: 原文件名
+// contentHash: 文件内容MD5 hash
+// 返回: 存储键（基于内容hash，同一内容始终相同key）
+func GenerateFileKeyWithHash(dir string, filename string, contentHash string) string {
+	// 安全检查：移除 dir 中的 ../
+	dir = strings.ReplaceAll(dir, "..", "")
+
+	// 清理路径分隔符
+	dir = strings.Trim(dir, "/")
+
+	ext := filepath.Ext(filename)
+
+	// 使用内容hash的前16位作为文件名
+	hashStr := contentHash
+	if len(hashStr) > 16 {
+		hashStr = hashStr[:16]
+	}
 
 	// 生成 key
 	var key string

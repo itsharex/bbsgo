@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bbsgo/cache"
 	"bbsgo/database"
 	"bbsgo/middleware"
 	"bbsgo/models"
@@ -9,6 +10,15 @@ import (
 	"log"
 	"net/http"
 )
+
+// 清除配置相关的缓存
+func clearConfigCache() {
+	keys := []string{"config:allow_register", "config:allow_post", "config:allow_comment",
+		"config:credit_topic", "config:credit_post", "config:credit_signin"}
+	for _, key := range keys {
+		cache.Delete(key)
+	}
+}
 
 // GetSiteConfig 获取网站配置处理器
 // 返回所有配置项的键值对
@@ -71,5 +81,6 @@ func UpdateSiteConfig(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("update site config: updated %d configs", len(req))
+	clearConfigCache()
 	utils.Success(w, nil)
 }

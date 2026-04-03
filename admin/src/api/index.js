@@ -28,7 +28,6 @@ api.interceptors.response.use(
       return res.data;
     } else {
       console.error(`响应错误: ${response.config.url}`, res.code, res.message);
-      alert(res.message || "请求失败");
       return Promise.reject(new Error(res.message));
     }
   },

@@ -321,11 +321,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, Loading } from '@element-plus/icons-vue'
 import api from '@/api'
 import { Settings, Globe, Save } from 'lucide-vue-next'
+import { compressAndUpload } from '@/utils/upload'
 
 const activeTab = ref('basic')
 const config = ref({
@@ -363,83 +364,17 @@ const saving = ref(false)
 const uploadingLogo = ref(false)
 const uploadingIcon = ref(false)
 
-const uploadUrl = computed(() => {
-  return `/api/v1/upload`
-})
-
-const uploadHeaders = computed(() => {
-  const token = localStorage.getItem('admin_token')
-  return {
-    Authorization: `Bearer ${token}`
-  }
-})
-
-function compressImage(file, maxWidth, maxHeight, type = 'image/png') {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const img = new Image()
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        let width = img.width
-        let height = img.height
-        
-        if (width > maxWidth || height > maxHeight) {
-          const ratio = Math.min(maxWidth / width, maxHeight / height)
-          width = width * ratio
-          height = height * ratio
-        }
-        
-        canvas.width = width
-        canvas.height = height
-        
-        const ctx = canvas.getContext('2d')
-        ctx.drawImage(img, 0, 0, width, height)
-        
-        canvas.toBlob((blob) => {
-          resolve(new File([blob], file.name, { type: type }))
-        }, type, 0.9)
-      }
-      img.onerror = reject
-      img.src = e.target.result
-    }
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
-
-async function uploadFile(file, type) {
-  const formData = new FormData()
-  formData.append('file', file)
-  
-  try {
-    const response = await fetch(uploadUrl.value, {
-      method: 'POST',
-      headers: uploadHeaders.value,
-      body: formData
-    })
-    
-    const result = await response.json()
-    return result
-  } catch (error) {
-    console.error('Upload error:', error)
-    throw error
-  }
-}
-
 async function handleLogoUpload(options) {
   uploadingLogo.value = true
-  
+
   try {
-    const compressedFile = await compressImage(options.file, 800, 200, 'image/png')
-    const result = await uploadFile(compressedFile, 'logo')
-    
-    if (result.code === 0 && result.data?.url) {
-      config.value.site_logo = result.data.url
-      ElMessage.success('Logo 上传成功')
-    } else {
-      ElMessage.error('上传失败')
-    }
+    const url = await compressAndUpload(options.file, 800, 200, {
+      dir: 'logo',
+      mimeType: 'image/png',
+      onInstant: () => ElMessage.success('Logo 上传成功（秒传）')
+    })
+    config.value.site_logo = url
+    ElMessage.success('Logo 上传成功')
   } catch (error) {
     console.error('Logo upload error:', error)
     ElMessage.error('Logo 上传失败')
@@ -450,17 +385,15 @@ async function handleLogoUpload(options) {
 
 async function handleIconUpload(options) {
   uploadingIcon.value = true
-  
+
   try {
-    const compressedFile = await compressImage(options.file, 256, 256, 'image/png')
-    const result = await uploadFile(compressedFile, 'icon')
-    
-    if (result.code === 0 && result.data?.url) {
-      config.value.site_icon = result.data.url
-      ElMessage.success('Icon 上传成功')
-    } else {
-      ElMessage.error('上传失败')
-    }
+    const url = await compressAndUpload(options.file, 256, 256, {
+      dir: 'icon',
+      mimeType: 'image/png',
+      onInstant: () => ElMessage.success('Icon 上传成功（秒传）')
+    })
+    config.value.site_icon = url
+    ElMessage.success('Icon 上传成功')
   } catch (error) {
     console.error('Icon upload error:', error)
     ElMessage.error('Icon 上传失败')

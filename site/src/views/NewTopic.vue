@@ -1,212 +1,331 @@
 <template>
-  <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-sm p-6">
-    <h1 class="text-2xl font-bold text-gray-900 mb-6">发表新帖</h1>
-    <form @submit.prevent="handleSubmit">
-      <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-medium mb-2">标题</label>
-        <input type="text" v-model="form.title"
-          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" placeholder="请输入标题"
-          required>
+  <div class="max-w-5xl mx-auto px-4 py-8">
+    <div v-if="!configStore.state.allow_post" class="bg-white rounded-2xl shadow-sm p-12 text-center">
+      <svg class="w-20 h-20 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+      </svg>
+      <h2 class="text-2xl font-bold text-gray-900 mb-3">发帖功能已关闭</h2>
+      <p class="text-gray-500 text-lg">管理员暂时关闭了发帖功能，请稍后再试。</p>
+      <router-link to="/" class="inline-block mt-6 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors">
+        返回首页
+      </router-link>
+    </div>
+    <div v-else>
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">发表新帖</h1>
+        <p class="text-gray-500">分享你的想法和见解</p>
       </div>
-
-      <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-medium mb-2">版块 <span class="text-red-500">*</span></label>
-        <select v-model="form.forum_id"
-          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500" required>
-          <option value="">请选择版块</option>
-          <option v-for="forum in forums" :key="forum.id" :value="forum.id">{{ forum.name }}</option>
-        </select>
-      </div>
-
-      <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-medium mb-2">话题（可选，最多3个）</label>
-        <div class="relative">
-          <div class="flex flex-wrap gap-2 mb-2">
-            <span v-for="(tag, index) in selectedTags" :key="index"
-              class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-              {{ tag }}
-              <button type="button" @click="removeTag(index)" class="ml-2 text-blue-500 hover:text-blue-700">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            </span>
+      
+      <form @submit.prevent="handleSubmit" class="space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div class="mb-6">
+            <label class="block text-gray-800 text-sm font-semibold mb-2">标题</label>
+            <input type="text" v-model="form.title"
+              class="w-full px-5 py-2 text-[1rem]  border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all" 
+              placeholder="给你的帖子起一个吸引人的标题..."
+              required>
           </div>
-          <input type="text" v-model="tagInput" @input="searchTags" @keydown.enter.prevent="addTag"
-            @keydown.down="navigateSuggestion(1)" @keydown.up="navigateSuggestion(-1)"
-            @keydown.escape="showSuggestions = false"
-            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-            placeholder="输入话题名称，按回车添加" :disabled="selectedTags.length >= 3">
-          <div v-if="showSuggestions && suggestions.length > 0"
-            class="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-            <div v-for="(suggestion, index) in suggestions" :key="suggestion.id"
-              @click="selectSuggestion(suggestion.name)"
-              :class="['px-4 py-2 cursor-pointer', index === suggestionIndex ? 'bg-blue-50' : 'hover:bg-gray-50']">
-              <span class="font-medium">{{ suggestion.name }}</span>
-              <span class="text-xs text-gray-400 ml-2">{{ suggestion.usage_count }}次使用</span>
+
+          <div class="mb-6">
+            <label class="block text-gray-800 text-sm font-semibold mb-2">选择版块</label>
+            <select v-model="form.forum_id"
+              class="w-full px-5 py-2 text-[1rem] border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all bg-white" required>
+              <option value="" disabled selected>请选择版块</option>
+              <option v-for="forum in forums" :key="forum.id" :value="forum.id">{{ forum.name }}</option>
+            </select>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-gray-800 text-sm font-semibold mb-3">话题标签 <span class="text-gray-400 font-normal">（可选，最多3个）</span></label>
+            <div class="relative">
+              <div class="flex flex-wrap gap-2 mb-3">
+                <span v-for="(tag, index) in selectedTags" :key="index"
+                  class="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+                  #{{ tag }}
+                  <button type="button" @click="removeTag(index)" class="ml-2 text-blue-400 hover:text-blue-600 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </span>
+              </div>
+              <input type="text" v-model="tagInput" @input="searchTags" @keydown.enter.prevent="addTag"
+                @keydown.down="navigateSuggestion(1)" @keydown.up="navigateSuggestion(-1)"
+                @keydown.escape="showSuggestions = false"
+                class="w-full px-5 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all"
+                placeholder="输入话题名称，按回车添加" :disabled="selectedTags.length >= 3">
+              <div v-if="showSuggestions && suggestions.length > 0"
+                class="absolute z-20 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl max-h-56 overflow-y-auto">
+                <div v-for="(suggestion, index) in suggestions" :key="suggestion.id"
+                  @click="selectSuggestion(suggestion.name)"
+                  :class="['px-5 py-3 cursor-pointer transition-colors', index === suggestionIndex ? 'bg-blue-50' : 'hover:bg-gray-50']">
+                  <span class="font-medium text-gray-800">#{{ suggestion.name }}</span>
+                  <span class="text-xs text-gray-400 ml-3">{{ suggestion.usage_count }}次使用</span>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs text-gray-400 mt-2">话题由用户自由创建，2-20个字符</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <div class="flex items-center justify-between">
+              <label class="text-gray-800 text-sm font-semibold">帖子内容</label>
+              <div class="flex flex-wrap items-center gap-3 mt-2">
+                <div class="text-xs text-gray-500 flex items-center gap-4">
+                  <span class="inline-flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    支持图片和视频
+                  </span>
+                </div>
+                <button 
+                  type="button"
+                  @click="openVideoUpload"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all shadow-sm">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                  </svg>
+                  上传视频
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <input 
+            type="file" 
+            ref="videoInputRef" 
+            accept="video/*" 
+            class="hidden"
+            @change="handleVideoFileSelect"
+          />
+          
+          <Editor
+            ref="editorRef"
+            :value="form.content"
+            @change="handleEditorChange"
+            :plugins="plugins"
+            :locale="zhHans"
+            placeholder="开始编写你的精彩内容..."
+            :upload-images="handleUploadImage"
+            :upload-files="handleUploadVideo"
+            :mode="editorMode"
+            :sanitize="sanitizeSchema"
+            class="bytemd-editor"
+          />
+          
+          <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
+            <div class="flex items-center gap-4 text-sm text-gray-500">
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                支持 Markdown 语法
+              </div>
+              <div class="w-px h-4 bg-gray-300"></div>
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                拖拽/粘贴图片上传
+              </div>
+              <div class="w-px h-4 bg-gray-300"></div>
+              <div class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+                右侧实时预览
+              </div>
             </div>
           </div>
         </div>
-        <p class="text-xs text-gray-500 mt-1">话题由用户自由创建，2-20个字符</p>
-      </div>
 
-      <div class="mb-6">
-        <label class="block text-gray-700 text-sm font-medium mb-2">内容 <span class="text-red-500">*</span></label>
-
-        <div class="border rounded-lg overflow-hidden">
-          <div class="toolbar bg-gray-50 border-b p-2 flex flex-wrap gap-1 items-center">
-            <button type="button" @click="editorMode = 'wysiwyg'"
-              :class="['px-3 py-1.5 text-sm rounded-lg transition-colors', editorMode === 'wysiwyg' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">
-              富文本
-            </button>
-            <button type="button" @click="editorMode = 'markdown'"
-              :class="['px-3 py-1.5 text-sm rounded-lg transition-colors', editorMode === 'markdown' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">
-              Markdown
-            </button>
-            <button type="button" @click="editorMode = 'preview'"
-              :class="['px-3 py-1.5 text-sm rounded-lg transition-colors', editorMode === 'preview' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">
-              预览
-            </button>
-            
-            <template v-if="editorMode === 'wysiwyg'">
-              <div class="w-px h-8 bg-gray-300 mx-1"></div>
-              <button type="button" @click="toggleBold"
-                :class="['p-2 rounded hover:bg-gray-200', isActive('bold') && 'bg-blue-100 text-blue-600']" title="粗体">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"></path>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"></path>
-                </svg>
-              </button>
-              <button type="button" @click="toggleItalic"
-                :class="['p-2 rounded hover:bg-gray-200', isActive('italic') && 'bg-blue-100 text-blue-600']" title="斜体">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 4h4m-2 0v16m-4 0h8"></path>
-                </svg>
-              </button>
-              <button type="button" @click="toggleUnderline"
-                :class="['p-2 rounded hover:bg-gray-200', isActive('underline') && 'bg-blue-100 text-blue-600']"
-                title="下划线">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8v8a5 5 0 0010 0V8M5 21h14">
-                  </path>
-                </svg>
-              </button>
-              <div class="w-px h-8 bg-gray-300 mx-1"></div>
-              <button type="button" @click="toggleHeading(1)"
-                :class="['p-2 rounded hover:bg-gray-200', isActiveHeading(1) && 'bg-blue-100 text-blue-600']" title="标题1">
-                <span class="font-bold text-lg">H1</span>
-              </button>
-              <button type="button" @click="toggleHeading(2)"
-                :class="['p-2 rounded hover:bg-gray-200', isActiveHeading(2) && 'bg-blue-100 text-blue-600']" title="标题2">
-                <span class="font-bold">H2</span>
-              </button>
-              <button type="button" @click="toggleHeading(3)"
-                :class="['p-2 rounded hover:bg-gray-200', isActiveHeading(3) && 'bg-blue-100 text-blue-600']" title="标题3">
-                <span class="font-bold text-sm">H3</span>
-              </button>
-              <div class="w-px h-8 bg-gray-300 mx-1"></div>
-              <button type="button" @click="toggleBulletList"
-                :class="['p-2 rounded hover:bg-gray-200', isActive('bulletList') && 'bg-blue-100 text-blue-600']"
-                title="无序列表">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
-                  </path>
-                </svg>
-              </button>
-              <button type="button" @click="toggleOrderedList"
-                :class="['p-2 rounded hover:bg-gray-200', isActive('orderedList') && 'bg-blue-100 text-blue-600']"
-                title="有序列表">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
-                </svg>
-              </button>
-              <div class="w-px h-8 bg-gray-300 mx-1"></div>
-              <button type="button" @click="toggleBlockquote"
-                :class="['p-2 rounded hover:bg-gray-200', isActive('blockquote') && 'bg-blue-100 text-blue-600']"
-                title="引用">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
-                  </path>
-                </svg>
-              </button>
-              <button type="button" @click="toggleCodeBlock"
-                :class="['p-2 rounded hover:bg-gray-200', isActive('codeBlock') && 'bg-blue-100 text-blue-600']"
-                title="代码块">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-                </svg>
-              </button>
-              <div class="w-px h-8 bg-gray-300 mx-1"></div>
-              <button type="button" @click="addImage" :class="['p-2 rounded hover:bg-gray-200']" title="插入图片">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                  </path>
-                </svg>
-              </button>
-              <button type="button" @click="addLink" :class="['p-2 rounded hover:bg-gray-200']" title="插入链接">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l1.1-1.1">
-                  </path>
-                </svg>
-              </button>
-            </template>
-          </div>
-          <editor-content v-if="editorMode === 'wysiwyg'" :editor="editor" class="tiptap-editor" />
-          <textarea v-else-if="editorMode === 'markdown'" v-model="markdownContent"
-            class="w-full min-h-[400px] p-4 font-mono text-sm border-0 focus:outline-none resize-none"
-            placeholder="在此输入 Markdown 内容..."></textarea>
-          <div v-else-if="editorMode === 'preview'" class="prose prose-sm p-4 min-h-[400px]" v-html="previewHtml"></div>
+        <div class="flex justify-end gap-4 pt-4">
+          <button type="button" @click="$router.back()" 
+            class="px-8 py-3.5 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 font-semibold transition-all">
+            取消
+          </button>
+          <button type="submit" :disabled="submitting"
+            class="px-10 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg shadow-blue-500/25 transition-all hover:shadow-xl hover:shadow-blue-500/30">
+            <span v-if="submitting" class="inline-flex items-center gap-2">
+              <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              发布中...
+            </span>
+            <span v-else>立即发布</span>
+          </button>
         </div>
-        <p class="text-xs text-gray-500 mt-2">💡 提示：可以直接 Ctrl+V 粘贴图片</p>
-      </div>
-
-      <div class="flex justify-end space-x-4">
-        <button type="button" @click="$router.back()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">取消</button>
-        <button type="submit" :disabled="submitting"
-          class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
-          {{ submitting ? '发布中...' : '发布' }}
-        </button>
-      </div>
-    </form>
-
-    <input type="file" ref="imageInput" accept="image/*" class="hidden" @change="handleImageSelect">
+      </form>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useEditor, EditorContent } from '@tiptap/vue-3'
-import StarterKit from '@tiptap/starter-kit'
-import ImageResize from 'tiptap-extension-resize-image'
-import Link from '@tiptap/extension-link'
-import TextAlign from '@tiptap/extension-text-align'
-import Underline from '@tiptap/extension-underline'
-import api from '@/api'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import MarkdownIt from 'markdown-it'
-import TurndownService from 'turndown'
+import { useConfigStore } from '@/stores/config'
+import { Editor } from '@bytemd/vue-next'
+import gfm from '@bytemd/plugin-gfm'
+import highlight from '@bytemd/plugin-highlight'
+import mediumZoom from '@bytemd/plugin-medium-zoom'
+import math from '@bytemd/plugin-math'
+import 'bytemd/dist/index.css'
+import 'highlight.js/styles/github.css'
+import 'katex/dist/katex.css'
+import { ElMessage } from 'element-plus'
+import { uploadImage, uploadVideo } from '@/utils/upload'
 
-const md = new MarkdownIt()
-const turndown = new TurndownService()
+const plugins = [
+  gfm(),
+  highlight(),
+  mediumZoom(),
+  math(),
+  createResizePlugin()
+]
+
+function createResizePlugin() {
+  return {
+    remark: (processor) => processor,
+    rehype: (processor) => processor,
+    viewerEffect: ({ markdownBody }) => {
+      const setupResize = () => {
+        const images = markdownBody.querySelectorAll('img, video')
+        images.forEach(element => {
+          if (!element.classList.contains('resizable')) {
+            makeResizable(element)
+          }
+        })
+      }
+
+      const makeResizable = (element) => {
+        element.classList.add('resizable')
+        
+        const resizeHandle = document.createElement('div')
+        resizeHandle.className = 'resize-handle'
+        element.parentNode.insertBefore(resizeHandle, element.nextSibling)
+        
+        let isResizing = false
+        let startX, startY, startWidth, startHeight
+
+        resizeHandle.addEventListener('mousedown', (e) => {
+          isResizing = true
+          startX = e.clientX
+          startY = e.clientY
+          startWidth = element.offsetWidth
+          startHeight = element.offsetHeight
+          
+          document.body.style.cursor = 'se-resize'
+          document.body.style.userSelect = 'none'
+        })
+
+        document.addEventListener('mousemove', (e) => {
+          if (!isResizing) return
+          
+          const width = startWidth + (e.clientX - startX)
+          const height = startHeight + (e.clientY - startY)
+          
+          if (width > 100 && height > 100) {
+            element.style.width = `${width}px`
+            element.style.height = `${height}px`
+          }
+        })
+
+        document.addEventListener('mouseup', () => {
+          if (isResizing) {
+            isResizing = false
+            document.body.style.cursor = ''
+            document.body.style.userSelect = ''
+            
+            updateMarkdownSize(element)
+          }
+        })
+      }
+
+      const updateMarkdownSize = (element) => {
+        const width = Math.round(element.offsetWidth)
+        const height = Math.round(element.offsetHeight)
+        
+        let currentContent = form.value.content
+        let updatedContent = currentContent
+        
+        if (element.tagName === 'IMG') {
+          const src = element.src
+          const alt = element.alt || ''
+          
+          const imgRegex = new RegExp(`!\[${alt}\]\((${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})(\s+"[^"]*")?(\s+\{[^\}]*\})?\)`, 'g')
+          
+          updatedContent = currentContent.replace(imgRegex, `![${alt}](${src} =${width}x${height})`)
+        } else if (element.tagName === 'VIDEO') {
+          const src = element.src
+          
+          const videoRegex = new RegExp(`<video\s+src="(${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})"[^>]*>.*?<\/video>`, 'g')
+          
+          updatedContent = currentContent.replace(videoRegex, `<video src="${src}" width="${width}" height="${height}" controls style="max-width: 100%; border-radius: 8px; display: block; margin: 1rem 0;"></video>`)
+        }
+        
+        if (updatedContent !== currentContent) {
+          form.value.content = updatedContent
+        }
+      }
+
+      setupResize()
+      
+      const observer = new MutationObserver(setupResize)
+      observer.observe(markdownBody, { childList: true, subtree: true })
+      
+      return () => observer.disconnect()
+    }
+  }
+}
+
+function sanitizeSchema(schema) {
+  const newSchema = { ...schema }
+  
+  newSchema.tagNames = [...(newSchema.tagNames || []), 'video']
+  newSchema.attributes = {
+    ...(newSchema.attributes || {}),
+    video: ['src', 'controls', 'style', 'width', 'height', 'autoplay', 'loop', 'muted', 'poster']
+  }
+  
+  return newSchema
+}
+
+const zhHans = {
+  'placeholder': '开始编写你的精彩内容...',
+  'uploadError': '上传失败',
+  'bold': '加粗',
+  'italic': '斜体',
+  'strike': '删除线',
+  'link': '链接',
+  'quote': '引用',
+  'code': '代码',
+  'image': '图片',
+  'file': '文件',
+  'table': '表格',
+  'ordered-list': '有序列表',
+  'unordered-list': '无序列表',
+  'task-list': '任务列表',
+  'heading-1': '一级标题',
+  'heading-2': '二级标题',
+  'heading-3': '三级标题',
+  'heading-4': '四级标题',
+  'heading-5': '五级标题',
+  'heading-6': '六级标题',
+}
 
 const router = useRouter()
-const imageInput = ref(null)
-
-const editorMode = ref('wysiwyg')
-const markdownContent = ref('')
+const configStore = useConfigStore()
 
 const form = ref({
   title: '',
   content: '',
-  forum_id: null,
+  forum_id: '',
   tag_names: []
 })
 const forums = ref([])
@@ -216,181 +335,81 @@ const suggestions = ref([])
 const showSuggestions = ref(false)
 const suggestionIndex = ref(-1)
 const submitting = ref(false)
+const editorMode = ref('split')
+const editorRef = ref(null)
+const videoInputRef = ref(null)
 let searchTimeout = null
 
-const previewHtml = computed(() => {
-  return md.render(markdownContent.value)
-})
-
-const editor = useEditor({
-  extensions: [
-    StarterKit.configure({
-      heading: {
-        levels: [1, 2, 3]
-      }
-    }),
-    ImageResize.configure({
-      inline: false,
-      minWidth: 100,
-      maxWidth: 800,
-      HTMLAttributes: {
-        class: 'rounded-lg'
-      }
-    }),
-    Link.configure({
-      openOnClick: false,
-      HTMLAttributes: {
-        rel: 'noopener noreferrer',
-        target: '_blank',
-        class: 'text-blue-600 underline hover:text-blue-800'
-      }
-    }),
-    TextAlign.configure({
-      types: ['heading', 'paragraph']
-    }),
-    Underline
-  ],
-  content: '',
-  editorProps: {
-    attributes: {
-      class: 'prose prose-sm focus:outline-none min-h-[400px] p-4 max-w-none'
-    },
-    handlePaste: (view, event) => {
-      const items = event.clipboardData?.items
-      if (items) {
-        for (let item of items) {
-          if (item.type.indexOf('image') !== -1) {
-            const file = item.getAsFile()
-            if (file) {
-              event.preventDefault()
-              uploadImage(file)
-              return true
-            }
-          }
-        }
-      }
-      return false
-    }
-  },
-  onUpdate: ({ editor }) => {
-    if (editorMode.value === 'wysiwyg') {
-      form.value.content = editor.getHTML()
-    }
-  }
-})
-
-watch(editorMode, (newMode, oldMode) => {
-  if (oldMode === 'wysiwyg' && newMode !== 'wysiwyg') {
-    if (editor.value) {
-      const html = editor.value.getHTML()
-      markdownContent.value = turndown.turndown(html)
-    }
-  } else if (oldMode !== 'wysiwyg' && newMode === 'wysiwyg') {
-    if (editor.value) {
-      const html = md.render(markdownContent.value)
-      editor.value.commands.setContent(html)
-    }
-  }
-})
-
-watch(markdownContent, () => {
-  if (editorMode.value === 'markdown' || editorMode.value === 'preview') {
-    form.value.content = md.render(markdownContent.value)
-  }
-})
-
-function isActive(format) {
-  if (!editor.value) return false
-  return editor.value.isActive(format)
+function openVideoUpload() {
+  videoInputRef.value?.click()
 }
 
-function isActiveHeading(level) {
-  if (!editor.value) return false
-  return editor.value.isActive('heading', { level })
-}
-
-function toggleBold() {
-  editor.value?.chain().focus().toggleBold().run()
-}
-
-function toggleItalic() {
-  editor.value?.chain().focus().toggleItalic().run()
-}
-
-function toggleUnderline() {
-  editor.value?.chain().focus().toggleUnderline().run()
-}
-
-function toggleHeading(level) {
-  editor.value?.chain().focus().toggleHeading({ level }).run()
-}
-
-function toggleBulletList() {
-  editor.value?.chain().focus().toggleBulletList().run()
-}
-
-function toggleOrderedList() {
-  editor.value?.chain().focus().toggleOrderedList().run()
-}
-
-function toggleBlockquote() {
-  editor.value?.chain().focus().toggleBlockquote().run()
-}
-
-function toggleCodeBlock() {
-  editor.value?.chain().focus().toggleCodeBlock().run()
-}
-
-function addImage() {
-  imageInput.value?.click()
-}
-
-async function addLink() {
-  try {
-    const result = await ElMessageBox.prompt('请输入链接地址', '插入链接', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      inputPattern: /^https?:\/\/.+/,
-      inputErrorMessage: '请输入有效的 URL'
-    })
-    if (result.value) {
-      editor.value?.chain().focus().setLink({ href: result.value }).run()
-    }
-  } catch {
-  }
-}
-
-async function handleImageSelect(event) {
+async function handleVideoFileSelect(event) {
   const file = event.target.files[0]
-  if (file) {
-    await uploadImage(file)
-  }
-  event.target.value = ''
-}
+  if (!file) return
 
-async function uploadImage(file) {
   try {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    const response = await api.post('/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+    const url = await uploadVideo(file, {
+      onInstant: () => ElMessage.success('视频上传成功（秒传）')
     })
 
-    if (response && response.url) {
-      if (editorMode.value === 'wysiwyg') {
-        editor.value?.chain().focus().setImage({ src: response.url }).run()
-      } else {
-        markdownContent.value += `\n![图片](${response.url})\n`
-      }
-    } else {
-      throw new Error('上传失败')
-    }
+    ElMessage.success('视频上传成功')
+    const videoMarkdown = `\n\n<video src="${url}" controls style="max-width: 100%; border-radius: 8px; display: block; margin: 1rem 0;"></video>\n\n`
+    form.value.content += videoMarkdown
+  } catch (error) {
+    console.error('Video upload error:', error)
+    ElMessage.error('视频上传失败')
+  } finally {
+    event.target.value = ''
+  }
+}
+
+function handleEditorChange(value) {
+  form.value.content = value
+}
+
+async function handleUploadImage(files) {
+  const file = files[0]
+  if (!file) return []
+
+  try {
+    const url = await uploadImage(file, {
+      dir: 'images',
+      onInstant: () => ElMessage.success('图片上传成功（秒传）')
+    })
+
+    ElMessage.success('图片上传成功')
+    return [{
+      url: url,
+      alt: file.name,
+      title: file.name
+    }]
   } catch (error) {
     console.error('Image upload error:', error)
     ElMessage.error('图片上传失败')
+    return []
+  }
+}
+
+async function handleUploadVideo(files) {
+  const file = files[0]
+  if (!file) return []
+
+  try {
+    const url = await uploadVideo(file, {
+      onInstant: () => ElMessage.success('视频上传成功（秒传）')
+    })
+
+    ElMessage.success('视频上传成功')
+    return [{
+      url: url,
+      alt: file.name,
+      title: file.name
+    }]
+  } catch (error) {
+    console.error('Video upload error:', error)
+    ElMessage.error('视频上传失败')
+    return []
   }
 }
 
@@ -488,11 +507,8 @@ async function handleSubmit() {
     return
   }
 
-  const contentToCheck = editorMode.value === 'wysiwyg' 
-    ? form.value.content 
-    : markdownContent.value
-
-  if (!contentToCheck || contentToCheck.trim() === '') {
+  if (!form.value.content || form.value.content.trim() === '') {
+    console.log('content:', form.value.content)
     ElMessage.warning('请输入内容')
     return
   }
@@ -515,33 +531,116 @@ async function handleSubmit() {
 
 onMounted(() => {
   loadForums()
+  // 强制设置编辑器模式为双栏
+  setTimeout(() => {
+    editorMode.value = 'split'
+  }, 100)
 })
 
-onBeforeUnmount(() => {
-  if (editor.value) {
-    editor.value.destroy()
-  }
+// 调试 content 变化
+watch(() => form.value.content, (val) => {
+  console.log('content changed:', val)
 })
 </script>
 
 <style scoped>
-.tiptap-editor {
-  min-height: 400px;
+.bytemd-editor {
+  min-height: 650px;
+  width: 100%;
 }
 
-.tiptap-editor :deep(img) {
+.bytemd-editor :deep(.bytemd) {
+  min-height: 650px;
+  border: none;
+}
+
+.bytemd-editor :deep(.bytemd-toolbar) {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.bytemd-editor :deep(.bytemd-editor-left) {
+  min-height: 580px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #111827;
+}
+
+.bytemd-editor :deep(.bytemd-editor-right) {
+  min-height: 580px;
+}
+
+.bytemd-editor :deep(.bytemd-preview) {
+  padding: 1rem 1.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #111827;
+}
+
+.bytemd-editor :deep(.markdown-body > *:first-child) {
+  margin-top: -8px !important;
+}
+
+.bytemd-editor :deep(.bytemd-preview h1),
+.bytemd-editor :deep(.bytemd-preview h2),
+.bytemd-editor :deep(.bytemd-preview h3),
+.bytemd-editor :deep(.bytemd-preview h4),
+.bytemd-editor :deep(.bytemd-preview h5),
+.bytemd-editor :deep(.bytemd-preview h6) {
+  color: #111827;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.bytemd-editor :deep(.bytemd-preview p) {
+  color: #111827;
+  margin: 0.75rem 0;
+}
+
+.bytemd-editor :deep(.bytemd-preview strong) {
+  color: #111827;
+  font-weight: 700;
+}
+
+.bytemd-editor :deep(.bytemd-toolbar-btn[title="GitHub"]),
+.bytemd-editor :deep(.bytemd-toolbar-btn[title="帮助"]),
+.bytemd-editor :deep(.bytemd-toolbar-btn[title="Help"]) {
+  display: none;
+}
+
+.bytemd-editor :deep(.bytemd-preview video) {
   max-width: 100%;
-  height: auto;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   margin: 1rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.tiptap-editor :deep(a) {
-  color: #2563eb;
-  text-decoration: underline;
+.bytemd-editor :deep(.resizable) {
+  position: relative;
+  display: inline-block;
 }
 
-.tiptap-editor :deep(a:hover) {
-  color: #1e40af;
+.bytemd-editor :deep(.resize-handle) {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 0 0 8px 0;
+  cursor: se-resize;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.bytemd-editor :deep(.resize-handle:hover) {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.bytemd-editor :deep(.resizable:hover .resize-handle) {
+  opacity: 0.8;
 }
 </style>

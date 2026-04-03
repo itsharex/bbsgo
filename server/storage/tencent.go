@@ -117,6 +117,18 @@ func (s *TencentStorage) Delete(key string) error {
 	return nil
 }
 
+// Exists 检查腾讯云 COS 文件是否存在
+// key: 文件存储键
+// 返回: 是否存在
+func (s *TencentStorage) Exists(key string) bool {
+	client, err := s.getClient()
+	if err != nil {
+		return false
+	}
+	_, err = client.Object.Head(context.Background(), key, nil)
+	return err == nil
+}
+
 // GetURL 获取腾讯云 COS 文件访问 URL
 // key: 文件存储键
 // 返回: 访问 URL

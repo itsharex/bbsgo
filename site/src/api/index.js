@@ -28,20 +28,15 @@ api.interceptors.response.use(
     }
   },
   (error) => {
-    if (error.response) {
-      // 服务器返回了错误响应
-      const data = error.response.data;
-      const message = data?.message || data?.msg || "请求失败";
-      ElMessage.error(message)
-    } else if (error.message) {
-      // 网络错误等
-      ElMessage.error(error.message)
-    }
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/login";
+      return Promise.reject(error);
     }
+    
+    // 不在这里自动显示错误消息，让各组件自己处理
+    // 这样可以避免重复弹窗，并且组件可以提供更有针对性的错误信息
     return Promise.reject(error);
   },
 );

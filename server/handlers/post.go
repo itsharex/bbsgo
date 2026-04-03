@@ -67,6 +67,13 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 检查是否允许评论
+	if !utils.GetConfigBool("allow_comment", true) {
+		log.Printf("create post: comment disabled")
+		utils.Error(w, 400, "评论功能已关闭")
+		return
+	}
+
 	vars := mux.Vars(r)
 	topicID, _ := strconv.Atoi(vars["id"])
 
@@ -129,7 +136,8 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	// 给评论用户增加积分
 	var user models.User
 	if err := database.DB.First(&user, userID).Error; err == nil {
-		user.Credits += 5
+		creditAmount := utils.GetConfigInt("credit_post", 5)
+		user.Credits += creditAmount
 		if err := database.DB.Save(&user).Error; err != nil {
 			log.Printf("create post: failed to add credits, userID: %d, error: %v", userID, err)
 		}

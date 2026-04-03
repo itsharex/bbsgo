@@ -18,6 +18,23 @@
       </div>
     </aside>
     <div class="flex-1 min-w-0">
+      <div v-if="announcements.length > 0" class="mb-4">
+        <div v-for="announcement in announcements" :key="announcement.id" 
+          class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-2">
+          <div class="flex items-start">
+            <div class="flex-shrink-0">
+              <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+              </svg>
+            </div>
+            <div class="ml-3 flex-1">
+              <h4 class="font-medium text-blue-900">{{ announcement.title }}</h4>
+              <p v-if="announcement.content" class="mt-1 text-sm text-blue-800">{{ announcement.content }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="space-y-4">
         <div v-for="topic in topics" :key="topic.id"
           class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
@@ -97,19 +114,19 @@
       </div>
     </div>
     <aside class="w-52 flex-shrink-0 hidden xl:block">
-      <div class="bg-white rounded-lg shadow-sm p-4 mb-4" v-if="userStore.isLoggedIn">
-        <h3 class="font-semibold text-gray-900 mb-3">签到</h3>
+      <div class="bg-white rounded-lg shadow-sm p-3 mb-4" v-if="userStore.isLoggedIn">
+        <h3 class="font-semibold text-gray-900 mb-2 text-sm">签到</h3>
         <div class="text-center">
-          <div class="text-3xl font-bold text-gray-800 mb-2">{{ userStore.user?.credits || 0 }}</div>
-          <div class="text-xs text-gray-500 mb-4">积分</div>
+          <div class="text-2xl font-bold text-gray-800 mb-1">{{ signInStatus.credits || userStore.user?.credits || 0 }}</div>
+          <div class="text-xs text-gray-500 mb-2">积分</div>
           <button @click="handleSignIn" :disabled="signInLoading || signInStatus.signed_today"
-            :class="['w-full py-2 rounded-lg font-medium transition-colors', 
+            :class="['w-full py-1.5 rounded-lg text-sm font-medium transition-colors', 
               signInStatus.signed_today 
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                 : 'bg-blue-500 text-white hover:bg-blue-600']">
             {{ signInLoading ? '签到中...' : (signInStatus.signed_today ? '今日已签到' : '立即签到') }}
           </button>
-          <div v-if="signInStatus.last_sign_at" class="mt-3 text-xs text-gray-500">
+          <div v-if="signInStatus.last_sign_at" class="mt-2 text-xs text-gray-500">
             你已经连续签到 {{ getStreakDays() }} 天啦！
           </div>
         </div>
@@ -143,6 +160,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useIntersectionObserver } from '@vueuse/core'
+import { ElMessage } from 'element-plus'
 import api from '@/api'
 import { useUserStore } from '@/stores/user'
 
@@ -160,6 +178,7 @@ const loadMoreTrigger = ref(null)
 
 const hotTopics = ref([])
 const creditUsers = ref([])
+const announcements = ref([])
 const signInStatus = ref({
   signed_today: false,
   last_sign_at: null,
@@ -256,6 +275,15 @@ async function loadCreditUsers() {
   }
 }
 
+async function loadAnnouncements() {
+  try {
+    const res = await api.get('/announcements')
+    announcements.value = res || []
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 function loadMore() {
   if (!loading.value && !noMore.value) {
     page.value++
@@ -282,7 +310,7 @@ watch([() => route.query.forum, () => route.query.tag], () => {
 
 async function toggleLike(topic) {
   if (!userStore.isLoggedIn) {
-    Swal.fire('提示', '请先登录', 'warning')
+    ElMessage.warning('请先登录')
     return
   }
 
@@ -300,7 +328,7 @@ async function toggleLike(topic) {
     topic.liked = !topic.liked
   } catch (e) {
     console.error(e)
-    Swal.fire('错误', '操作失败', 'error')
+    ElMessage.error('操作失败')
   }
 }
 
@@ -321,11 +349,7 @@ async function handleSignIn() {
   signInLoading.value = true
   try {
     const res = await api.post('/user/signin')
-    Swal.fire({
-      icon: 'success',
-      title: '签到成功',
-      text: `获得 ${res.credits} 积分，总积分 ${res.total_credits}`
-    })
+    ElMessage.success(`签到成功，获得 ${res.credits} 积分，总积分 ${res.total_credits}`)
     signInStatus.value.signed_today = true
     signInStatus.value.last_sign_at = new Date().toISOString()
     signInStatus.value.credits = res.total_credits
@@ -334,7 +358,7 @@ async function handleSignIn() {
     }
   } catch (e) {
     console.error(e)
-    Swal.fire('错误', e.response?.data?.message || '签到失败', 'error')
+    ElMessage.error(e.response?.data?.message || '签到失败')
   } finally {
     signInLoading.value = false
   }
@@ -342,29 +366,38 @@ async function handleSignIn() {
 
 function getStreakDays() {
   if (!signInStatus.value.last_sign_at) return 0
-  const today = new Date().toISOString().split('T')[0]
-  const lastSign = new Date(signInStatus.value.last_sign_at).toISOString().split('T')[0]
   
-  if (today === lastSign || 
-      (new Date(today).getTime() - new Date(lastSign).getTime()) <= 86400000) {
-    return 2
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  const lastSignDate = new Date(signInStatus.value.last_sign_at)
+  lastSignDate.setHours(0, 0, 0, 0)
+  
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  
+  if (lastSignDate.getTime() === today.getTime() || lastSignDate.getTime() === yesterday.getTime()) {
+    return 1
   }
   return 1
 }
 
 async function checkTopicLikes() {
   if (!userStore.isLoggedIn || topics.value.length === 0) return
-  
-  for (const topic of topics.value) {
-    try {
-      const res = await api.post('/likes/check', {
-        target_type: 'topic',
-        target_id: topic.id
-      })
-      topic.liked = res.liked
-    } catch (e) {
-      console.error(e)
+
+  try {
+    const topicIds = topics.value.map(t => t.id)
+    const res = await api.post('/likes/check', {
+      target_type: 'topic',
+      target_ids: topicIds
+    })
+    if (res.liked_map) {
+      for (const topic of topics.value) {
+        topic.liked = res.liked_map[topic.id] || false
+      }
     }
+  } catch (e) {
+    console.error(e)
   }
 }
 
@@ -373,17 +406,21 @@ onMounted(() => {
   loadTopics()
   loadHotTopics()
   loadCreditUsers()
+  loadAnnouncements()
   if (userStore.isLoggedIn) {
     loadSignInStatus()
   }
 })
 
-watch(() => topics.value, () => {
-  checkTopicLikes()
-}, { deep: true })
+// 监听 topics 加载完成后检查点赞状态（避免 deep watch 导致的无限循环）
+watch(() => topics.value.length, (newLen) => {
+  if (newLen > 0) {
+    checkTopicLikes()
+  }
+})
 
-watch(() => userStore.isLoggedIn, () => {
-  if (userStore.isLoggedIn) {
+watch(() => userStore.isLoggedIn, (isLoggedIn) => {
+  if (isLoggedIn) {
     loadSignInStatus()
     checkTopicLikes()
   }

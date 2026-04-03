@@ -102,9 +102,9 @@ async function loadSettings() {
       allow_register: config.allow_register !== 'false',
       allow_post: config.allow_post !== 'false',
       allow_comment: config.allow_comment !== 'false',
-      credits_topic: parseInt(config.credits_topic) || 10,
-      credits_post: parseInt(config.credits_post) || 5,
-      credits_signin: parseInt(config.credits_signin) || 10
+      credits_topic: parseInt(config.credit_topic) || 10,
+      credits_post: parseInt(config.credit_post) || 5,
+      credits_signin: parseInt(config.credit_signin) || 10
     }
   } catch (e) {
     console.error('加载设置失败', e)
@@ -122,9 +122,9 @@ async function saveSettings() {
       allow_register: settings.value.allow_register ? 'true' : 'false',
       allow_post: settings.value.allow_post ? 'true' : 'false',
       allow_comment: settings.value.allow_comment ? 'true' : 'false',
-      credits_topic: String(settings.value.credits_topic),
-      credits_post: String(settings.value.credits_post),
-      credits_signin: String(settings.value.credits_signin)
+      credit_topic: String(settings.value.credits_topic),
+      credit_post: String(settings.value.credits_post),
+      credit_signin: String(settings.value.credits_signin)
     })
     ElMessage.success('设置已保存')
   } catch (e) {

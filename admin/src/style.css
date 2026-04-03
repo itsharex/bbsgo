@@ -59,3 +59,20 @@ body {
   overflow-y: auto;
 }
 
+/* 1. 隐藏 Chrome/Edge/Safari 等 WebKit 内核浏览器的滚动条 */
+*::-webkit-scrollbar {
+  display: none !important;
+  /* 直接隐藏滚动条元素 */
+  width: 0 !important;
+  /* 兜底：宽度设为0 */
+  height: 0 !important;
+  /* 兜底：高度设为0 */
+}
+
+/* 2. 隐藏 Firefox 浏览器的滚动条（Firefox 专用属性） */
+* {
+  scrollbar-width: none !important;
+  /* 隐藏滚动条，保留滚动功能 */
+  -ms-overflow-style: none !important;
+  /* 兼容 IE/Edge 旧版本 */
+}
