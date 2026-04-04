@@ -39,5 +39,42 @@ func AutoMigrate() {
 	if err != nil {
 		log.Fatalf("failed to migrate database: %v", err)
 	}
+
+	// 创建复合索引优化查询性能
+	createCompositeIndexes()
+
 	log.Println("database migrated successfully")
+}
+
+// createCompositeIndexes 创建复合索引优化查询性能
+func createCompositeIndexes() {
+	// Topic 表索引
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_topic_forum_created ON topics(forum_id, created_at DESC)")
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_topic_pinned_hot ON topics(is_pinned DESC, (like_count + reply_count * 2) DESC)")
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_topic_pinned_reply ON topics(is_pinned DESC, last_reply_at DESC)")
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_topic_user_created ON topics(user_id, created_at DESC)")
+
+	// Comment 表索引
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_comment_topic_created ON comments(topic_id, created_at DESC)")
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_comment_user_created ON comments(user_id, created_at DESC)")
+
+	// TopicTags 表索引（用于标签筛选话题）
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_topic_tags_tag ON topic_tags(tag_id)")
+
+	// Like 表索引
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_like_user_topic ON likes(user_id, topic_id)")
+
+	// Favorite 表索引
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_favorite_user_topic ON favorites(user_id, topic_id)")
+
+	// Follow 表索引
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_follow_user ON follows(user_id)")
+
+	// UserOperation 表索引（用于防刷检查）
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_user_op_user_type ON user_operations(user_id, operation_type)")
+
+	// Notification 表索引
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_notification_user_read ON notifications(user_id, is_read)")
+
+	log.Println("composite indexes created successfully")
 }

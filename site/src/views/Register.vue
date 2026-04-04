@@ -73,6 +73,7 @@ import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import { useConfigStore } from '@/stores/config'
 import { ElMessage } from 'element-plus'
+import { getErrorI18nKey } from '@/utils/error'
 import api from '@/api'
 
 const { t } = useI18n()
@@ -177,6 +178,10 @@ async function handleRegister() {
     router.push('/')
   } catch (e) {
     // 验证失败或注册失败
+    if (e.code) {
+      const errorKey = getErrorI18nKey(e.code)
+      ElMessage.error(t(errorKey))
+    }
   } finally {
     loading.value = false
   }

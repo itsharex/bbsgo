@@ -56,7 +56,7 @@ export default {
     signInFailed: 'Check-in failed',
     signInDays: 'You have checked in for {days} consecutive days!',
     signInIng: 'Checking in...',
-    hotPosts: 'Hot Posts',
+    hotPosts: 'Hot Topics',
     activeUsers: 'Active Users',
     views: 'Views',
     video: 'Video',

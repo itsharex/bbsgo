@@ -222,6 +222,7 @@ import { stripMarkdown, extractFirstImage, hasVideo } from '@/utils/markdown'
 import { getDisplayBadges } from '@/utils/badge'
 import { getErrorI18nKey } from '@/utils/error'
 import SvgBadge from '@/components/SvgBadge.vue'
+import { homeApi } from '@/api'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -279,6 +280,33 @@ async function loadTags() {
   } catch (e) {
     console.error(e)
     ElMessage.error(t(getErrorI18nKey(e?.code)))
+  }
+}
+
+// 使用首页聚合接口加载数据（无筛选条件时使用）
+async function loadHomePage() {
+  loading.value = true
+  try {
+    const res = await homeApi.getHomePage()
+    // 设置标签
+    tags.value = res.tags || []
+    // 设置公告
+    announcements.value = res.announcements || []
+    // 设置话题列表
+    topics.value = res.topics?.list || []
+    total.value = res.topics?.total || 0
+    if (topics.value.length >= total.value) {
+      noMore.value = true
+    }
+    // 设置侧边栏热门话题
+    hotTopics.value = (res.topics?.list || []).slice(0, 5)
+    // 设置积分排行
+    loadCreditUsers()
+  } catch (e) {
+    console.error(e)
+    ElMessage.error(t(getErrorI18nKey(e?.code)))
+  } finally {
+    loading.value = false
   }
 }
 
@@ -376,7 +404,12 @@ watch([() => route.query.forum, () => route.query.tag], () => {
   page.value = 1
   noMore.value = false
   topics.value = []
+  // 筛选变化时重新加载侧边栏和话题
+  loadTags()
   loadTopics()
+  loadHotTopics()
+  loadCreditUsers()
+  loadAnnouncements()
 })
 
 async function toggleLike(topic) {
@@ -475,11 +508,17 @@ async function checkTopicLikes() {
 }
 
 onMounted(() => {
-  loadTags()
-  loadTopics()
-  loadHotTopics()
-  loadCreditUsers()
-  loadAnnouncements()
+  // 无筛选条件时使用首页聚合接口
+  if (!currentForum.value && !currentTagId.value) {
+    loadHomePage()
+  } else {
+    // 有筛选条件时使用单独接口
+    loadTags()
+    loadTopics()
+    loadHotTopics()
+    loadCreditUsers()
+    loadAnnouncements()
+  }
   if (userStore.isLoggedIn) {
     loadSignInStatus()
   }

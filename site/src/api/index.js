@@ -75,4 +75,11 @@ export const reportApi = {
   getMyReports: () => api.get('/user/reports'),
 }
 
+export const homeApi = {
+  // 获取首页聚合数据
+  getHomePage: (params) => api.get('/homepage', { params }),
+  // 获取筛选条件下的首页数据
+  getHomePageWithQuery: (params) => api.get('/homepage/query', { params }),
+}
+
 export default api;

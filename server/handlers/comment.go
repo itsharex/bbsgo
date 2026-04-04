@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bbsgo/antispam"
+	"bbsgo/cache"
 	"bbsgo/database"
 	"bbsgo/errors"
 	"bbsgo/middleware"
@@ -264,6 +265,9 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 	log.Printf("create comment: comment created successfully, id: %d, topicID: %d, userID: %d", comment.ID, topicID, userID)
 	errors.Success(w, comment)
 
+	// 清除首页缓存
+	cache.HomePageCache.InvalidateTopics()
+
 	// 检查并授予勋章
 	go commentBadgeService.CheckAndAwardBadges(userID)
 }
@@ -389,6 +393,9 @@ func DeleteComment(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("delete comment: comment deleted successfully, id: %d, userID: %d", id, userID)
 	errors.Success(w, nil)
+
+	// 清除首页缓存
+	cache.HomePageCache.InvalidateTopics()
 }
 
 // PinComment 置顶/取消置顶评论处理器

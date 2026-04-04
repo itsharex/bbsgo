@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bbsgo/antispam"
+	"bbsgo/cache"
 	"bbsgo/database"
 	"bbsgo/errors"
 	"bbsgo/middleware"
@@ -9,6 +10,7 @@ import (
 	"bbsgo/services"
 	"bbsgo/utils"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -35,6 +37,24 @@ func GetTopics(w http.ResponseWriter, r *http.Request) {
 		pageSize = 20
 	}
 
+	// 构建缓存 key（基于查询参数）
+	cacheKey := cache.BuildKey(cache.TopicListPrefix, fmt.Sprintf("%d:%d:%s:%d:%d", forumID, tagID, sort, page, pageSize))
+
+	// 尝试从缓存获取
+	data, err := cache.GetData(cacheKey, func() (interface{}, error) {
+		return fetchTopics(forumID, tagID, sort, page, pageSize)
+	}, cache.TopicListExpire)
+
+	if err != nil {
+		errors.Error(w, errors.CodeServerInternal, "")
+		return
+	}
+
+	errors.Success(w, data)
+}
+
+// fetchTopics 获取话题列表核心逻辑
+func fetchTopics(forumID, tagID int, sort string, page, pageSize int) (map[string]interface{}, error) {
 	var topics []models.Topic
 	var total int64
 
@@ -79,8 +99,7 @@ func GetTopics(w http.ResponseWriter, r *http.Request) {
 	// 执行查询
 	if err := dbQuery.Offset(offset).Limit(pageSize).Find(&topics).Error; err != nil {
 		log.Printf("get topics: failed to query topics, error: %v", err)
-		errors.Error(w, errors.CodeServerInternal, "")
-		return
+		return nil, err
 	}
 
 	// 给每个 topic 添加 has_poll 字段
@@ -138,12 +157,12 @@ func GetTopics(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	errors.Success(w, map[string]interface{}{
+	return map[string]interface{}{
 		"list":      response,
 		"total":     total,
 		"page":      page,
 		"page_size": pageSize,
-	})
+	}, nil
 }
 
 // GetTopic 获取单个话题详情处理器
@@ -151,17 +170,29 @@ func GetTopic(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
 
-	var topic models.Topic
-	if err := database.DB.Preload("User").Preload("Forum").First(&topic, id).Error; err != nil {
+	// 尝试从缓存获取
+	cacheKey := cache.TopicCache.BuildKey(id)
+	data, err := cache.GetData(cacheKey, func() (interface{}, error) {
+		var topic models.Topic
+		if err := database.DB.Preload("User").Preload("Forum").First(&topic, id).Error; err != nil {
+			return nil, err
+		}
+		return topic, nil
+	}, cache.TopicExpire)
+
+	if err != nil {
 		log.Printf("get topic: topic not found, id: %d, error: %v", id, err)
 		errors.Error(w, errors.CodeTopicNotFound, "")
 		return
 	}
 
-	// 增加浏览数
-	if err := database.DB.Model(&topic).UpdateColumn("view_count", topic.ViewCount+1).Error; err != nil {
-		log.Printf("get topic: failed to increment view count, id: %d, error: %v", id, err)
-	}
+	topic := data.(models.Topic)
+
+	// 增加浏览数（异步更新）
+	go func(topicID uint) {
+		database.DB.Model(&models.Topic{}).Where("id = ?", topicID).
+			UpdateColumn("view_count", database.DB.Raw("view_count + 1"))
+	}(topic.ID)
 
 	errors.Success(w, topic)
 }
@@ -333,6 +364,9 @@ func CreateTopic(w http.ResponseWriter, r *http.Request) {
 	errors.Success(w, topic)
 	log.Printf("create topic: [DEBUG] after Success")
 
+	// 清除首页缓存
+	cache.HomePageCache.InvalidateTopics()
+
 	// 检查并授予勋章
 	go badgeService.CheckAndAwardBadges(userID)
 }
@@ -448,6 +482,9 @@ func DeleteTopic(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("delete topic: topic deleted successfully, id: %d, userID: %d", id, userID)
 	errors.Success(w, nil)
+
+	// 清除首页缓存
+	cache.HomePageCache.InvalidateTopics()
 }
 
 // AdminPinTopic 管理员置顶/取消置顶话题处理器
@@ -486,6 +523,9 @@ func AdminPinTopic(w http.ResponseWriter, r *http.Request) {
 		"id":        topic.ID,
 		"is_pinned": req.Pinned,
 	})
+
+	// 清除首页缓存
+	cache.HomePageCache.InvalidateTopics()
 }
 
 // UserPinTopic 作者置顶/取消置顶话题处理器

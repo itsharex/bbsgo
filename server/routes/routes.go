@@ -43,6 +43,7 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/tags/{id}", handlers.GetTag).Methods("GET")                      // 获取标签详情
 	api.HandleFunc("/announcements", handlers.GetAnnouncements).Methods("GET")        // 获取公告列表
 	api.HandleFunc("/users/credit", handlers.GetCreditUsers).Methods("GET")           // 获取积分排行
+	api.HandleFunc("/homepage", handlers.GetHomePage).Methods("GET")                 // 获取首页聚合数据
 	api.HandleFunc("/users/search", handlers.SearchUsers).Methods("GET")              // 搜索用户
 	api.HandleFunc("/users/{id}", handlers.GetUser).Methods("GET")                    // 获取用户公开信息
 	api.HandleFunc("/users/{id}/stats", handlers.GetUserStats).Methods("GET")         // 获取用户统计
