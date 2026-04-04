@@ -155,7 +155,11 @@ async function sendCode() {
       }
     }, 1000)
   } catch (e) {
-    ElMessage.error(t('register.codeSendFailed'))
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    } else {
+      ElMessage.error(t('register.codeSendFailed'))
+    }
   }
 }
 

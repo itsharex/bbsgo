@@ -97,6 +97,7 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
+import { getErrorI18nKey } from '@/utils/error'
 import api from '@/api'
 import SvgBadge from '@/components/SvgBadge.vue'
 
@@ -145,6 +146,9 @@ async function loadUser() {
     user.value = await api.get(`/users/${userId}`)
   } catch (e) {
     console.error(t('userBadges.loadFailed'), e)
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    }
   }
 }
 
@@ -154,7 +158,11 @@ async function loadBadgeProgress() {
     badgeProgress.value = await api.get('/badges/progress')
   } catch (e) {
     console.error(t('userBadges.loadFailed'), e)
-    ElMessage.error(t('userBadges.loadFailed'))
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    } else {
+      ElMessage.error(t('userBadges.loadFailed'))
+    }
   } finally {
     loading.value = false
   }

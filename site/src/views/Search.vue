@@ -27,6 +27,8 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { ElMessage } from 'element-plus'
+import { getErrorI18nKey } from '@/utils/error'
 import api from '@/api'
 import { stripMarkdown } from '@/utils/markdown'
 
@@ -62,6 +64,9 @@ async function searchTopics() {
   } catch (e) {
     console.error(t('search.noResults'), e)
     topics.value = []
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    }
   } finally {
     loading.value = false
   }

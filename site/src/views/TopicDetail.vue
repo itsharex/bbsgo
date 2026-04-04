@@ -477,7 +477,11 @@ async function toggleCommentBest(post) {
   } catch (e) {
     if (e !== 'cancel') {
       console.error('操作失败', e)
-      ElMessage.error(t('common.operationFailed'))
+      if (e.code) {
+        ElMessage.error(t(getErrorI18nKey(e.code)))
+      } else {
+        ElMessage.error(t('common.operationFailed'))
+      }
     }
   }
 }
@@ -531,7 +535,11 @@ async function toggleCommentPin(post) {
   } catch (e) {
     if (e !== 'cancel') {
       console.error('操作失败', e)
-      ElMessage.error(t('common.operationFailed'))
+      if (e.code) {
+        ElMessage.error(t(getErrorI18nKey(e.code)))
+      } else {
+        ElMessage.error(t('common.operationFailed'))
+      }
     }
   }
 }
@@ -571,7 +579,11 @@ async function submitReport() {
     closeReportDialog()
   } catch (e) {
     console.error('举报失败', e)
-    ElMessage.error(e.response?.data?.message || t('topic.reportFailed'))
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    } else {
+      ElMessage.error(t('topic.reportFailed'))
+    }
   } finally {
     reportSubmitting.value = false
   }
@@ -594,7 +606,11 @@ async function handleDeletePost(post) {
     ElMessage.success(t('topic.commentDeleted'))
   } catch (e) {
     console.error('删除失败', e)
-    ElMessage.error(e.response?.data?.message || t('common.operationFailed'))
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    } else {
+      ElMessage.error(t('common.operationFailed'))
+    }
   }
 }
 
@@ -668,7 +684,11 @@ async function handleDeleteTopic() {
     window.location.href = '/'
   } catch (e) {
     console.error('删除失败', e)
-    ElMessage.error(e.response?.data?.message || t('common.operationFailed'))
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    } else {
+      ElMessage.error(t('common.operationFailed'))
+    }
   }
 }
 
@@ -700,7 +720,11 @@ async function submitVote() {
     ElMessage.success(t('topic.voteSuccess'))
   } catch (e) {
     console.error(e)
-    ElMessage.error(e.response?.data?.message || t('topic.voteFailed'))
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    } else {
+      ElMessage.error(t('topic.voteFailed'))
+    }
   } finally {
     submittingVote.value = false
   }
@@ -739,6 +763,9 @@ async function loadTopic() {
     setupMediaViewers()
   } catch (e) {
     console.error(e)
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    }
   }
 }
 
@@ -749,6 +776,9 @@ async function loadAuthorBadges() {
     authorBadges.value = res || []
   } catch (e) {
     console.error('加载作者勋章失败', e)
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    }
   }
 }
 
@@ -761,6 +791,9 @@ async function checkLikeStatus() {
     liked.value = res.liked
   } catch (e) {
     console.error(e)
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    }
   }
 }
 
@@ -772,6 +805,9 @@ async function checkFavoriteStatus() {
     favorited.value = res.favorited
   } catch (e) {
     console.error(e)
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    }
   }
 }
 
@@ -795,7 +831,11 @@ async function toggleLike() {
     liked.value = !liked.value
   } catch (e) {
     console.error(e)
-    ElMessage.error(t('common.operationFailed'))
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    } else {
+      ElMessage.error(t('common.operationFailed'))
+    }
   }
 }
 
@@ -816,7 +856,11 @@ async function toggleFavorite() {
     favorited.value = !favorited.value
   } catch (e) {
     console.error(e)
-    ElMessage.error(t('common.operationFailed'))
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    } else {
+      ElMessage.error(t('common.operationFailed'))
+    }
   }
 }
 
@@ -949,7 +993,11 @@ async function togglePostLike(post) {
     postLikes.value[post.id] = !getPostLiked(post.id)
   } catch (e) {
     console.error(e)
-    ElMessage.error(t('common.operationFailed'))
+    if (e.code) {
+      ElMessage.error(t(getErrorI18nKey(e.code)))
+    } else {
+      ElMessage.error(t('common.operationFailed'))
+    }
   }
 }
 

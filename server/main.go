@@ -4,59 +4,51 @@ import (
 	"bbsgo/cache"
 	"bbsgo/config"
 	"bbsgo/database"
+	"bbsgo/fileserver"
 	"bbsgo/routes"
 	"bbsgo/seed"
 	"log"
 	"net/http"
-	"path/filepath"
 
 	"github.com/gorilla/mux"
 )
 
-// main 程序入口
-// 初始化数据库、缓存、路由并启动 HTTP 服务器
 func main() {
-	// 初始化数据库连接
 	database.InitDB()
-
-	// 执行数据库迁移
 	database.AutoMigrate()
-
-	// 初始化缓存
 	cache.Init()
-
-	// 初始化配置缓存
 	config.InitConfigCache()
-
-	// 初始化默认数据（版块、配置、标签、管理员、勋章等）
 	seed.Init()
 
-	// 配置路由
-	r := routes.SetupRoutes()
+	r := mux.NewRouter()
 
-	// 配置静态文件服务（处理本地存储的文件访问）
-	configureStaticFiles(r)
+	// API 路由 - 最高优先级
+	apiRouter := r.PathPrefix("/api/v1").Subrouter()
+	routes.SetupAPIRoutes(apiRouter)
 
-	// 启动 HTTP 服务器
-	log.Printf("server starting on :8080...")
-	if err := http.ListenAndServe(":8080", r); err != nil {
-		log.Fatalf("server failed to start: %v", err)
-	}
-}
+	// 管理后台 - /console 下的所有请求都由 admin 处理（包括 assets）
+	consoleRouter := r.PathPrefix("/console").Subrouter()
+	// /console 重定向
+	consoleRouter.HandleFunc("", func(w http.ResponseWriter, req *http.Request) {
+		http.Redirect(w, req, "/console/", http.StatusFound)
+	})
+	// /console/ 下的所有路径都由 admin 的 SPA 处理
+	consoleRouter.PathPrefix("/").Handler(http.HandlerFunc(fileserver.ServeAdmin))
 
-// configureStaticFiles 配置静态文件服务
-// 处理本地存储上传文件的访问
-func configureStaticFiles(r *mux.Router) {
-	staticURL := "/uploads"
+	// 主站 - 所有其他路径（SPA）
+	r.PathPrefix("/").Handler(http.HandlerFunc(fileserver.ServeSite))
 
-	// 使用相对路径，直接返回文件内容
-	r.HandleFunc(staticURL+"/{file:.*}", func(w http.ResponseWriter, req *http.Request) {
+	// 上传文件 - 优先处理
+	r.HandleFunc("/uploads/{file:.*}", func(w http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
 		fp := vars["file"]
-		fullPath := filepath.Join(".", "uploads", fp)
+		fullPath := "./uploads/" + fp
 		log.Printf("[static] serving file: %s", fullPath)
 		http.ServeFile(w, req, fullPath)
 	})
 
-	log.Printf("[static] route registered: %s/*", staticURL)
+	log.Printf("server starting on :8080...")
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		log.Fatalf("server failed to start: %v", err)
+	}
 }

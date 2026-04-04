@@ -170,6 +170,7 @@ import { ref, onMounted, nextTick, onActivated } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
+import { getErrorI18nKey } from '@/utils/error'
 import api from '@/api'
 import { getUserAvatar, getUserDisplayName } from '@/utils/user'
 

@@ -811,7 +811,11 @@ async function handleSubmit() {
         await pollApi.createPoll(pollData)
       } catch (pollError) {
         console.error('创建投票失败:', pollError)
-        ElMessage.warning(t('topic.createPollFailed'))
+        if (pollError.code) {
+          ElMessage.error(t(getErrorI18nKey(pollError.code)))
+        } else {
+          ElMessage.warning(t('topic.createPollFailed'))
+        }
       }
     }
 
