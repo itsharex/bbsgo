@@ -11,111 +11,111 @@
       <!-- 菜单分组 -->
       <nav class="menu-nav">
         <div class="menu-group">
-          <span class="menu-label">主菜单</span>
+          <span class="menu-label">{{ t('layout.mainMenu') }}</span>
           <router-link to="/console/dashboard" class="menu-item" :class="{ active: route.name === 'Dashboard' }">
             <span class="menu-icon blue">
               <LayoutDashboard :size="18" />
             </span>
-            <span class="menu-text">仪表盘</span>
+            <span class="menu-text">{{ t('menu.dashboard') }}</span>
           </router-link>
-          <router-link to="users" class="menu-item" :class="{ active: route.name === 'Users' }">
+          <router-link to="/console/users" class="menu-item" :class="{ active: route.name === 'Users' }">
             <span class="menu-icon purple">
               <Users :size="18" />
             </span>
-            <span class="menu-text">用户管理</span>
+            <span class="menu-text">{{ t('menu.users') }}</span>
           </router-link>
-          <router-link to="forums" class="menu-item" :class="{ active: route.name === 'Forums' }">
+          <router-link to="/console/forums" class="menu-item" :class="{ active: route.name === 'Forums' }">
             <span class="menu-icon pink">
               <FolderOpen :size="18" />
             </span>
-            <span class="menu-text">版块管理</span>
+            <span class="menu-text">{{ t('menu.forums') }}</span>
           </router-link>
-          <router-link to="topics" class="menu-item" :class="{ active: route.name === 'Topics' }">
+          <router-link to="/console/topics" class="menu-item" :class="{ active: route.name === 'Topics' }">
             <span class="menu-icon green">
               <FileText :size="18" />
             </span>
-            <span class="menu-text">帖子管理</span>
+            <span class="menu-text">{{ t('menu.topics') }}</span>
           </router-link>
-          <router-link to="comments" class="menu-item" :class="{ active: route.name === 'Comments' }">
+          <router-link to="/console/comments" class="menu-item" :class="{ active: route.name === 'Comments' }">
             <span class="menu-icon cyan">
               <MessageSquare :size="18" />
             </span>
-            <span class="menu-text">评论管理</span>
+            <span class="menu-text">{{ t('menu.comments') }}</span>
           </router-link>
-          <router-link to="tags" class="menu-item" :class="{ active: route.name === 'Tags' }">
+          <router-link to="/console/tags" class="menu-item" :class="{ active: route.name === 'Tags' }">
             <span class="menu-icon orange">
               <Tag :size="18" />
             </span>
-            <span class="menu-text">话题管理</span>
+            <span class="menu-text">{{ t('menu.tags') }}</span>
           </router-link>
-          <router-link to="polls" class="menu-item" :class="{ active: route.name === 'Polls' }">
+          <router-link to="/console/polls" class="menu-item" :class="{ active: route.name === 'Polls' }">
             <span class="menu-icon indigo">
               <Vote :size="18" />
             </span>
-            <span class="menu-text">投票管理</span>
+            <span class="menu-text">{{ t('menu.polls') }}</span>
           </router-link>
-          <router-link to="badges" class="menu-item" :class="{ active: route.name === 'Badges' }">
+          <router-link to="/console/badges" class="menu-item" :class="{ active: route.name === 'Badges' }">
             <span class="menu-icon yellow">
               <Award :size="18" />
             </span>
-            <span class="menu-text">勋章管理</span>
+            <span class="menu-text">{{ t('menu.badges') }}</span>
           </router-link>
-          <router-link to="follows" class="menu-item" :class="{ active: route.name === 'Follows' }">
+          <router-link to="/console/follows" class="menu-item" :class="{ active: route.name === 'Follows' }">
             <span class="menu-icon pink">
               <Heart :size="18" />
             </span>
-            <span class="menu-text">关注管理</span>
+            <span class="menu-text">{{ t('menu.follows') }}</span>
           </router-link>
-          <router-link to="antispam" class="menu-item" :class="{ active: route.name === 'AntiSpam' }">
+          <router-link to="/console/antispam" class="menu-item" :class="{ active: route.name === 'AntiSpam' }">
             <span class="menu-icon red">
               <Shield :size="18" />
             </span>
-            <span class="menu-text">防刷配置</span>
+            <span class="menu-text">{{ t('menu.antispam') }}</span>
           </router-link>
         </div>
 
         <div class="menu-group">
-          <span class="menu-label">系统</span>
-          <router-link to="reports" class="menu-item" :class="{ active: route.name === 'Reports' }">
+          <span class="menu-label">{{ t('menu.system') }}</span>
+          <router-link to="/console/reports" class="menu-item" :class="{ active: route.name === 'Reports' }">
             <span class="menu-icon red">
               <AlertTriangle :size="18" />
             </span>
-            <span class="menu-text">举报管理</span>
+            <span class="menu-text">{{ t('menu.reports') }}</span>
             <span v-if="reportCount > 0" class="badge badge-red">{{ reportCount }}</span>
           </router-link>
-          <router-link to="announcements" class="menu-item" :class="{ active: route.name === 'Announcements' }">
+          <router-link to="/console/announcements" class="menu-item" :class="{ active: route.name === 'Announcements' }">
             <span class="menu-icon yellow">
               <Bell :size="18" />
             </span>
-            <span class="menu-text">公告管理</span>
+            <span class="menu-text">{{ t('menu.announcements') }}</span>
           </router-link>
-          <router-link to="config" class="menu-item" :class="{ active: route.name === 'Config' }">
+          <router-link to="/console/config" class="menu-item" :class="{ active: route.name === 'Config' }">
             <span class="menu-icon blue">
               <Settings :size="18" />
             </span>
-            <span class="menu-text">网站配置</span>
+            <span class="menu-text">{{ t('menu.config') }}</span>
           </router-link>
-          <router-link to="settings" class="menu-item" :class="{ active: route.name === 'Settings' }">
+          <router-link to="/console/settings" class="menu-item" :class="{ active: route.name === 'Settings' }">
             <span class="menu-icon gray">
               <Sliders :size="18" />
             </span>
-            <span class="menu-text">系统设置</span>
+            <span class="menu-text">{{ t('menu.settings') }}</span>
           </router-link>
         </div>
 
         <div class="menu-group">
-          <span class="menu-label">账户</span>
-          <router-link to="change-password" class="menu-item" :class="{ active: route.name === 'ChangePassword' }">
+          <span class="menu-label">{{ t('menu.account') }}</span>
+          <router-link to="/console/change-password" class="menu-item" :class="{ active: route.name === 'ChangePassword' }">
             <span class="menu-icon teal">
               <Key :size="18" />
             </span>
-            <span class="menu-text">修改密码</span>
+            <span class="menu-text">{{ t('menu.changePassword') }}</span>
           </router-link>
           <a @click="handleLogout" class="menu-item">
             <span class="menu-icon red">
               <LogOut :size="18" />
             </span>
-            <span class="menu-text">退出登录</span>
+            <span class="menu-text">{{ t('common.logout') }}</span>
           </a>
         </div>
       </nav>
@@ -133,6 +133,24 @@
             <Calendar :size="14" />
             {{ currentDate }}
           </span>
+          <div class="language-switcher">
+            <el-dropdown @command="switchLanguage">
+              <span class="language-btn">
+                <Globe :size="16" />
+                <span>{{ locale === 'zh' ? t('common.chinese') : t('common.english') }}</span>
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item :command="'zh'" :class="{ 'is-active': locale === 'zh' }">
+                    {{ t('common.chinese') }}
+                  </el-dropdown-item>
+                  <el-dropdown-item :command="'en'" :class="{ 'is-active': locale === 'en' }">
+                    English
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>          
           <div class="user-info-header">
             <div class="user-avatar-header">
               <User :size="16" />
@@ -156,13 +174,15 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAdminStore } from '@/stores/admin'
 import api from '@/api'
 import {
   LayoutDashboard, User, Users, FolderOpen, FileText, MessageSquare,
-  Tag, AlertTriangle, Bell, Settings, Sliders, Key, LogOut, Calendar, Vote, Award, Heart, Star, Shield
+  Tag, AlertTriangle, Bell, Settings, Sliders, Key, LogOut, Calendar, Vote, Award, Heart, Star, Shield, Globe
 } from 'lucide-vue-next'
 
+const { t, locale } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const adminStore = useAdminStore()
@@ -170,12 +190,18 @@ const adminStore = useAdminStore()
 const reportCount = ref(0)
 
 function getRoleName(role) {
-  const roles = { 0: '普通用户', 1: '版主', 2: '管理员' }
-  return roles[role] || '未知'
+  const roles = { 0: t('user.roleOptions.0'), 1: t('user.roleOptions.1'), 2: t('user.roleOptions.2') }
+  return roles[role] || t('common.noData')
+}
+
+function switchLanguage(lang) {
+  locale.value = lang
+  localStorage.setItem('admin_locale', lang)
 }
 
 const currentDate = computed(() => {
-  return new Date().toLocaleDateString('zh-CN', {
+  const dateLocale = locale.value === 'zh' ? 'zh-CN' : 'en-US'
+  return new Date().toLocaleDateString(dateLocale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -185,22 +211,22 @@ const currentDate = computed(() => {
 
 const pageTitle = computed(() => {
   const titles = {
-    'Dashboard': '仪表盘',
-    'Users': '用户管理',
-    'Forums': '版块管理',
-    'Topics': '帖子管理',
-    'Posts': '评论管理',
-    'Tags': '话题管理',
-    'Polls': '投票管理',
-    'Reports': '举报管理',
-    'Announcements': '公告管理',
-    'Badges': '勋章管理',
-    'Follows': '关注管理',
-    'Config': '网站配置',
-    'Settings': '系统设置',
-    'ChangePassword': '修改密码'
+    'Dashboard': t('menu.dashboard'),
+    'Users': t('menu.users'),
+    'Forums': t('menu.forums'),
+    'Topics': t('menu.topics'),
+    'Posts': t('menu.comments'),
+    'Tags': t('menu.tags'),
+    'Polls': t('menu.polls'),
+    'Reports': t('menu.reports'),
+    'Announcements': t('menu.announcements'),
+    'Badges': t('menu.badges'),
+    'Follows': t('menu.follows'),
+    'Config': t('menu.config'),
+    'Settings': t('menu.settings'),
+    'ChangePassword': t('menu.changePassword')
   }
-  return titles[route.name] || '管理后台'
+  return titles[route.name] || t('layout.adminPanel')
 })
 
 async function loadReportCount() {
@@ -208,7 +234,7 @@ async function loadReportCount() {
     const res = await api.get('/admin/reports', { params: { status: 0 } })
     reportCount.value = Array.isArray(res) ? res.length : 0
   } catch (e) {
-    console.error('加载举报数量失败', e)
+    console.error('Failed to load report count', e)
   }
 }
 
@@ -231,7 +257,7 @@ onMounted(() => {
 
 /* 侧边栏 */
 .sidebar {
-  width: 200px;
+  width: 210px;
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
   color: #fff;
   display: flex;
@@ -442,5 +468,33 @@ onMounted(() => {
   flex: 1;
   padding: 24px;
   overflow-x: auto;
+}
+
+.language-switcher {
+  display: flex;
+  align-items: center;
+}
+
+.language-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #6b7280;
+  transition: all 0.2s;
+}
+
+.language-btn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+:deep(.el-dropdown-menu__item.is-active) {
+  color: #409eff;
+  font-weight: 600;
 }
 </style>

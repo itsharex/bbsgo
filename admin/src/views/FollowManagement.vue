@@ -1,9 +1,9 @@
 <template>
   <div class="follow-management">
     <div class="header">
-      <h2>关注管理</h2>
+      <h2>{{ t('follow.title') }}</h2>
       <div class="search-box">
-        <el-input v-model="searchKeyword" placeholder="搜索用户" @keyup.enter="handleSearch" clearable>
+        <el-input v-model="searchKeyword" :placeholder="t('follow.searchPlaceholder')" @keyup.enter="handleSearch" clearable>
           <template #prefix>
             <el-icon><Search /></el-icon>
           </template>
@@ -12,10 +12,10 @@
     </div>
 
     <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-      <el-tab-pane label="关注列表" name="follows">
+      <el-tab-pane :label="t('follow.followList')" name="follows">
         <el-table :data="follows" v-loading="loading" stripe>
           <el-table-column prop="id" label="ID" width="80" />
-          <el-table-column label="用户" width="200">
+          <el-table-column :label="t('follow.user')" width="200">
             <template #default="{ row }">
               <div class="user-info">
                 <img :src="getUserAvatar(row.user)" class="avatar" />
@@ -26,7 +26,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="关注对象" width="200">
+          <el-table-column :label="t('follow.followTarget')" width="200">
             <template #default="{ row }">
               <div class="user-info">
                 <img :src="getUserAvatar(row.follow_user)" class="avatar" />
@@ -37,25 +37,25 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="created_at" label="关注时间" width="180">
+          <el-table-column prop="created_at" :label="t('follow.followTime')" width="180">
             <template #default="{ row }">
               {{ formatTime(row.created_at) }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="120">
+          <el-table-column :label="t('common.actions')" width="120">
             <template #default="{ row }">
               <el-button type="danger" size="small" @click="handleDeleteFollow(row)">
-                删除
+                {{ t('follow.delete') }}
               </el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-tab-pane>
 
-      <el-tab-pane label="粉丝列表" name="followers">
+      <el-tab-pane :label="t('follow.fanList')" name="followers">
         <el-table :data="followers" v-loading="loading" stripe>
           <el-table-column prop="id" label="ID" width="80" />
-          <el-table-column label="粉丝" width="200">
+          <el-table-column :label="t('follow.followers')" width="200">
             <template #default="{ row }">
               <div class="user-info">
                 <img :src="getUserAvatar(row.user)" class="avatar" />
@@ -66,7 +66,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="关注对象" width="200">
+          <el-table-column :label="t('follow.followTarget')" width="200">
             <template #default="{ row }">
               <div class="user-info">
                 <img :src="getUserAvatar(row.follow_user)" class="avatar" />
@@ -77,15 +77,15 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="created_at" label="关注时间" width="180">
+          <el-table-column prop="created_at" :label="t('follow.followTime')" width="180">
             <template #default="{ row }">
               {{ formatTime(row.created_at) }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="120">
+          <el-table-column :label="t('common.actions')" width="120">
             <template #default="{ row }">
               <el-button type="danger" size="small" @click="handleDeleteFollow(row)">
-                删除
+                {{ t('follow.delete') }}
               </el-button>
             </template>
           </el-table-column>
@@ -107,11 +107,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import api from '@/api'
 import { getUserAvatar, getUserDisplayName } from '@/utils/user'
 
+const { t } = useI18n()
 const activeTab = ref('follows')
 const follows = ref([])
 const followers = ref([])
@@ -133,8 +135,8 @@ async function loadFollows() {
     follows.value = res.list || []
     total.value = res.total || 0
   } catch (e) {
-    console.error('加载关注列表失败', e)
-    ElMessage.error('加载关注列表失败')
+    console.error('Load follows failed', e)
+    ElMessage.error(t('follow.loadFailed'))
   } finally {
     loading.value = false
   }
@@ -152,8 +154,8 @@ async function loadFollowers() {
     followers.value = res.list || []
     total.value = res.total || 0
   } catch (e) {
-    console.error('加载粉丝列表失败', e)
-    ElMessage.error('加载粉丝列表失败')
+    console.error('Load followers failed', e)
+    ElMessage.error(t('follow.loadFanFailed'))
   } finally {
     loading.value = false
   }
@@ -161,15 +163,15 @@ async function loadFollowers() {
 
 async function handleDeleteFollow(row) {
   try {
-    await ElMessageBox.confirm('确定要删除这条关注记录吗？', '确认删除', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('follow.confirmDelete'), t('follow.deleteTitle'), {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
       type: 'warning'
     })
-    
+
     await api.delete(`/admin/follows/${row.id}`)
-    ElMessage.success('删除成功')
-    
+    ElMessage.success(t('follow.deleteSuccess'))
+
     if (activeTab.value === 'follows') {
       loadFollows()
     } else {
@@ -177,8 +179,8 @@ async function handleDeleteFollow(row) {
     }
   } catch (e) {
     if (e !== 'cancel') {
-      console.error('删除失败', e)
-      ElMessage.error('删除失败')
+      console.error('Delete follow failed', e)
+      ElMessage.error(t('follow.deleteFailed'))
     }
   }
 }
@@ -212,7 +214,7 @@ function handlePageChange(page) {
 
 function formatTime(time) {
   if (!time) return ''
-  return new Date(time).toLocaleString('zh-CN')
+  return new Date(time).toLocaleString()
 }
 
 onMounted(() => {

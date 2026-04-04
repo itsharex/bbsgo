@@ -3,9 +3,9 @@
     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
       <!-- 标题栏 -->
       <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center justify-between">
-        <h1 class="text-lg sm:text-xl font-bold text-gray-900">私信</h1>
+        <h1 class="text-lg sm:text-xl font-bold text-gray-900">{{ t('messages.privateMessages') }}</h1>
         <button @click="showSearchDialog = true" class="text-blue-500 hover:text-blue-600 text-xs sm:text-sm font-medium">
-          + 发起私信
+          + {{ t('messages.startPrivate') }}
         </button>
       </div>
 
@@ -17,7 +17,7 @@
               <svg class="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
               </svg>
-              <p class="text-sm">暂无私信会话</p>
+              <p class="text-sm">{{ t('messages.noConversations') }}</p>
             </div>
           </div>
           <div v-else class="flex-1 overflow-y-auto">
@@ -42,7 +42,7 @@
                     <span class="font-medium text-gray-900 truncate text-sm">{{ conv.user?.nickname || conv.user?.username }}</span>
                     <span class="text-xs text-gray-400">{{ formatTime(conv.last_message?.created_at) }}</span>
                   </div>
-                  <p class="text-xs sm:text-sm text-gray-500 truncate mt-1">{{ conv.last_message?.content || '暂无消息' }}</p>
+                  <p class="text-xs sm:text-sm text-gray-500 truncate mt-1">{{ conv.last_message?.content || t('messages.noMessages') }}</p>
                 </div>
               </div>
             </div>
@@ -62,17 +62,17 @@
               <img :src="getUserAvatar(selectedUser)" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-200">
               <div class="ml-2 sm:ml-3 flex-1 min-w-0">
                 <div class="font-medium text-gray-900 text-sm">{{ getUserDisplayName(selectedUser) }}</div>
-                <div class="text-xs text-gray-500 hidden sm:block">点击头像访问他的主页</div>
+                <div class="text-xs text-gray-500 hidden sm:block">{{ t('messages.clickAvatarHint') }}</div>
               </div>
               <router-link :to="`/user/${selectedUser.id}`" class="text-blue-500 hover:text-blue-600 text-xs sm:text-sm ml-auto">
-                查看主页
+                {{ t('messages.viewProfile') }}
               </router-link>
             </div>
 
             <!-- 消息列表 -->
             <div ref="messageListRef" class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50">
               <div v-if="messages.length === 0" class="flex items-center justify-center h-full text-gray-400 text-sm">
-                开始和 {{ getUserDisplayName(selectedUser) }} 聊天吧
+                {{ t('messages.startChat', { 0: getUserDisplayName(selectedUser) }) }}
               </div>
               <div v-for="msg in messages" :key="msg.id">
                 <!-- 自己发送的消息 -->
@@ -103,7 +103,7 @@
                 <input
                   type="text"
                   v-model="newMessage"
-                  placeholder="输入消息..."
+                  :placeholder="t('messages.typeMessage')"
                   class="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-full focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-50 transition-all text-sm"
                 >
                 <button
@@ -111,7 +111,7 @@
                   :disabled="!newMessage.trim()"
                   class="bg-blue-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
                 >
-                  发送
+                  {{ t('messages.send') }}
                 </button>
               </form>
             </div>
@@ -122,8 +122,8 @@
               <svg class="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
               </svg>
-              <p class="text-base sm:text-lg">选择一个对话开始聊天</p>
-              <p class="text-xs sm:text-sm mt-2">或 <button @click="showSearchDialog = true" class="text-blue-500 hover:underline">发起新的私信</button></p>
+              <p class="text-base sm:text-lg">{{ t('messages.selectConversation') }}</p>
+              <p class="text-xs sm:text-sm mt-2">{{ t('messages.or') }} <button @click="showSearchDialog = true" class="text-blue-500 hover:underline">{{ t('messages.startNewConversation') }}</button></p>
             </div>
           </div>
         </div>
@@ -131,11 +131,11 @@
     </div>
 
     <!-- 搜索用户对话框 -->
-    <el-dialog v-model="showSearchDialog" title="发起私信" width="450px" :close-on-click-modal="false">
+    <el-dialog v-model="showSearchDialog" :title="t('messages.startConversation')" width="450px" :close-on-click-modal="false">
       <div class="mb-4">
         <el-input
           v-model="searchKeyword"
-          placeholder="搜索用户..."
+          :placeholder="t('messages.searchUser')"
           prefix-icon="Search"
           @input="handleSearchUser"
           clearable
@@ -156,10 +156,10 @@
         </div>
       </div>
       <div v-else-if="searchKeyword && !searching" class="text-center text-gray-400 py-8">
-        未找到用户
+        {{ t('messages.userNotFound') }}
       </div>
       <div v-else class="text-center text-gray-400 py-8">
-        输入用户名搜索
+        {{ t('messages.searchUsername') }}
       </div>
     </el-dialog>
   </div>
@@ -168,9 +168,12 @@
 <script setup>
 import { ref, onMounted, nextTick, onActivated } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import api from '@/api'
 import { getUserAvatar, getUserDisplayName } from '@/utils/user'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const route = useRoute()
@@ -193,10 +196,10 @@ function formatTime(date) {
   const diff = now - d
   const oneDay = 24 * 60 * 60 * 1000
 
-  if (diff < 60000) return '刚刚'
-  if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前'
+  if (diff < 60000) return t('notifications.justNow')
+  if (diff < 3600000) return t('notifications.minutesAgo', { 0: Math.floor(diff / 60000) })
   if (diff < oneDay) return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-  if (diff < 7 * oneDay) return Math.floor(diff / oneDay) + '天前'
+  if (diff < 7 * oneDay) return t('notifications.daysAgo', { 0: Math.floor(diff / oneDay) })
   return d.toLocaleDateString('zh-CN')
 }
 
@@ -244,11 +247,11 @@ async function loadConversations() {
     // 更新用户头像
     conversations.value.forEach(conv => {
       if (!conv.user.avatar) {
-        conv.user.avatar = getAvatar(conv.user)
+        conv.user.avatar = getUserAvatar(conv.user)
       }
     })
   } catch (e) {
-    console.error('加载会话列表失败:', e)
+    console.error(t('messages.loadFailed'), e)
   }
 }
 
@@ -264,8 +267,8 @@ async function loadMessages(userId) {
     await nextTick()
     scrollToBottom()
   } catch (e) {
-    console.error('加载消息失败:', e)
-    ElMessage.error('加载消息失败')
+    console.error(t('messages.loadFailed'), e)
+    ElMessage.error(t('messages.loadFailed'))
   }
 }
 
@@ -290,8 +293,8 @@ async function sendMessage() {
       conversations.value = [conv, ...conversations.value.filter(c => c.user_id !== selectedUser.value.id)]
     }
   } catch (e) {
-    console.error('发送消息失败:', e)
-    ElMessage.error('发送消息失败')
+    console.error(t('messages.sendFailed'), e)
+    ElMessage.error(t('messages.sendFailed'))
   }
 }
 
@@ -316,11 +319,11 @@ function handleSearchUser() {
       searchResults.value = (res?.list || []).filter(u => u.id !== currentUserId.value)
       searchResults.value.forEach(user => {
         if (!user.avatar) {
-          user.avatar = getAvatar(user)
+          user.avatar = getUserAvatar(user)
         }
       })
     } catch (e) {
-      console.error('搜索用户失败:', e)
+      console.error(t('messages.searchFailed'), e)
       searchResults.value = []
     } finally {
       searching.value = false
@@ -374,8 +377,8 @@ onMounted(async () => {
           unread_count: 0
         }
       } catch (e) {
-        console.error('获取用户信息失败:', e)
-        ElMessage.error('无法发起私信')
+        console.error(t('messages.cannotSend'), e)
+        ElMessage.error(t('messages.cannotSend'))
         return
       }
     }

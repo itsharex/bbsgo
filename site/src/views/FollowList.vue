@@ -4,10 +4,10 @@
       <div class="flex items-center justify-between mb-6">
         <div>
           <h1 class="text-2xl font-bold text-gray-900">{{ title }}</h1>
-          <p class="text-gray-500 mt-1">共 {{ total }} 人</p>
+          <p class="text-gray-500 mt-1">{{ t('follow.totalPeople', { total }) }}</p>
         </div>
         <router-link :to="`/user/${userId}`" class="text-blue-500 hover:underline">
-          返回个人主页
+          {{ t('follow.returnToProfile') }}
         </router-link>
       </div>
 
@@ -18,23 +18,23 @@
       </div>
 
       <div v-else-if="list.length === 0" class="text-center py-12 text-gray-500">
-        暂无{{ type === 'follows' ? '关注' : '粉丝' }}
+        {{ type === 'follows' ? t('follow.noFollowing') : t('follow.noFollowers') }}
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        <div v-for="item in list" :key="item.id" 
+        <div v-for="item in list" :key="item.id"
           class="flex items-center gap-3 p-4 rounded-lg border hover:shadow-md transition-shadow">
           <router-link :to="`/user/${getUserID(item)}`">
-            <img :src="getUserAvatar(getUserInfo(item))" 
+            <img :src="getUserAvatar(getUserInfo(item))"
               class="w-12 h-12 rounded-full object-cover">
           </router-link>
           <div class="flex-1 min-w-0">
-            <router-link :to="`/user/${getUserID(item)}`" 
+            <router-link :to="`/user/${getUserID(item)}`"
               class="font-medium text-gray-900 hover:text-blue-500 truncate block">
               {{ getUserDisplayName(getUserInfo(item)) }}
             </router-link>
             <p class="text-sm text-gray-500 truncate">
-              {{ getUserInfo(item)?.signature || '这个人很懒，什么都没写' }}
+              {{ getUserInfo(item)?.signature || t('follow.userLazy') }}
             </p>
           </div>
           <FollowButton v-if="type === 'follows'" :user-id="getUserID(item)" />
@@ -57,18 +57,20 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import api from '@/api'
 import { getUserAvatar, getUserDisplayName } from '@/utils/user'
 import FollowButton from '@/components/FollowButton.vue'
 
+const { t } = useI18n()
 const route = useRoute()
 const userId = computed(() => route.params.id)
 const type = computed(() => route.query.type || 'follows')
 
 const title = computed(() => {
-  return type.value === 'follows' ? '我的关注' : '我的粉丝'
+  return type.value === 'follows' ? t('follow.myFollowing') : t('follow.myFans')
 })
 
 const list = ref([])
@@ -100,8 +102,8 @@ async function loadList() {
     list.value = res.list || res || []
     total.value = res.total || list.value.length
   } catch (e) {
-    console.error('加载列表失败', e)
-    ElMessage.error('加载列表失败')
+    console.error(t('follow.loadFailed'), e)
+    ElMessage.error(t('follow.loadFailed'))
   } finally {
     loading.value = false
   }

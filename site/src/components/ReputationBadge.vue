@@ -11,7 +11,10 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Shield } from '@element-plus/icons-vue'
+
+const { t } = useI18n()
 
 const props = defineProps({
   reputation: {
@@ -29,11 +32,11 @@ const levelClass = computed(() => {
 })
 
 const levelName = computed(() => {
-  if (props.reputation >= 80) return '信誉良好'
-  if (props.reputation >= 60) return '信誉一般'
-  if (props.reputation >= 40) return '信誉较差'
-  if (props.reputation >= 20) return '信誉很差'
-  return '已被禁言'
+  if (props.reputation >= 80) return t('reputation.good')
+  if (props.reputation >= 60) return t('reputation.normal')
+  if (props.reputation >= 40) return t('reputation.poor')
+  if (props.reputation >= 20) return t('reputation.veryPoor')
+  return t('reputation.banned')
 })
 
 const tooltipContent = computed(() => {

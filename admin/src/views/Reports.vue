@@ -6,23 +6,23 @@
           <div class="header-left">
             <h3>
               <AlertTriangle :size="18" />
-              举报列表
+              {{ t('report.title') }}
             </h3>
             <span v-if="pendingCount > 0" class="pending-badge">
               <Bell :size="12" />
-              {{ pendingCount }} 条待处理
+              {{ t('report.pendingCount').replace('%d', pendingCount) }}
             </span>
           </div>
           <div class="header-right">
-            <el-select v-model="filterStatus" placeholder="选择状态" clearable style="width: 140px">
-              <el-option label="全部状态" value="" />
-              <el-option label="待处理" value="0" />
-              <el-option label="已通过" value="1" />
-              <el-option label="已驳回" value="2" />
+            <el-select v-model="filterStatus" :placeholder="t('report.selectStatus')" clearable style="width: 140px">
+              <el-option :label="t('report.allStatus')" value="" />
+              <el-option :label="t('report.pending')" value="0" />
+              <el-option :label="t('report.approved')" value="1" />
+              <el-option :label="t('report.rejected')" value="2" />
             </el-select>
             <el-button type="primary" @click="loadReports">
               <RefreshCw :size="16" />
-              刷新
+              {{ t('report.refresh') }}
             </el-button>
           </div>
         </div>
@@ -30,7 +30,7 @@
 
       <el-table :data="reports" stripe style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="举报人" width="120">
+        <el-table-column :label="t('report.reporter')" width="120">
           <template #default="{ row }">
             <div class="reporter-cell">
               <el-avatar :size="24" :src="row.reporter?.avatar">
@@ -40,7 +40,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="被举报人" width="120">
+        <el-table-column :label="t('report.reportedUser')" width="120">
           <template #default="{ row }">
             <div v-if="row.target_user" class="flex items-center">
               <el-avatar :size="24" :src="row.target_user.avatar">
@@ -51,78 +51,78 @@
             <span v-else class="text-gray-400">-</span>
           </template>
         </el-table-column>
-        <el-table-column label="类型" width="80">
+        <el-table-column :label="t('report.type')" width="80">
           <template #default="{ row }">
             <el-tag :type="getTypeType(row.target_type)" size="small">
               {{ getTargetType(row.target_type) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="被举报内容" min-width="200">
+        <el-table-column :label="t('report.targetContent')" min-width="200">
           <template #default="{ row }">
             <template v-if="row.target_type === 'topic'">
               <div>
-                <el-tooltip :content="row.topic_title || '帖子'" placement="top">
-                  <span class="text-sm line-clamp-1">{{ row.topic_title || '帖子' }}</span>
+                <el-tooltip :content="row.topic_title || t('report.topic')" placement="top">
+                  <span class="text-sm line-clamp-1">{{ row.topic_title || t('report.topic') }}</span>
                 </el-tooltip>
                 <br>
                 <a :href="`/topic/${row.target_id}`" target="_blank" class="text-blue-500 hover:text-blue-700 text-xs">
-                  查看帖子 →
+                  {{ t('report.viewTopic') }}
                 </a>
               </div>
             </template>
             <template v-else-if="row.target_type === 'comment'">
               <div>
-                <el-tooltip :content="row.comment_content || '[内容已删除]'" placement="top">
+                <el-tooltip :content="row.comment_content || t('report.contentDeleted')" placement="top">
                   <span class="text-sm line-clamp-2 text-gray-700">{{ row.comment_content ? row.comment_content.substring(0, 50) +
-                    (row.comment_content.length > 50 ? '...' : '') : '[内容已删除]' }}</span>
+                    (row.comment_content.length > 50 ? '...' : '') : t('report.contentDeleted') }}</span>
                 </el-tooltip>
                 <br>
                 <a v-if="row.topic_id" :href="`/topic/${row.topic_id}#post-${row.target_id}`" target="_blank"
                   class="text-blue-500 hover:text-blue-700 text-xs">
-                  查看评论 →
+                  {{ t('report.viewComment') }}
                 </a>
-                <span v-else class="text-gray-400 text-xs">评论ID: {{ row.target_id }}</span>
+                <span v-else class="text-gray-400 text-xs">{{ t('report.comment') }}ID: {{ row.target_id }}</span>
               </div>
             </template>
           </template>
         </el-table-column>
-        <el-table-column label="举报原因" width="100">
+        <el-table-column :label="t('report.reason')" width="100">
           <template #default="{ row }">
             <span class="text-sm">{{ getReasonText(row.reason) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="说明" min-width="120">
+        <el-table-column :label="t('report.description')" min-width="120">
           <template #default="{ row }">
             <span v-if="row.detail" class="text-sm text-gray-600">{{ row.detail }}</span>
-            <span v-else class="text-gray-400">-</span>
+            <span v-else class="text-gray-400">{{ t('report.noDetail') }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="100">
+        <el-table-column :label="t('report.status')" width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)" size="small">
               {{ getStatusName(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="举报时间" width="120">
+        <el-table-column :label="t('report.reportTime')" width="120">
           <template #default="{ row }">
             <span class="date-text">{{ formatDate(row.created_at) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="140" fixed="right">
+        <el-table-column :label="t('report.actions')" width="140" fixed="right">
           <template #default="{ row }">
             <template v-if="row.status === 0">
               <el-button link type="success" @click="handleReport(row, true)">
                 <Check :size="14" />
-                通过
+                {{ t('report.approve') }}
               </el-button>
               <el-button link type="danger" @click="handleReport(row, false)">
                 <X :size="14" />
-                驳回
+                {{ t('report.reject') }}
               </el-button>
             </template>
-            <span v-else class="handled-text">已处理</span>
+            <span v-else class="handled-text">{{ t('report.handled') }}</span>
           </template>
         </el-table-column>
       </el-table>
@@ -132,10 +132,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/api'
 import { AlertTriangle, Bell, User, Check, X, RefreshCw } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const reports = ref([])
 const filterStatus = ref('')
 const loading = ref(false)
@@ -143,7 +145,7 @@ const loading = ref(false)
 const pendingCount = computed(() => (Array.isArray(reports.value) ? reports.value.filter(r => r.status === 0).length : 0))
 
 function getTargetType(type) {
-  const types = { topic: '帖子', comment: '评论', message: '私信' }
+  const types = { topic: t('report.topic'), comment: t('report.comment'), message: t('report.message') }
   return types[type] || type
 }
 
@@ -153,8 +155,8 @@ function getTypeType(type) {
 }
 
 function getStatusName(status) {
-  const statuses = { 0: '待处理', 1: '已通过', 2: '已驳回' }
-  return statuses[status] || '未知'
+  const statuses = { 0: t('report.pending'), 1: t('report.approved'), 2: t('report.rejected') }
+  return statuses[status] || 'Unknown'
 }
 
 function getStatusType(status) {
@@ -164,17 +166,17 @@ function getStatusType(status) {
 
 function getReasonText(reason) {
   const reasons = {
-    spam: '垃圾广告',
-    illegal: '违规内容',
-    attack: '人身攻击',
-    rumor: '谣言虚假信息',
-    other: '其他'
+    spam: t('report.reasons.spam'),
+    illegal: t('report.reasons.illegal'),
+    attack: t('report.reasons.attack'),
+    rumor: t('report.reasons.rumor'),
+    other: t('report.reasons.other')
   }
   return reasons[reason] || reason
 }
 
 function formatDate(date) {
-  return new Date(date).toLocaleDateString('zh-CN')
+  return new Date(date).toLocaleDateString()
 }
 
 async function loadReports() {
@@ -187,29 +189,29 @@ async function loadReports() {
     const res = await api.get('/admin/reports', { params })
     reports.value = Array.isArray(res) ? res : (res?.list || [])
   } catch (e) {
-    console.error('加载举报列表失败', e)
-    ElMessage.error('加载举报列表失败')
+    console.error('load reports failed', e)
+    ElMessage.error(t('common.failed'))
   } finally {
     loading.value = false
   }
 }
 
 async function handleReport(report, approved) {
-  const action = approved ? '通过' : '驳回'
+  const action = approved ? t('report.approve') : t('report.reject')
   try {
     await ElMessageBox.confirm(
-      approved ? '通过后相关内容将被删除，是否继续？' : '确定要驳回这条举报吗？',
-      `${action}举报`,
-      { confirmButtonText: action, cancelButtonText: '取消', type: approved ? 'warning' : 'info' }
+      approved ? t('report.confirmApprove') : t('report.confirmReject'),
+      `${action} ${t('report.title')}`,
+      { confirmButtonText: action, cancelButtonText: t('common.cancel'), type: approved ? 'warning' : 'info' }
     )
 
     await api.put(`/admin/reports/${report.id}/handle`, { status: approved ? 1 : 2 })
     report.status = approved ? 1 : 2
-    ElMessage.success(approved ? '举报已通过，相关内容已删除' : '举报已驳回')
+    ElMessage.success(t('common.success'))
   } catch (e) {
     if (e !== 'cancel') {
-      console.error('处理举报失败', e)
-      ElMessage.error('操作失败')
+      console.error('handle report failed', e)
+      ElMessage.error(t('common.failed'))
     }
   }
 }
@@ -258,11 +260,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
-  color: #f59e0b;
-  background: rgba(245, 158, 11, 0.1);
   padding: 4px 10px;
+  background: rgba(248, 113, 113, 0.1);
+  color: #f87171;
   border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .header-right {
@@ -275,15 +278,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.reason-text {
-  font-size: 13px;
-  color: #374151;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .date-text {
@@ -310,5 +304,6 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  padding: 4px 8px;
 }
 </style>

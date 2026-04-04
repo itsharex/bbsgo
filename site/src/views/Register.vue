@@ -6,77 +6,77 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
       </svg>
-      <h2 class="text-xl font-bold text-gray-900 mb-2">注册功能已关闭</h2>
-      <p class="text-gray-500 mb-4">管理员暂时关闭了注册功能，请稍后再试。</p>
+      <h2 class="text-xl font-bold text-gray-900 mb-2">{{ t('register.closed') }}</h2>
+      <p class="text-gray-500 mb-4">{{ t('register.closedTip') }}</p>
       <router-link to="/login"
         class="inline-block w-full bg-blue-500 text-white py-2.5 rounded-lg hover:bg-blue-600 transition-colors font-medium">
-        返回登录
+        {{ t('register.backToLogin') }}
       </router-link>
     </div>
     <div v-else class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
       <div class="text-center mb-5">
-        <h2 class="text-2xl font-bold text-gray-800">注册账号</h2>
-        <p class="text-gray-500 mt-1 text-sm">加入我们，开始您的社区之旅</p>
+        <h2 class="text-2xl font-bold text-gray-800">{{ t('register.title') }}</h2>
+        <p class="text-gray-500 mt-1 text-sm">{{ t('register.subtitle') }}</p>
       </div>
 
       <form @submit.prevent="handleRegister" class="space-y-4">
         <div>
-          <label class="block text-gray-700 text-sm font-medium mb-1">用户名</label>
+          <label class="block text-gray-700 text-sm font-medium mb-1">{{ t('register.username') }}</label>
           <input type="text" v-model="form.username"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
-            placeholder="请输入用户名" required />
+            :placeholder="t('register.usernamePlaceholder')" required />
         </div>
 
         <div>
-          <label class="block text-gray-700 text-sm font-medium mb-1">昵称</label>
+          <label class="block text-gray-700 text-sm font-medium mb-1">{{ t('register.nickname') }}</label>
           <input type="text" v-model="form.nickname"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
-            placeholder="请输入昵称" required />
+            :placeholder="t('register.nicknamePlaceholder')" required />
         </div>
 
         <div>
-          <label class="block text-gray-700 text-sm font-medium mb-1">邮箱</label>
+          <label class="block text-gray-700 text-sm font-medium mb-1">{{ t('register.email') }}</label>
           <input type="email" v-model="form.email"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
-            placeholder="请输入邮箱" required />
+            :placeholder="t('register.emailPlaceholder')" required />
         </div>
 
         <div v-if="emailEnabled">
-          <label class="block text-gray-700 text-sm font-medium mb-1">验证码</label>
+          <label class="block text-gray-700 text-sm font-medium mb-1">{{ t('register.emailCode') }}</label>
           <div class="flex gap-2">
             <input type="text" v-model="form.code"
               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
-              placeholder="请输入验证码" maxlength="6" required />
+              :placeholder="t('register.codePlaceholder')" maxlength="6" required />
             <button type="button" @click="sendCode" :disabled="countdown > 0 || !form.email"
               class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-sm">
-              {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
+              {{ countdown > 0 ? `${countdown}s` : t('register.sendCode') }}
             </button>
           </div>
         </div>
 
         <div>
-          <label class="block text-gray-700 text-sm font-medium mb-1">密码</label>
+          <label class="block text-gray-700 text-sm font-medium mb-1">{{ t('register.password') }}</label>
           <input type="password" v-model="form.password"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
-            placeholder="请输入密码" required />
+            :placeholder="t('register.passwordPlaceholder')" required />
         </div>
 
         <div>
-          <label class="block text-gray-700 text-sm font-medium mb-1">确认密码</label>
+          <label class="block text-gray-700 text-sm font-medium mb-1">{{ t('register.confirmPassword') }}</label>
           <input type="password" v-model="form.confirm_password"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
-            placeholder="请再次输入密码" required />
+            :placeholder="t('register.confirmPasswordPlaceholder')" required />
         </div>
 
         <button type="submit" :disabled="loading"
           class="w-full bg-blue-500 text-white py-2.5 rounded-lg hover:bg-blue-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed text-sm">
-          {{ loading ? '注册中...' : '注册' }}
+          {{ loading ? t('register.registering') : t('register.registerBtn') }}
         </button>
       </form>
 
       <p class="text-center mt-4 text-gray-600 text-sm">
-        已有账号？
-        <router-link to="/login" class="text-blue-500 hover:underline font-medium">立即登录</router-link>
+        {{ t('register.hasAccount') }}
+        <router-link to="/login" class="text-blue-500 hover:underline font-medium">{{ t('register.goLogin') }}</router-link>
       </p>
     </div>
   </div>
@@ -85,11 +85,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import { useConfigStore } from '@/stores/config'
 import { ElMessage } from 'element-plus'
 import api from '@/api'
 
+const { t } = useI18n()
 const router = useRouter()
 const userStore = useUserStore()
 const configStore = useConfigStore()
@@ -113,19 +115,19 @@ async function checkEmailEnabled() {
     const res = await api.get('/config')
     emailEnabled.value = res.email_enabled === 'true'
   } catch (e) {
-    console.error('获取配置失败', e)
+    console.error('get config failed', e)
   }
 }
 
 async function sendCode() {
   if (!form.value.email) {
-    ElMessage.warning('请先输入邮箱')
+    ElMessage.warning(t('register.enterEmailFirst'))
     return
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(form.value.email)) {
-    ElMessage.warning('请输入有效的邮箱地址')
+    ElMessage.warning(t('register.invalidEmail'))
     return
   }
 
@@ -134,7 +136,7 @@ async function sendCode() {
       email: form.value.email,
       type: 'register'
     })
-    ElMessage.success('验证码已发送到您的邮箱')
+    ElMessage.success(t('register.codeSent'))
     countdown.value = 60
     timer = setInterval(() => {
       countdown.value--
@@ -143,29 +145,28 @@ async function sendCode() {
       }
     }, 1000)
   } catch (e) {
-    // 统一提示验证码发送失败
-    ElMessage.error('验证码发送失败，请重试')
+    ElMessage.error(t('register.codeSendFailed'))
   }
 }
 
 async function handleRegister() {
   if (form.value.password !== form.value.confirm_password) {
-    ElMessage.warning('两次密码输入不一致')
+    ElMessage.warning(t('register.passwordMismatch'))
     return
   }
 
   if (emailEnabled.value && !form.value.code) {
-    ElMessage.warning('请输入验证码')
+    ElMessage.warning(t('register.enterCode'))
     return
   }
 
   loading.value = true
   try {
     await userStore.register(form.value)
-    ElMessage.success('注册成功！')
+    ElMessage.success(t('register.success'))
     router.push('/')
   } catch (e) {
-    // 错误已在 interceptor 中显示
+    // error shown in interceptor
   } finally {
     loading.value = false
   }

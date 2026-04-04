@@ -10,14 +10,17 @@
     :disabled="loading"
   >
     <span v-if="loading" class="loading-spinner"></span>
-    <span v-else>{{ isFollowing ? '已关注' : '关注' }}</span>
+    <span v-else>{{ isFollowing ? t('user.followed') : t('user.follow') }}</span>
   </button>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import api from '@/api'
+
+const { t } = useI18n()
 
 const props = defineProps({
   userId: {
@@ -43,7 +46,7 @@ async function checkFollowStatus() {
     })
     isFollowing.value = res.is_following
   } catch (e) {
-    console.error('检查关注状态失败', e)
+    console.error(t('follow.checkStatusFailed'), e)
   }
 }
 
@@ -66,7 +69,7 @@ async function toggleFollow() {
       isFollowing.value = true
     }
   } catch (e) {
-    console.error('关注操作失败', e)
+    console.error(t('follow.followFailed'), e)
   } finally {
     loading.value = false
   }

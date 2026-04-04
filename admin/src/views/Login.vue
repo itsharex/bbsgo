@@ -6,39 +6,39 @@
           <LayoutDashboard :size="40" />
         </div>
         <h1>BBS Go</h1>
-        <p>现代化社区管理系统</p>
+        <p>{{ t('login.subtitle') }}</p>
       </div>
       <div class="features">
         <div class="feature-item">
           <Shield :size="20" />
-          <span>安全可靠的后台管理</span>
+          <span>{{ t('login.feature1') }}</span>
         </div>
         <div class="feature-item">
           <Zap :size="20" />
-          <span>高效便捷的操作体验</span>
+          <span>{{ t('login.feature2') }}</span>
         </div>
         <div class="feature-item">
           <BarChart3 :size="20" />
-          <span>实时数据统计与分析</span>
+          <span>{{ t('login.feature3') }}</span>
         </div>
       </div>
     </div>
 
     <div class="login-right">
       <div class="login-card">
-        <h2>管理员登录</h2>
-        <p class="subtitle">欢迎回来，请登录您的账户</p>
+        <h2>{{ t('login.title') }}</h2>
+        <p class="subtitle">{{ t('login.welcome') }}</p>
 
         <el-form ref="formRef" :model="form" :rules="rules" @submit.prevent="handleLogin">
           <el-form-item prop="username">
-            <el-input v-model="form.username" placeholder="请输入用户名" size="large" prefix-icon="User">
+            <el-input v-model="form.username" :placeholder="t('login.username')" size="large" prefix-icon="User">
               <template #prefix>
                 <User :size="18" />
               </template>
             </el-input>
           </el-form-item>
           <el-form-item prop="password">
-            <el-input v-model="form.password" type="password" placeholder="请输入密码" size="large" show-password>
+            <el-input v-model="form.password" type="password" :placeholder="t('login.password')" size="large" show-password>
               <template #prefix>
                 <Lock :size="18" />
               </template>
@@ -46,7 +46,7 @@
           </el-form-item>
           <el-form-item>
             <el-button type="primary" size="large" class="login-btn" :loading="loading" native-type="submit" @click="handleLogin">
-              登录
+              {{ t('login.loginBtn') }}
             </el-button>
           </el-form-item>
         </el-form>
@@ -58,10 +58,12 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import { LayoutDashboard, Shield, Zap, BarChart3, User, Lock } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const router = useRouter()
 const adminStore = useAdminStore()
 const loading = ref(false)
@@ -73,8 +75,8 @@ const form = ref({
 })
 
 const rules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+  username: [{ required: true, message: () => t('login.username'), trigger: 'blur' }],
+  password: [{ required: true, message: () => t('login.password'), trigger: 'blur' }]
 }
 
 async function handleLogin() {
@@ -88,7 +90,7 @@ async function handleLogin() {
       await adminStore.login(form.value)
       router.push('/console')
     } catch (e) {
-      ElMessage.error(e.message || '登录失败')
+      ElMessage.error(e.message || t('login.failed'))
     } finally {
       loading.value = false
     }

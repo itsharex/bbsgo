@@ -7,7 +7,7 @@
           <UserPlus :size="24" />
         </div>
         <div class="stat-content">
-          <span class="stat-label">用户总数</span>
+          <span class="stat-label">{{ t('dashboard.users') }}</span>
           <span class="stat-value">{{ stats.users }}</span>
         </div>
         <div class="stat-trend up">
@@ -21,7 +21,7 @@
           <FileText :size="24" />
         </div>
         <div class="stat-content">
-          <span class="stat-label">帖子总数</span>
+          <span class="stat-label">{{ t('dashboard.topics') }}</span>
           <span class="stat-value">{{ stats.topics }}</span>
         </div>
         <div class="stat-trend up">
@@ -35,7 +35,7 @@
           <MessageCircle :size="24" />
         </div>
         <div class="stat-content">
-          <span class="stat-label">评论总数</span>
+          <span class="stat-label">{{ t('dashboard.comments') }}</span>
           <span class="stat-value">{{ stats.comments }}</span>
         </div>
         <div class="stat-trend up">
@@ -49,7 +49,7 @@
           <AlertTriangle :size="24" />
         </div>
         <div class="stat-content">
-          <span class="stat-label">待处理举报</span>
+          <span class="stat-label">{{ t('dashboard.pendingReports') }}</span>
           <span class="stat-value">{{ stats.reports }}</span>
         </div>
         <div class="stat-trend down">
@@ -64,7 +64,7 @@
       <div class="section-header">
         <h3 class="section-title">
           <Info :size="18" />
-          系统信息
+          {{ t('dashboard.systemInfo') }}
         </h3>
       </div>
       <div class="info-grid">
@@ -73,7 +73,7 @@
             <Codepen :size="18" />
           </div>
           <div class="info-content">
-            <span class="info-label">系统版本</span>
+            <span class="info-label">{{ t('dashboard.version') }}</span>
             <span class="info-value">v1.0.0</span>
           </div>
         </div>
@@ -82,7 +82,7 @@
             <Box :size="18" />
           </div>
           <div class="info-content">
-            <span class="info-label">Go 版本</span>
+            <span class="info-label">{{ t('dashboard.goVersion') }}</span>
             <span class="info-value">go1.21+</span>
           </div>
         </div>
@@ -91,7 +91,7 @@
             <Database :size="18" />
           </div>
           <div class="info-content">
-            <span class="info-label">数据库</span>
+            <span class="info-label">{{ t('dashboard.database') }}</span>
             <span class="info-value">SQLite</span>
           </div>
         </div>
@@ -100,7 +100,7 @@
             <Zap :size="18" />
           </div>
           <div class="info-content">
-            <span class="info-label">缓存</span>
+            <span class="info-label">{{ t('dashboard.cache') }}</span>
             <span class="info-value">Ristretto</span>
           </div>
         </div>
@@ -109,7 +109,7 @@
             <Cpu :size="18" />
           </div>
           <div class="info-content">
-            <span class="info-label">运行时间</span>
+            <span class="info-label">{{ t('dashboard.uptime') }}</span>
             <span class="info-value">{{ uptime }}</span>
           </div>
         </div>
@@ -118,8 +118,8 @@
             <Activity :size="18" />
           </div>
           <div class="info-content">
-            <span class="info-label">系统状态</span>
-            <span class="info-value status-online">正常</span>
+            <span class="info-label">{{ t('dashboard.status') }}</span>
+            <span class="info-value status-online">{{ t('dashboard.online') }}</span>
           </div>
         </div>
       </div>
@@ -130,7 +130,7 @@
       <div class="section-header">
         <h3 class="section-title">
           <Rocket :size="18" />
-          快捷操作
+          {{ t('dashboard.quickActions') }}
         </h3>
       </div>
       <div class="actions-grid">
@@ -138,25 +138,25 @@
           <div class="action-icon purple">
             <UserPlus :size="22" />
           </div>
-          <span class="action-text">用户管理</span>
+          <span class="action-text">{{ t('dashboard.userManagement') }}</span>
         </router-link>
         <router-link to="/topics" class="action-card">
           <div class="action-icon green">
             <FilePlus :size="22" />
           </div>
-          <span class="action-text">帖子审核</span>
+          <span class="action-text">{{ t('dashboard.postReview') }}</span>
         </router-link>
         <router-link to="/reports" class="action-card">
           <div class="action-icon red">
             <ShieldAlert :size="22" />
           </div>
-          <span class="action-text">处理举报</span>
+          <span class="action-text">{{ t('dashboard.handleReports') }}</span>
         </router-link>
         <router-link to="/announcements" class="action-card">
           <div class="action-icon yellow">
             <Megaphone :size="22" />
           </div>
-          <span class="action-text">发布公告</span>
+          <span class="action-text">{{ t('dashboard.publishAnnouncement') }}</span>
         </router-link>
       </div>
     </div>
@@ -165,12 +165,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   UserPlus, FileText, MessageCircle, AlertTriangle, TrendingUp, TrendingDown,
   Info, Codepen, Box, Database, Zap, Cpu, Activity, Rocket, FilePlus,
   ShieldAlert, Megaphone
 } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const stats = ref({
   users: 0,
   topics: 0,
@@ -178,7 +180,7 @@ const stats = ref({
   reports: 0
 })
 
-const uptime = ref('0天 0小时')
+const uptime = ref('0 days 0 hours')
 
 onMounted(() => {
   stats.value = {
@@ -187,7 +189,7 @@ onMounted(() => {
     comments: 3567,
     reports: 5
   }
-  uptime.value = '15天 8小时'
+  uptime.value = '15 days 8 hours'
 })
 </script>
 

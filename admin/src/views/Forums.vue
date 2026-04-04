@@ -6,20 +6,20 @@
           <div class="header-left">
             <h3>
               <FolderOpen :size="18" />
-              版块列表
+              {{ t('forum.title') }}
             </h3>
-            <span class="total-count">共 {{ forums.length }} 个版块</span>
+            <span class="total-count">{{ t('forum.totalForums').replace('%d', forums.length) }}</span>
           </div>
           <el-button type="primary" @click="openCreateModal">
             <Plus :size="16" />
-            新建版块
+            {{ t('forum.create') }}
           </el-button>
         </div>
       </template>
 
       <el-table :data="forums" stripe style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="名称" min-width="150">
+        <el-table-column :label="t('forum.name')" min-width="150">
           <template #default="{ row }">
             <div class="forum-name">
               <div class="forum-icon">
@@ -29,28 +29,28 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="描述" min-width="200">
+        <el-table-column :label="t('forum.description')" min-width="200">
           <template #default="{ row }">
             <span class="desc-text">{{ row.description || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="sort_order" label="排序" width="100" sortable />
-        <el-table-column label="允许发帖" width="120">
+        <el-table-column prop="sort_order" :label="t('forum.sortOrder')" width="100" sortable />
+        <el-table-column :label="t('forum.allowPost')" width="120">
           <template #default="{ row }">
             <el-tag :type="row.allow_post ? 'success' : 'danger'" size="small">
-              {{ row.allow_post ? '是' : '否' }}
+              {{ row.allow_post ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="140" fixed="right">
+        <el-table-column :label="t('forum.actions')" width="140" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="editForum(row)">
               <Edit :size="14" />
-              编辑
+              {{ t('common.edit') }}
             </el-button>
             <el-button link type="danger" @click="deleteForum(row)">
               <Trash2 :size="14" />
-              删除
+              {{ t('common.delete') }}
             </el-button>
           </template>
         </el-table-column>
@@ -58,24 +58,24 @@
     </el-card>
 
     <!-- 创建/编辑弹窗 -->
-    <el-dialog v-model="dialogVisible" :title="editingForum ? '编辑版块' : '新建版块'" width="480px" :close-on-click-modal="false">
+    <el-dialog v-model="dialogVisible" :title="editingForum ? t('forum.edit') : t('forum.create')" width="480px" :close-on-click-modal="false">
       <el-form ref="formRef" :model="form" label-position="top">
-        <el-form-item label="名称" prop="name" :rules="[{ required: true, message: '请输入版块名称', trigger: 'blur' }]">
-          <el-input v-model="form.name" placeholder="请输入版块名称" />
+        <el-form-item :label="t('forum.name')" prop="name" :rules="[{ required: true, message: t('forum.nameRequired'), trigger: 'blur' }]">
+          <el-input v-model="form.name" :placeholder="t('forum.namePlaceholder')" />
         </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入版块描述" />
+        <el-form-item :label="t('forum.description')" prop="description">
+          <el-input v-model="form.description" type="textarea" :rows="3" :placeholder="t('forum.descPlaceholder')" />
         </el-form-item>
-        <el-form-item label="排序" prop="sort_order">
+        <el-form-item :label="t('forum.sortOrder')" prop="sort_order">
           <el-input-number v-model="form.sort_order" :min="0" :max="9999" />
         </el-form-item>
         <el-form-item>
-          <el-checkbox v-model="form.allow_post">允许普通用户发帖</el-checkbox>
+          <el-checkbox v-model="form.allow_post">{{ t('forum.allowPost') }}</el-checkbox>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveForum" :loading="saving">保存</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="saveForum" :loading="saving">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -83,10 +83,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/api'
 import { FolderOpen, Plus, Edit, Trash2 } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const forums = ref([])
 const loading = ref(false)
 const dialogVisible = ref(false)
@@ -107,8 +109,8 @@ async function loadForums() {
     const res = await api.get('/forums')
     forums.value = res || []
   } catch (e) {
-    console.error('加载版块失败', e)
-    ElMessage.error('加载版块失败')
+    console.error('load forums failed', e)
+    ElMessage.error(t('common.failed'))
   } finally {
     loading.value = false
   }
@@ -137,16 +139,16 @@ async function saveForum() {
       if (editingForum.value) {
         await api.put(`/admin/forums/${editingForum.value.id}`, form.value)
         Object.assign(editingForum.value, form.value)
-        ElMessage.success('版块已更新')
+        ElMessage.success(t('common.success'))
       } else {
         const res = await api.post('/admin/forums', form.value)
         forums.value.push(res)
-        ElMessage.success('版块已创建')
+        ElMessage.success(t('common.success'))
       }
       dialogVisible.value = false
     } catch (e) {
-      console.error('保存失败', e)
-      ElMessage.error('保存失败')
+      console.error('save forum failed', e)
+      ElMessage.error(t('common.failed'))
     } finally {
       saving.value = false
     }
@@ -155,18 +157,18 @@ async function saveForum() {
 
 async function deleteForum(forum) {
   try {
-    await ElMessageBox.confirm(`确定要删除版块 "${forum.name}" 吗？`, '删除版块', {
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(`${t('forum.confirmDelete')} "${forum.name}"?`, t('forum.delete'), {
+      confirmButtonText: t('common.delete'),
+      cancelButtonText: t('common.cancel'),
       type: 'warning'
     })
 
     await api.delete(`/admin/forums/${forum.id}`)
     forums.value = forums.value.filter(f => f.id !== forum.id)
-    ElMessage.success('版块已删除')
+    ElMessage.success(t('common.success'))
   } catch (e) {
     if (e !== 'cancel') {
-      console.error('删除失败', e)
+      console.error('delete forum failed', e)
     }
   }
 }

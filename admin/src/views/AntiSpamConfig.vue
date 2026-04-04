@@ -1,161 +1,161 @@
 <template>
   <div class="p-6">
     <div class="mb-6">
-      <h1 class="text-2xl font-bold text-gray-900">防刷系统配置</h1>
-      <p class="text-gray-600 mt-1">配置防刷策略和参数，系统将自动执行所有规则</p>
+      <h1 class="text-2xl font-bold text-gray-900">{{ t('antispam.title') }}</h1>
+      <p class="text-gray-600 mt-1">{{ t('antispam.title') }}</p>
     </div>
 
     <el-tabs v-model="activeTab" class="mb-6">
-      <el-tab-pane label="频率限制" name="rate">
+      <el-tab-pane :label="t('antispam.rateLimit')" name="rate">
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-medium mb-4">操作频率限制</h3>
+          <h3 class="text-lg font-medium mb-4">{{ t('antispam.rateLimitTitle') }}</h3>
           <el-form :model="rateConfig" label-width="200px">
-            <el-form-item label="发帖最小间隔（秒）">
+            <el-form-item :label="t('antispam.topicMinInterval')">
               <el-input-number v-model="rateConfig.topic_min_interval" :min="10" :max="600" />
             </el-form-item>
-            <el-form-item label="评论最小间隔（秒）">
+            <el-form-item :label="t('antispam.commentMinInterval')">
               <el-input-number v-model="rateConfig.comment_min_interval" :min="5" :max="300" />
             </el-form-item>
-            <el-form-item label="单日最大发帖数">
+            <el-form-item :label="t('antispam.maxTopicsPerDay')">
               <el-input-number v-model="rateConfig.max_topics_per_day" :min="1" :max="100" />
             </el-form-item>
-            <el-form-item label="单日最大评论数">
+            <el-form-item :label="t('antispam.maxCommentsPerDay')">
               <el-input-number v-model="rateConfig.max_comments_per_day" :min="1" :max="200" />
             </el-form-item>
             <el-divider />
-            <h4 class="text-md font-medium mb-3">新用户限制</h4>
-            <el-form-item label="新用户判定时长（小时）">
+            <h4 class="text-md font-medium mb-3">{{ t('antispam.newUserLimit') }}</h4>
+            <el-form-item :label="t('antispam.newUserHours2')">
               <el-input-number v-model="rateConfig.new_user_hours" :min="1" :max="168" />
             </el-form-item>
-            <el-form-item label="新用户单日发帖上限">
+            <el-form-item :label="t('antispam.newUserTopicLimit')">
               <el-input-number v-model="rateConfig.new_user_max_topics_per_day" :min="1" :max="20" />
             </el-form-item>
-            <el-form-item label="新用户单日评论上限">
+            <el-form-item :label="t('antispam.newUserCommentLimit')">
               <el-input-number v-model="rateConfig.new_user_max_comments_per_day" :min="1" :max="50" />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="saveRateConfig">保存配置</el-button>
+              <el-button type="primary" @click="saveRateConfig">{{ t('antispam.saveConfig') }}</el-button>
             </el-form-item>
           </el-form>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="内容质量" name="quality">
+      <el-tab-pane :label="t('antispam.contentQuality')" name="quality">
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-medium mb-4">内容质量检测</h3>
+          <h3 class="text-lg font-medium mb-4">{{ t('antispam.qualityDetect') }}</h3>
           <el-form :model="qualityConfig" label-width="200px">
-            <el-form-item label="最小内容长度">
+            <el-form-item :label="t('antispam.minContentLength')">
               <el-input-number v-model="qualityConfig.min_content_length" :min="5" :max="100" />
-              <span class="ml-2 text-gray-500">汉字数量</span>
+              <span class="ml-2 text-gray-500">{{ t('antispam.charCount') }}</span>
             </el-form-item>
-            <el-form-item label="重复字符阈值">
+            <el-form-item :label="t('antispam.repeatCharThreshold')">
               <el-input-number v-model="qualityConfig.repeat_char_threshold" :min="3" :max="20" />
-              <span class="ml-2 text-gray-500">连续重复字符数</span>
+              <span class="ml-2 text-gray-500">{{ t('antispam.repeatCharDesc') }}</span>
             </el-form-item>
-            <el-form-item label="内容相似度阈值">
+            <el-form-item :label="t('antispam.similarityThreshold')">
               <el-slider v-model="qualityConfig.similarity_threshold" :min="0.5" :max="1" :step="0.1" show-input />
-              <span class="ml-2 text-gray-500">超过此阈值判定为重复内容</span>
+              <span class="ml-2 text-gray-500">{{ t('antispam.similarityDesc') }}</span>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="saveQualityConfig">保存配置</el-button>
+              <el-button type="primary" @click="saveQualityConfig">{{ t('antispam.saveConfig') }}</el-button>
             </el-form-item>
           </el-form>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="信誉分系统" name="reputation">
+      <el-tab-pane :label="t('antispam.reputation')" name="reputation">
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-medium mb-4">信誉分配置</h3>
+          <h3 class="text-lg font-medium mb-4">{{ t('antispam.reputationConfig') }}</h3>
           <el-form :model="reputationConfig" label-width="200px">
-            <el-form-item label="低信誉分阈值">
+            <el-form-item :label="t('antispam.lowReputationThreshold')">
               <el-input-number v-model="reputationConfig.low_reputation_threshold" :min="20" :max="80" />
-              <span class="ml-2 text-gray-500">低于此分数将降低内容热度</span>
+              <span class="ml-2 text-gray-500">{{ t('antispam.lowRepDesc') }}</span>
             </el-form-item>
-            <el-form-item label="禁言信誉分阈值">
+            <el-form-item :label="t('antispam.banReputationThreshold')">
               <el-input-number v-model="reputationConfig.ban_reputation_threshold" :min="0" :max="50" />
-              <span class="ml-2 text-gray-500">低于此分数将自动禁言</span>
+              <span class="ml-2 text-gray-500">{{ t('antispam.banRepDesc') }}</span>
             </el-form-item>
-            <el-form-item label="启用低信誉分禁言">
+            <el-form-item :label="t('antispam.banLowReputation')">
               <el-switch v-model="reputationConfig.ban_low_reputation" />
             </el-form-item>
             <el-divider />
-            <h4 class="text-md font-medium mb-3">热度权重</h4>
-            <el-form-item label="低质量内容热度系数">
+            <h4 class="text-md font-medium mb-3">{{ t('antispam.hotWeight') }}</h4>
+            <el-form-item :label="t('antispam.lowQualityHot')">
               <el-slider v-model="reputationConfig.low_quality_hot_multiplier" :min="0" :max="1" :step="0.1" show-input />
             </el-form-item>
-            <el-form-item label="低信誉分内容热度系数">
+            <el-form-item :label="t('antispam.lowRepHot')">
               <el-slider v-model="reputationConfig.low_reputation_hot_multiplier" :min="0" :max="1" :step="0.1" show-input />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="saveReputationConfig">保存配置</el-button>
+              <el-button type="primary" @click="saveReputationConfig">{{ t('antispam.saveConfig') }}</el-button>
             </el-form-item>
           </el-form>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="举报处理" name="report">
+      <el-tab-pane :label="t('antispam.report')" name="report">
         <div class="bg-white rounded-lg shadow p-6">
-          <h3 class="text-lg font-medium mb-4">举报自动处理</h3>
+          <h3 class="text-lg font-medium mb-4">{{ t('antispam.reportAutoHandle') }}</h3>
           <el-form :model="reportConfig" label-width="200px">
-            <el-form-item label="自动隐藏举报阈值">
+            <el-form-item :label="t('antispam.autoHide')">
               <el-input-number v-model="reportConfig.report_threshold" :min="1" :max="10" />
-              <span class="ml-2 text-gray-500">达到此举报数自动隐藏内容</span>
+              <span class="ml-2 text-gray-500">{{ t('antispam.autoHideDesc') }}</span>
             </el-form-item>
-            <el-form-item label="自动禁言违规阈值">
+            <el-form-item :label="t('antispam.autoBan')">
               <el-input-number v-model="reportConfig.report_ban_threshold" :min="1" :max="20" />
-              <span class="ml-2 text-gray-500">7天内被隐藏内容达到此数自动禁言</span>
+              <span class="ml-2 text-gray-500">{{ t('antispam.autoBanDesc') }}</span>
             </el-form-item>
-            <el-form-item label="自动禁言天数">
+            <el-form-item :label="t('antispam.autoBanDays')">
               <el-input-number v-model="reportConfig.report_ban_days" :min="1" :max="30" />
             </el-form-item>
-            <el-form-item label="每日举报上限">
+            <el-form-item :label="t('antispam.maxReportPerDay')">
               <el-input-number v-model="reportConfig.max_reports_per_day" :min="1" :max="50" />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="saveReportConfig">保存配置</el-button>
+              <el-button type="primary" @click="saveReportConfig">{{ t('antispam.saveConfig') }}</el-button>
             </el-form-item>
           </el-form>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="用户信誉" name="users">
+      <el-tab-pane :label="t('antispam.userReputation')" name="users">
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium">用户信誉分管理</h3>
-            <el-input v-model="userSearch" placeholder="搜索用户" style="width: 300px" clearable>
+            <h3 class="text-lg font-medium">{{ t('antispam.userRepManage') }}</h3>
+            <el-input v-model="userSearch" :placeholder="t('antispam.searchUser')" style="width: 300px" clearable>
               <template #prefix>
                 <el-icon><Search /></el-icon>
               </template>
             </el-input>
           </div>
-          
+
           <el-table :data="filteredUsers" style="width: 100%">
             <el-table-column prop="id" label="ID" width="80" />
-            <el-table-column prop="username" label="用户名" width="150" />
-            <el-table-column prop="nickname" label="昵称" width="150" />
-            <el-table-column label="信誉分" width="200">
+            <el-table-column prop="username" :label="t('antispam.username')" width="150" />
+            <el-table-column prop="nickname" :label="t('antispam.nickname')" width="150" />
+            <el-table-column :label="t('antispam.reputationScore')" width="200">
               <template #default="{ row }">
-                <el-progress 
-                  :percentage="row.reputation" 
+                <el-progress
+                  :percentage="row.reputation"
                   :color="getReputationColor(row.reputation)"
                   :stroke-width="20"
                   :text-inside="true"
                 />
               </template>
             </el-table-column>
-            <el-table-column label="信誉等级" width="120">
+            <el-table-column :label="t('antispam.reputationLevel')" width="120">
               <template #default="{ row }">
                 <el-tag :type="getReputationTagType(row.reputation)">
                   {{ getReputationLevel(row.reputation) }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="created_at" label="注册时间" width="180" />
-            <el-table-column label="操作" fixed="right" width="200">
+            <el-table-column prop="created_at" :label="t('antispam.registerTime')" width="180" />
+            <el-table-column :label="t('common.actions')" fixed="right" width="200">
               <template #default="{ row }">
-                <el-button size="small" @click="showReputationDialog(row)">调整信誉分</el-button>
-                <el-button size="small" type="danger" @click="banUser(row)" v-if="!isBanned(row)">禁言</el-button>
-                <el-button size="small" type="success" @click="unbanUser(row)" v-else>解禁</el-button>
+                <el-button size="small" @click="showReputationDialog(row)">{{ t('antispam.adjustScore') }}</el-button>
+                <el-button size="small" type="danger" @click="banUser(row)" v-if="!isBanned(row)">{{ t('antispam.ban') }}</el-button>
+                <el-button size="small" type="success" @click="unbanUser(row)" v-else>{{ t('antispam.unban') }}</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -173,21 +173,21 @@
       </el-tab-pane>
     </el-tabs>
 
-    <el-dialog v-model="reputationDialogVisible" title="调整用户信誉分" width="400px">
+    <el-dialog v-model="reputationDialogVisible" :title="t('antispam.adjustScore')" width="400px">
       <el-form :model="reputationForm" label-width="100px">
-        <el-form-item label="当前信誉分">
+        <el-form-item :label="t('antispam.currentScore')">
           <el-input :value="currentUser?.reputation" disabled />
         </el-form-item>
-        <el-form-item label="调整分数">
+        <el-form-item :label="t('antispam.adjustChange')">
           <el-input-number v-model="reputationForm.change" :min="-100" :max="100" />
         </el-form-item>
-        <el-form-item label="调整原因">
+        <el-form-item :label="t('antispam.adjustReason')">
           <el-input v-model="reputationForm.reason" type="textarea" :rows="3" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="reputationDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="adjustReputation">确定</el-button>
+        <el-button @click="reputationDialogVisible = false">{{ t('antispam.cancel') }}</el-button>
+        <el-button type="primary" @click="adjustReputation">{{ t('antispam.confirm') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -195,10 +195,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import api from '@/api'
 
+const { t } = useI18n()
 const activeTab = ref('rate')
 const userSearch = ref('')
 const userPage = ref(1)
@@ -246,7 +248,7 @@ const reputationForm = ref({
 const filteredUsers = computed(() => {
   if (!userSearch.value) return users.value
   const search = userSearch.value.toLowerCase()
-  return users.value.filter(u => 
+  return users.value.filter(u =>
     u.username?.toLowerCase().includes(search) ||
     u.nickname?.toLowerCase().includes(search)
   )
@@ -282,7 +284,7 @@ async function loadConfigs() {
       })
     }
   } catch (e) {
-    console.error('加载配置失败', e)
+    console.error('Load config failed', e)
   }
 }
 
@@ -305,9 +307,9 @@ async function saveReportConfig() {
 async function saveConfig(config) {
   try {
     await api.post('/admin/antispam/config', config)
-    ElMessage.success('配置保存成功')
+    ElMessage.success(t('antispam.saveSuccess'))
   } catch (e) {
-    ElMessage.error('配置保存失败')
+    ElMessage.error(t('antispam.saveFailed'))
     console.error(e)
   }
 }
@@ -320,7 +322,7 @@ async function loadUsers() {
     users.value = res.list || []
     userTotal.value = res.total || 0
   } catch (e) {
-    console.error('加载用户失败', e)
+    console.error('Load users failed', e)
   }
 }
 
@@ -340,11 +342,11 @@ function getReputationTagType(reputation) {
 }
 
 function getReputationLevel(reputation) {
-  if (reputation >= 80) return '正常'
-  if (reputation >= 60) return '需验证'
-  if (reputation >= 40) return '受限'
-  if (reputation >= 20) return '严重'
-  return '禁言'
+  if (reputation >= 80) return t('antispam.levels.normal')
+  if (reputation >= 60) return t('antispam.levels.verify')
+  if (reputation >= 40) return t('antispam.levels.restricted')
+  if (reputation >= 20) return t('antispam.levels.serious')
+  return t('antispam.levels.banned')
 }
 
 function isBanned(user) {
@@ -360,28 +362,28 @@ function showReputationDialog(user) {
 async function adjustReputation() {
   try {
     await api.post(`/admin/users/${currentUser.value.id}/reputation`, reputationForm.value)
-    ElMessage.success('信誉分调整成功')
+    ElMessage.success(t('antispam.adjustSuccess'))
     reputationDialogVisible.value = false
     loadUsers()
   } catch (e) {
-    ElMessage.error('调整失败')
+    ElMessage.error(t('antispam.adjustFailed'))
     console.error(e)
   }
 }
 
 async function banUser(user) {
   try {
-    await ElMessageBox.confirm('确定要禁言该用户吗？', '警告', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('antispam.banConfirm'), t('antispam.ban'), {
+      confirmButtonText: t('antispam.confirm'),
+      cancelButtonText: t('antispam.cancel'),
       type: 'warning'
     })
-    await api.post(`/admin/users/${user.id}/ban`, { reason: '管理员手动禁言' })
-    ElMessage.success('用户已被禁言')
+    await api.post(`/admin/users/${user.id}/ban`, { reason: t('antispam.banReason') })
+    ElMessage.success(t('antispam.banSuccess'))
     loadUsers()
   } catch (e) {
     if (e !== 'cancel') {
-      ElMessage.error('操作失败')
+      ElMessage.error(t('antispam.operationFailed'))
       console.error(e)
     }
   }
@@ -390,10 +392,10 @@ async function banUser(user) {
 async function unbanUser(user) {
   try {
     await api.post(`/admin/users/${user.id}/unban`)
-    ElMessage.success('用户已解禁')
+    ElMessage.success(t('antispam.unbanSuccess'))
     loadUsers()
   } catch (e) {
-    ElMessage.error('操作失败')
+    ElMessage.error(t('antispam.operationFailed'))
     console.error(e)
   }
 }

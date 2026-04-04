@@ -5,7 +5,7 @@
         <div class="card-header">
           <h3>
             <Sliders :size="18" />
-            系统设置
+            {{ t('settings.title') }}
           </h3>
         </div>
       </template>
@@ -14,34 +14,34 @@
         <div class="settings-section">
           <h4 class="section-title">
             <ToggleLeft :size="16" />
-            功能开关
+            {{ t('settings.features') }}
           </h4>
           <div class="switch-grid">
             <div class="switch-item">
               <div class="switch-info">
-                <span class="switch-label">允许用户注册</span>
-                <span class="switch-desc">控制是否开放新用户注册</span>
+                <span class="switch-label">{{ t('settings.allowRegister') }}</span>
+                <span class="switch-desc">{{ t('settings.allowRegisterDesc') }}</span>
               </div>
               <el-switch v-model="settings.allow_register" />
             </div>
             <div class="switch-item">
               <div class="switch-info">
-                <span class="switch-label">允许发帖</span>
-                <span class="switch-desc">控制是否允许用户发布帖子</span>
+                <span class="switch-label">{{ t('settings.allowPost') }}</span>
+                <span class="switch-desc">{{ t('settings.allowPostDesc') }}</span>
               </div>
               <el-switch v-model="settings.allow_post" />
             </div>
             <div class="switch-item">
               <div class="switch-info">
-                <span class="switch-label">允许评论</span>
-                <span class="switch-desc">控制是否允许用户发表评论</span>
+                <span class="switch-label">{{ t('settings.allowComment') }}</span>
+                <span class="switch-desc">{{ t('settings.allowCommentDesc') }}</span>
               </div>
               <el-switch v-model="settings.allow_comment" />
             </div>
             <div class="switch-item">
               <div class="switch-info">
-                <span class="switch-label">允许发起投票</span>
-                <span class="switch-desc">控制是否允许用户发布投票</span>
+                <span class="switch-label">{{ t('settings.allowPoll') }}</span>
+                <span class="switch-desc">{{ t('settings.allowPollDesc') }}</span>
               </div>
               <el-switch v-model="settings.allow_poll" />
             </div>
@@ -51,21 +51,21 @@
         <div class="settings-section">
           <h4 class="section-title">
             <Coins :size="16" />
-            积分规则
+            {{ t('settings.credits') }}
           </h4>
           <el-row :gutter="24">
             <el-col :span="8">
-              <el-form-item label="发帖积分">
+              <el-form-item :label="t('settings.topicCredits')">
                 <el-input-number v-model="settings.credits_topic" :min="0" :max="999" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="评论积分">
+              <el-form-item :label="t('settings.commentCredits')">
                 <el-input-number v-model="settings.credits_post" :min="0" :max="999" />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="签到积分">
+              <el-form-item :label="t('settings.creditSignin')">
                 <el-input-number v-model="settings.credits_signin" :min="0" :max="999" />
               </el-form-item>
             </el-col>
@@ -73,10 +73,10 @@
         </div>
 
         <div class="form-footer">
-          <el-button @click="resetSettings">重置</el-button>
+          <el-button @click="resetSettings">{{ t('settings.reset') }}</el-button>
           <el-button type="primary" @click="saveSettings" :loading="saving">
             <Save :size="16" />
-            保存设置
+            {{ t('settings.saveSettings') }}
           </el-button>
         </div>
       </el-form>
@@ -86,10 +86,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { Sliders, ToggleLeft, Coins, Save } from 'lucide-vue-next'
 import api from '@/api'
 
+const { t } = useI18n()
 const settings = ref({
   allow_register: true,
   allow_post: true,
@@ -116,7 +118,7 @@ async function loadSettings() {
       credits_signin: parseInt(config.credit_signin) || 2
     }
   } catch (e) {
-    console.error('加载设置失败', e)
+    console.error('Load settings failed', e)
   }
 }
 
@@ -136,10 +138,10 @@ async function saveSettings() {
       credit_post: String(settings.value.credits_post),
       credit_signin: String(settings.value.credits_signin)
     })
-    ElMessage.success('设置已保存')
+    ElMessage.success(t('settings.saveSuccess'))
   } catch (e) {
-    console.error('保存设置失败', e)
-    ElMessage.error('保存失败')
+    console.error('Save settings failed', e)
+    ElMessage.error(t('settings.saveFailed'))
   } finally {
     saving.value = false
   }

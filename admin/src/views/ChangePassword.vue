@@ -5,31 +5,31 @@
         <div class="card-header">
           <h3>
             <Key :size="18" />
-            修改密码
+            {{ t('password.title') }}
           </h3>
         </div>
       </template>
 
       <div class="form-wrapper">
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="password-form">
-          <el-form-item label="原密码" prop="old_password">
-            <el-input v-model="form.old_password" type="password" placeholder="请输入原密码" show-password size="large">
+          <el-form-item :label="t('password.oldPassword')" prop="old_password">
+            <el-input v-model="form.old_password" type="password" :placeholder="t('password.oldPassword')" show-password size="large">
               <template #prefix>
                 <Lock :size="18" />
               </template>
             </el-input>
           </el-form-item>
 
-          <el-form-item label="新密码" prop="new_password">
-            <el-input v-model="form.new_password" type="password" placeholder="请输入新密码（至少6位）" show-password size="large">
+          <el-form-item :label="t('password.newPassword')" prop="new_password">
+            <el-input v-model="form.new_password" type="password" :placeholder="t('password.newPasswordPlaceholder')" show-password size="large">
               <template #prefix>
                 <Key :size="18" />
               </template>
             </el-input>
           </el-form-item>
 
-          <el-form-item label="确认新密码" prop="confirm_password">
-            <el-input v-model="form.confirm_password" type="password" placeholder="请再次输入新密码" show-password size="large">
+          <el-form-item :label="t('password.confirmPassword')" prop="confirm_password">
+            <el-input v-model="form.confirm_password" type="password" :placeholder="t('password.confirmPasswordPlaceholder')" show-password size="large">
               <template #prefix>
                 <KeyRound :size="18" />
               </template>
@@ -37,10 +37,10 @@
           </el-form-item>
 
           <div class="form-actions">
-            <el-button size="large" @click="resetForm">重置</el-button>
+            <el-button size="large" @click="resetForm">{{ t('common.reset') }}</el-button>
             <el-button type="primary" size="large" @click="handleSubmit" :loading="loading">
               <Save :size="16" />
-              保存修改
+              {{ t('password.submit') }}
             </el-button>
           </div>
         </el-form>
@@ -52,11 +52,13 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAdminStore } from '@/stores/admin'
 import { ElMessage } from 'element-plus'
 import api from '@/api'
 import { Key, Lock, KeyRound, Save } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const router = useRouter()
 const adminStore = useAdminStore()
 const formRef = ref(null)
@@ -70,7 +72,7 @@ const form = ref({
 
 const validateConfirm = (rule, value, callback) => {
   if (value !== form.value.new_password) {
-    callback(new Error('两次输入的密码不一致'))
+    callback(new Error(t('password.passwordMismatch')))
   } else {
     callback()
   }
@@ -78,14 +80,14 @@ const validateConfirm = (rule, value, callback) => {
 
 const rules = {
   old_password: [
-    { required: true, message: '请输入原密码', trigger: 'blur' }
+    { required: true, message: () => t('password.oldPassword'), trigger: 'blur' }
   ],
   new_password: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, message: '密码长度至少为6位', trigger: 'blur' }
+    { required: true, message: () => t('password.newPassword'), trigger: 'blur' },
+    { min: 6, message: () => t('password.minLength'), trigger: 'blur' }
   ],
   confirm_password: [
-    { required: true, message: '请确认新密码', trigger: 'blur' },
+    { required: true, message: () => t('password.confirmPassword'), trigger: 'blur' },
     { validator: validateConfirm, trigger: 'blur' }
   ]
 }
@@ -111,12 +113,12 @@ async function handleSubmit() {
         old_password: form.value.old_password,
         new_password: form.value.new_password
       })
-      ElMessage.success('密码修改成功，请重新登录')
+      ElMessage.success(t('password.success'))
       adminStore.logout()
       router.push('/login')
     } catch (e) {
-      console.error('密码修改失败', e)
-      ElMessage.error(e.response?.data?.message || '密码修改失败')
+      console.error('change password failed', e)
+      ElMessage.error(e.response?.data?.message || t('common.failed'))
     } finally {
       loading.value = false
     }

@@ -6,20 +6,20 @@
           <div class="header-left">
             <h3>
               <Bell :size="18" />
-              公告列表
+              {{ t('announcement.list') }}
             </h3>
-            <span class="total-count">共 {{ announcements.length }} 条公告</span>
+            <span class="total-count">{{ t('announcement.totalAnnouncements').replace('%d', announcements.length) }}</span>
           </div>
           <el-button type="primary" @click="openCreateModal">
             <Plus :size="16" />
-            发布公告
+            {{ t('announcement.publishAnnouncement') }}
           </el-button>
         </div>
       </template>
 
       <el-table :data="announcements" stripe style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="标题" min-width="200">
+        <el-table-column :label="t('announcement.title2')" min-width="200">
           <template #default="{ row }">
             <div class="title-cell">
               <span v-if="row.is_pinned" class="pin-icon">
@@ -29,32 +29,32 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="置顶" width="80">
+        <el-table-column :label="t('announcement.isPinned')" width="80">
           <template #default="{ row }">
             <el-tag :type="row.is_pinned ? 'danger' : 'info'" size="small">
-              {{ row.is_pinned ? '是' : '否' }}
+              {{ row.is_pinned ? t('common.yes') : t('common.no') }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="过期时间" width="150">
+        <el-table-column :label="t('announcement.expiresAt')" width="150">
           <template #default="{ row }">
-            <span class="date-text">{{ row.expires_at ? formatDate(row.expires_at) : '永久有效' }}</span>
+            <span class="date-text">{{ row.expires_at ? formatDate(row.expires_at) : t('announcement.permanent') }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="发布时间" width="120">
+        <el-table-column :label="t('announcement.publishTime')" width="120">
           <template #default="{ row }">
             <span class="date-text">{{ formatDate(row.created_at) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="140" fixed="right">
+        <el-table-column :label="t('common.actions')" width="140" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="editAnnouncement(row)">
               <Edit :size="14" />
-              编辑
+              {{ t('common.edit') }}
             </el-button>
             <el-button link type="danger" @click="deleteAnnouncement(row)">
               <Trash2 :size="14" />
-              删除
+              {{ t('common.delete') }}
             </el-button>
           </template>
         </el-table-column>
@@ -62,24 +62,24 @@
     </el-card>
 
     <!-- 创建/编辑弹窗 -->
-    <el-dialog v-model="dialogVisible" :title="editingAnnouncement ? '编辑公告' : '发布公告'" width="520px" :close-on-click-modal="false">
+    <el-dialog v-model="dialogVisible" :title="editingAnnouncement ? t('announcement.editAnnouncement') : t('announcement.publishAnnouncement')" width="520px" :close-on-click-modal="false">
       <el-form ref="formRef" :model="form" label-position="top">
-        <el-form-item label="标题" prop="title" :rules="[{ required: true, message: '请输入公告标题', trigger: 'blur' }]">
-          <el-input v-model="form.title" placeholder="请输入公告标题" />
+        <el-form-item :label="t('announcement.title2')" prop="title" :rules="[{ required: true, message: t('announcement.titlePlaceholder'), trigger: 'blur' }]">
+          <el-input v-model="form.title" :placeholder="t('announcement.titlePlaceholder')" />
         </el-form-item>
-        <el-form-item label="内容" prop="content" :rules="[{ required: true, message: '请输入公告内容', trigger: 'blur' }]">
-          <el-input v-model="form.content" type="textarea" :rows="5" placeholder="请输入公告内容" />
+        <el-form-item :label="t('announcement.content')" prop="content" :rules="[{ required: true, message: t('announcement.contentPlaceholder'), trigger: 'blur' }]">
+          <el-input v-model="form.content" type="textarea" :rows="5" :placeholder="t('announcement.contentPlaceholder')" />
         </el-form-item>
         <el-form-item>
-          <el-checkbox v-model="form.is_pinned">置顶公告</el-checkbox>
+          <el-checkbox v-model="form.is_pinned">{{ t('announcement.isPinned') }}</el-checkbox>
         </el-form-item>
-        <el-form-item label="过期时间（可选）">
-          <el-date-picker v-model="form.expires_at" type="datetime" placeholder="留空表示永久有效" style="width: 100%" />
+        <el-form-item :label="t('announcement.expiresAtOptional')">
+          <el-date-picker v-model="form.expires_at" type="datetime" :placeholder="t('announcement.expiresAtPlaceholder')" style="width: 100%" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveAnnouncement" :loading="saving">保存</el-button>
+        <el-button @click="dialogVisible = false">{{ t('announcement.cancel') }}</el-button>
+        <el-button type="primary" @click="saveAnnouncement" :loading="saving">{{ t('announcement.save') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -87,10 +87,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/api'
 import { Bell, Plus, Edit, Trash2, Pin } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const announcements = ref([])
 const loading = ref(false)
 const dialogVisible = ref(false)
@@ -106,7 +108,7 @@ const form = ref({
 })
 
 function formatDate(date) {
-  return new Date(date).toLocaleDateString('zh-CN')
+  return new Date(date).toLocaleDateString()
 }
 
 async function loadAnnouncements() {
@@ -115,8 +117,8 @@ async function loadAnnouncements() {
     const res = await api.get('/announcements')
     announcements.value = res || []
   } catch (e) {
-    console.error('加载公告失败', e)
-    ElMessage.error('加载公告失败')
+    console.error('Load announcements failed', e)
+    ElMessage.error(t('common.failed'))
   } finally {
     loading.value = false
   }
@@ -145,16 +147,16 @@ async function saveAnnouncement() {
       if (editingAnnouncement.value) {
         await api.put(`/admin/announcements/${editingAnnouncement.value.id}`, form.value)
         Object.assign(editingAnnouncement.value, form.value)
-        ElMessage.success('公告已更新')
+        ElMessage.success(t('common.success'))
       } else {
         const res = await api.post('/admin/announcements', form.value)
         announcements.value.unshift(res)
-        ElMessage.success('公告已发布')
+        ElMessage.success(t('common.success'))
       }
       dialogVisible.value = false
     } catch (e) {
-      console.error('保存失败', e)
-      ElMessage.error('保存失败')
+      console.error('Save announcement failed', e)
+      ElMessage.error(t('common.failed'))
     } finally {
       saving.value = false
     }
@@ -163,19 +165,19 @@ async function saveAnnouncement() {
 
 async function deleteAnnouncement(announcement) {
   try {
-    await ElMessageBox.confirm(`确定要删除公告 "${announcement.title}" 吗？`, '删除公告', {
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(`${t('common.confirm')} "${announcement.title}"?`, t('announcement.delete'), {
+      confirmButtonText: t('common.delete'),
+      cancelButtonText: t('common.cancel'),
       type: 'warning'
     })
 
     await api.delete(`/admin/announcements/${announcement.id}`)
     announcements.value = announcements.value.filter(a => a.id !== announcement.id)
-    ElMessage.success('公告已删除')
+    ElMessage.success(t('common.success'))
   } catch (e) {
     if (e !== 'cancel') {
-      console.error('删除失败', e)
-      ElMessage.error('删除失败')
+      console.error('Delete announcement failed', e)
+      ElMessage.error(t('common.failed'))
     }
   }
 }

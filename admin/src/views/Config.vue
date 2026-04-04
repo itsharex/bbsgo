@@ -5,18 +5,18 @@
         <div class="card-header">
           <h3>
             <Settings :size="18" />
-            网站配置
+            {{ t('config.title') }}
           </h3>
         </div>
       </template>
 
       <el-tabs v-model="activeTab">
-        <el-tab-pane label="基本设置" name="basic">
+        <el-tab-pane :label="t('config.basic')" name="basic">
           <el-form :model="config" label-position="top">
             <el-row :gutter="24">
               <el-col :span="12">
-                <el-form-item label="网站名称">
-                  <el-input v-model="config.site_name" placeholder="请输入网站名称">
+                <el-form-item :label="t('config.siteName')">
+                  <el-input v-model="config.site_name" :placeholder="t('config.siteNamePlaceholder')">
                     <template #prefix>
                       <Globe :size="16" />
                     </template>
@@ -24,15 +24,15 @@
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="网站描述">
-                  <el-input v-model="config.site_description" placeholder="请输入网站描述" />
+                <el-form-item :label="t('config.siteDescription')">
+                  <el-input v-model="config.site_description" :placeholder="t('config.siteDescPlaceholder')" />
                 </el-form-item>
               </el-col>
             </el-row>
 
             <el-row :gutter="24">
               <el-col :span="12">
-                <el-form-item label="网站 Logo">
+                <el-form-item :label="t('config.siteLogo')">
                   <div class="upload-container">
                     <el-upload
                       class="image-uploader"
@@ -45,30 +45,30 @@
                         <img :src="config.site_logo" class="preview-img" />
                         <div class="image-actions">
                           <el-button type="primary" size="small" @click.stop="config.site_logo = ''">
-                            更换图片
+                            {{ t('config.changeImage') }}
                           </el-button>
                         </div>
                       </div>
                       <div v-else class="upload-placeholder">
                         <el-icon class="upload-icon"><Plus /></el-icon>
-                        <div class="upload-text">点击上传 Logo</div>
-                        <div class="upload-hint">建议尺寸：800×200px</div>
+                        <div class="upload-text">{{ t('config.uploadLogo') }}</div>
+                        <div class="upload-hint">{{ t('config.logoSize') }}</div>
                       </div>
                     </el-upload>
                     <div v-if="uploadingLogo" class="upload-loading">
                       <el-icon class="is-loading"><Loading /></el-icon>
-                      <span>正在上传...</span>
+                      <span>{{ t('config.uploading') }}</span>
                     </div>
                     <div v-if="config.site_logo" class="url-display">
                       <el-input v-model="config.site_logo" placeholder="Logo URL" readonly>
-                        <template #prepend>URL</template>
+                        <template #prepend>{{ t('config.logoUrl') }}</template>
                       </el-input>
                     </div>
                   </div>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="网站 Icon">
+                <el-form-item :label="t('config.siteIcon')">
                   <div class="upload-container">
                     <el-upload
                       class="image-uploader icon-uploader"
@@ -81,23 +81,23 @@
                         <img :src="config.site_icon" class="preview-img icon-img" />
                         <div class="image-actions">
                           <el-button type="primary" size="small" @click.stop="config.site_icon = ''">
-                            更换图片
+                            {{ t('config.changeImage') }}
                           </el-button>
                         </div>
                       </div>
                       <div v-else class="upload-placeholder icon-placeholder">
                         <el-icon class="upload-icon"><Plus /></el-icon>
-                        <div class="upload-text">点击上传 Icon</div>
-                        <div class="upload-hint">建议尺寸：256×256px</div>
+                        <div class="upload-text">{{ t('config.uploadIcon') }}</div>
+                        <div class="upload-hint">{{ t('config.iconSize') }}</div>
                       </div>
                     </el-upload>
                     <div v-if="uploadingIcon" class="upload-loading">
                       <el-icon class="is-loading"><Loading /></el-icon>
-                      <span>正在上传...</span>
+                      <span>{{ t('config.uploading') }}</span>
                     </div>
                     <div v-if="config.site_icon" class="url-display">
                       <el-input v-model="config.site_icon" placeholder="Icon URL" readonly>
-                        <template #prepend>URL</template>
+                        <template #prepend>{{ t('config.iconUrl') }}</template>
                       </el-input>
                     </div>
                   </div>
@@ -107,38 +107,35 @@
           </el-form>
         </el-tab-pane>
 
-        <el-tab-pane label="邮件配置" name="email">
+        <el-tab-pane :label="t('config.email')" name="email">
           <el-alert
-            title="邮件服务说明"
+            :title="t('config.emailTip')"
             type="info"
             :closable="false"
             show-icon
             style="margin-bottom: 20px"
           >
             <template #default>
-              <p style="margin: 0">邮件服务用于用户注册时发送邮箱验证码，确保用户邮箱真实有效。</p>
-              <p style="margin: 8px 0 0 0; color: #909399; font-size: 13px">
-                启用邮件服务后，用户注册时需要输入邮箱验证码才能完成注册。
-              </p>
+              <p style="margin: 0">{{ t('config.emailTip2') }}</p>
             </template>
           </el-alert>
 
           <el-form :model="config" label-position="top">
-            <el-form-item label="启用邮件服务">
+            <el-form-item :label="t('config.emailEnabled')">
               <el-switch v-model="config.email_enabled" />
               <div style="color: #909399; font-size: 12px; margin-top: 4px">
-                启用后，用户注册时需要邮箱验证码；禁用则跳过邮箱验证
+                {{ t('config.emailEnabledDesc') }}
               </div>
             </el-form-item>
 
             <el-row :gutter="24">
               <el-col :span="12">
-                <el-form-item label="SMTP 服务器">
+                <el-form-item :label="t('config.emailHost')">
                   <el-input v-model="config.email_host" placeholder="smtp.example.com" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="SMTP 端口">
+                <el-form-item :label="t('config.emailPort')">
                   <el-input v-model="config.email_port" placeholder="465" />
                 </el-form-item>
               </el-col>
@@ -146,50 +143,50 @@
 
             <el-row :gutter="24">
               <el-col :span="12">
-                <el-form-item label="邮箱账号">
+                <el-form-item :label="t('config.emailUser')">
                   <el-input v-model="config.email_user" placeholder="noreply@example.com" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="邮箱密码">
-                  <el-input v-model="config.email_password" type="password" placeholder="请输入邮箱密码" />
+                <el-form-item :label="t('config.emailPassword')">
+                  <el-input v-model="config.email_password" type="password" :placeholder="t('config.emailPassword')" />
                 </el-form-item>
               </el-col>
             </el-row>
 
             <el-row :gutter="24">
               <el-col :span="12">
-                <el-form-item label="发件人地址">
+                <el-form-item :label="t('config.emailFrom')">
                   <el-input v-model="config.email_from" placeholder="noreply@example.com" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="发件人名称">
-                  <el-input v-model="config.email_from_name" placeholder="网站名称" />
+                <el-form-item :label="t('config.emailFromName')">
+                  <el-input v-model="config.email_from_name" :placeholder="t('config.siteName')" />
                 </el-form-item>
               </el-col>
             </el-row>
           </el-form>
         </el-tab-pane>
 
-        <el-tab-pane label="图床配置" name="storage">
+        <el-tab-pane :label="t('config.storage')" name="storage">
           <el-form :model="config" label-position="top">
-            <el-form-item label="存储类型">
-              <el-select v-model="config.storage_type" placeholder="请选择存储类型" class="w-full">
-                <el-option label="本地存储" value="local" />
-                <el-option label="七牛云存储" value="qiniu" />
-                <el-option label="阿里云OSS" value="aliyun" />
-                <el-option label="腾讯云COS" value="tencent" />
+            <el-form-item :label="t('config.storageType')">
+              <el-select v-model="config.storage_type" :placeholder="t('config.selectStorageType')" class="w-full">
+                <el-option :label="t('config.storageLocal')" value="local" />
+                <el-option :label="t('config.storageQiniu')" value="qiniu" />
+                <el-option :label="t('config.storageAliyun')" value="aliyun" />
+                <el-option :label="t('config.storageTencent')" value="tencent" />
               </el-select>
             </el-form-item>
 
             <template v-if="config.storage_type === 'local'">
               <el-alert type="info" :closable="false" show-icon>
                 <template #title>
-                  本地存储说明
+                  {{ t('config.localStorageTip') }}
                 </template>
                 <template #default>
-                  文件保存在服务器 <code>./uploads</code> 目录，访问路径为 <code>/uploads/文件名.png</code>
+                  {{ t('config.localStorageDesc') }}
                 </template>
               </el-alert>
             </template>
@@ -197,24 +194,24 @@
             <template v-if="config.storage_type === 'qiniu'">
               <el-row :gutter="24">
                 <el-col :span="12">
-                  <el-form-item label="Access Key">
-                    <el-input v-model="config.qiniu_access_key" placeholder="请输入 Access Key" />
+                  <el-form-item :label="t('config.qiniuAccessKey')">
+                    <el-input v-model="config.qiniu_access_key" :placeholder="t('config.qiniuAccessKey')" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="Secret Key">
-                    <el-input v-model="config.qiniu_secret_key" type="password" placeholder="请输入 Secret Key" />
+                  <el-form-item :label="t('config.qiniuSecretKey')">
+                    <el-input v-model="config.qiniu_secret_key" type="password" :placeholder="t('config.qiniuSecretKey')" />
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-row :gutter="24">
                 <el-col :span="12">
-                  <el-form-item label="Bucket 名称">
-                    <el-input v-model="config.qiniu_bucket" placeholder="请输入 Bucket 名称" />
+                  <el-form-item :label="t('config.qiniuBucket')">
+                    <el-input v-model="config.qiniu_bucket" :placeholder="t('config.qiniuBucket')" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="CDN 域名">
+                  <el-form-item :label="t('config.qiniuDomain')">
                     <el-input v-model="config.qiniu_domain" placeholder="cdn.example.com" />
                   </el-form-item>
                 </el-col>
@@ -224,31 +221,31 @@
             <template v-if="config.storage_type === 'aliyun'">
               <el-row :gutter="24">
                 <el-col :span="12">
-                  <el-form-item label="AccessKey ID">
-                    <el-input v-model="config.aliyun_access_key_id" placeholder="请输入 AccessKey ID" />
+                  <el-form-item :label="t('config.aliyunAccessKeyId')">
+                    <el-input v-model="config.aliyun_access_key_id" :placeholder="t('config.aliyunAccessKeyId')" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="AccessKey Secret">
-                    <el-input v-model="config.aliyun_access_key_secret" type="password" placeholder="请输入 AccessKey Secret" />
+                  <el-form-item :label="t('config.aliyunAccessKeySecret')">
+                    <el-input v-model="config.aliyun_access_key_secret" type="password" :placeholder="t('config.aliyunAccessKeySecret')" />
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-row :gutter="24">
                 <el-col :span="12">
-                  <el-form-item label="Bucket">
-                    <el-input v-model="config.aliyun_bucket" placeholder="请输入 Bucket" />
+                  <el-form-item :label="t('config.aliyunBucket')">
+                    <el-input v-model="config.aliyun_bucket" :placeholder="t('config.aliyunBucket')" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="Endpoint">
+                  <el-form-item :label="t('config.aliyunEndpoint')">
                     <el-input v-model="config.aliyun_endpoint" placeholder="oss-cn-hangzhou.aliyuncs.com" />
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-row :gutter="24">
                 <el-col :span="12">
-                  <el-form-item label="CDN 域名">
+                  <el-form-item :label="t('config.aliyunDomain')">
                     <el-input v-model="config.aliyun_domain" placeholder="cdn.example.com" />
                   </el-form-item>
                 </el-col>
@@ -258,31 +255,31 @@
             <template v-if="config.storage_type === 'tencent'">
               <el-row :gutter="24">
                 <el-col :span="12">
-                  <el-form-item label="Secret ID">
-                    <el-input v-model="config.tencent_secret_id" placeholder="请输入 Secret ID" />
+                  <el-form-item :label="t('config.tencentSecretId')">
+                    <el-input v-model="config.tencent_secret_id" :placeholder="t('config.tencentSecretId')" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="Secret Key">
-                    <el-input v-model="config.tencent_secret_key" type="password" placeholder="请输入 Secret Key" />
+                  <el-form-item :label="t('config.tencentSecretKey')">
+                    <el-input v-model="config.tencent_secret_key" type="password" :placeholder="t('config.tencentSecretKey')" />
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-row :gutter="24">
                 <el-col :span="12">
-                  <el-form-item label="Bucket">
-                    <el-input v-model="config.tencent_bucket" placeholder="请输入 Bucket" />
+                  <el-form-item :label="t('config.tencentBucket')">
+                    <el-input v-model="config.tencent_bucket" :placeholder="t('config.tencentBucket')" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="Region">
+                  <el-form-item :label="t('config.tencentRegion')">
                     <el-input v-model="config.tencent_region" placeholder="ap-guangzhou" />
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-row :gutter="24">
                 <el-col :span="12">
-                  <el-form-item label="CDN 域名">
+                  <el-form-item :label="t('config.tencentDomain')">
                     <el-input v-model="config.tencent_domain" placeholder="cdn.example.com" />
                   </el-form-item>
                 </el-col>
@@ -291,16 +288,16 @@
           </el-form>
         </el-tab-pane>
 
-        <el-tab-pane label="安全设置" name="security">
+        <el-tab-pane :label="t('config.security')" name="security">
           <el-form :model="config" label-position="top">
             <el-row :gutter="24">
               <el-col :span="12">
-                <el-form-item label="JWT Secret">
-                  <el-input v-model="config.jwt_secret" type="password" placeholder="请输入 JWT Secret" />
+                <el-form-item :label="t('config.jwtSecret')">
+                  <el-input v-model="config.jwt_secret" type="password" :placeholder="t('config.jwtSecretPlaceholder')" />
                 </el-form-item>
               </el-col>
               <el-col :span="12">
-                <el-form-item label="Token 过期天数">
+                <el-form-item :label="t('config.jwtExpireDays')">
                   <el-input v-model="config.jwt_expire_days" placeholder="7" />
                 </el-form-item>
               </el-col>
@@ -310,10 +307,10 @@
       </el-tabs>
 
       <div class="form-footer">
-        <el-button @click="loadConfig">重置</el-button>
+        <el-button @click="loadConfig">{{ t('config.reset') }}</el-button>
         <el-button type="primary" @click="saveConfig" :loading="saving">
           <Save :size="16" />
-          保存配置
+          {{ t('config.saveConfig') }}
         </el-button>
       </div>
     </el-card>
@@ -322,12 +319,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { Plus, Loading } from '@element-plus/icons-vue'
 import api from '@/api'
 import { Settings, Globe, Save } from 'lucide-vue-next'
 import { compressAndUpload } from '@/utils/upload'
 
+const { t } = useI18n()
 const activeTab = ref('basic')
 const config = ref({
   site_name: '',
@@ -371,13 +370,13 @@ async function handleLogoUpload(options) {
     const url = await compressAndUpload(options.file, 800, 200, {
       dir: 'logo',
       mimeType: 'image/png',
-      onInstant: () => ElMessage.success('Logo 上传成功（秒传）')
+      onInstant: () => ElMessage.success(t('config.logoUploadSuccess') + '（' + t('config.instantUpload') + '）')
     })
     config.value.site_logo = url
-    ElMessage.success('Logo 上传成功')
+    ElMessage.success(t('config.logoUploadSuccess'))
   } catch (error) {
     console.error('Logo upload error:', error)
-    ElMessage.error('Logo 上传失败')
+    ElMessage.error(t('config.logoUploadFailed'))
   } finally {
     uploadingLogo.value = false
   }
@@ -390,13 +389,13 @@ async function handleIconUpload(options) {
     const url = await compressAndUpload(options.file, 256, 256, {
       dir: 'icon',
       mimeType: 'image/png',
-      onInstant: () => ElMessage.success('Icon 上传成功（秒传）')
+      onInstant: () => ElMessage.success(t('config.iconUploadSuccess') + '（' + t('config.instantUpload') + '）')
     })
     config.value.site_icon = url
-    ElMessage.success('Icon 上传成功')
+    ElMessage.success(t('config.iconUploadSuccess'))
   } catch (error) {
     console.error('Icon upload error:', error)
-    ElMessage.error('Icon 上传失败')
+    ElMessage.error(t('config.iconUploadFailed'))
   } finally {
     uploadingIcon.value = false
   }
@@ -404,12 +403,12 @@ async function handleIconUpload(options) {
 
 function beforeUpload(file) {
   const isImage = file.type.startsWith('image/')
-  
+
   if (!isImage) {
-    ElMessage.error('只能上传图片文件!')
+    ElMessage.error(t('config.onlyImage'))
     return false
   }
-  
+
   return true
 }
 
@@ -449,8 +448,8 @@ async function loadConfig() {
       }
     }
   } catch (e) {
-    console.error('加载配置失败', e)
-    ElMessage.error('加载配置失败')
+    console.error('Load config failed', e)
+    ElMessage.error(t('config.loadFailed'))
   }
 }
 
@@ -462,11 +461,11 @@ async function saveConfig() {
       email_enabled: config.value.email_enabled ? 'true' : 'false'
     }
     await api.put('/admin/config', data)
-    ElMessage.success('保存成功')
+    ElMessage.success(t('config.saveSuccess'))
     loadConfig()
   } catch (e) {
-    console.error('保存失败', e)
-    ElMessage.error('保存失败')
+    console.error('Save config failed', e)
+    ElMessage.error(t('config.saveFailed'))
   } finally {
     saving.value = false
   }

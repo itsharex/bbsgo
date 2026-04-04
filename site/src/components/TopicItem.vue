@@ -4,9 +4,9 @@
       <img :src="topic.user?.avatar || 'https://via.placeholder.com/40'" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0">
       <div class="ml-2 sm:ml-3 flex-1 min-w-0">
         <div class="flex items-center flex-wrap gap-1">
-          <span v-if="topic.is_pinned" class="text-red-500 text-xs">[置顶]</span>
-          <span v-if="topic.is_essence" class="text-yellow-500 text-xs">[精华]</span>
-          <span v-if="topic.is_locked" class="text-gray-500 text-xs">[锁定]</span>
+          <span v-if="topic.is_pinned" class="text-red-500 text-xs">[{{ t('topic.pinned') }}]</span>
+          <span v-if="topic.is_essence" class="text-yellow-500 text-xs">[{{ t('topic.essence') }}]</span>
+          <span v-if="topic.is_locked" class="text-gray-500 text-xs">[{{ t('topic.lock') }}]</span>
           <h3 class="font-medium text-gray-900 truncate text-sm sm:text-base">{{ topic.title }}</h3>
         </div>
         <div class="mt-1 flex items-center flex-wrap gap-1 text-xs sm:text-sm text-gray-500">
@@ -50,6 +50,10 @@
 </template>
 
 <script setup>
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 defineProps({
   topic: {
     type: Object,
@@ -62,10 +66,10 @@ function formatDate(date) {
   const now = new Date()
   const diff = now - d
 
-  if (diff < 60000) return '刚刚'
-  if (diff < 3600000) return `${Math.floor(diff / 60000)} 分钟前`
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)} 小时前`
-  if (diff < 604800000) return `${Math.floor(diff / 86400000)} 天前`
+  if (diff < 60000) return t('notifications.justNow')
+  if (diff < 3600000) return t('notifications.minutesAgo', { 0: Math.floor(diff / 60000) })
+  if (diff < 86400000) return t('notifications.hoursAgo', { 0: Math.floor(diff / 3600000) })
+  if (diff < 604800000) return t('notifications.daysAgo', { 0: Math.floor(diff / 86400000) })
   return d.toLocaleDateString('zh-CN')
 }
 </script>

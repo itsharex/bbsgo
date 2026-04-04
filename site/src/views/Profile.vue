@@ -12,7 +12,7 @@
                 d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
               </path>
             </svg>
-            设置背景
+            {{ t('topic.setBackground') }}
           </button>
         </div>
       </div>
@@ -34,18 +34,18 @@
           </div>
           <div class="flex-1 min-w-0">
             <h1 class="text-lg sm:text-xl font-bold text-gray-900">{{ getUserDisplayName(user) }}</h1>
-            <p class="text-gray-500 text-xs sm:text-sm mt-1">{{ user?.signature || '这家伙很懒，什么都没留下...' }}</p>
+            <p class="text-gray-500 text-xs sm:text-sm mt-1">{{ user?.signature || t('topic.noSignature') }}</p>
           </div>
           <div class="flex gap-2">
             <button v-if="isCurrentUser" @click="openEditDialog"
               class="bg-blue-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-600">
-              编辑资料
+              {{ t('topic.editProfile') }}
             </button>
             <template v-else-if="userStore.isLoggedIn">
               <FollowButton :user-id="parseInt(route.params.id)" />
               <button @click="sendMessage"
                 class="bg-green-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-green-600">
-                发私信
+                {{ t('topic.sendMessage') }}
               </button>
             </template>
           </div>
@@ -53,88 +53,88 @@
       </div>
     </div>
     <div class="flex flex-col lg:flex-row gap-3 lg:gap-4">
-      <aside class="order-2 lg:order-1 lg:w-56 lg:flex-shrink-0">
+      <aside class="order-2 lg:order-1 lg:w-64 lg:flex-shrink-0">
         <div class="space-y-3 lg:space-y-4">
           <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4">
-            <h3 class="font-medium text-gray-900 mb-3 lg:mb-4 border-b pb-2">个人成就</h3>
-            <div class="grid grid-cols-4 gap-2 lg:gap-4 text-center">
-              <div>
+            <h3 class="font-medium text-gray-900 mb-3 lg:mb-4 border-b pb-2">{{ t('topic.personalAchievements') }}</h3>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3 text-center">
+              <div class="p-1">
                 <div class="text-xl sm:text-2xl font-bold text-gray-700">{{ userStats.topic_count || 0 }}</div>
-                <div class="text-xs text-gray-400">帖子</div>
+                <div class="text-xs sm:text-[10px] text-gray-400 leading-tight mt-0.5">{{ t('topic.posts') }}</div>
               </div>
-              <div>
+              <div class="p-1">
                 <div class="text-xl sm:text-2xl font-bold text-gray-700">{{ userStats.comment_count || 0 }}</div>
-                <div class="text-xs text-gray-400">评论</div>
+                <div class="text-xs sm:text-[10px] text-gray-400 leading-tight mt-0.5">{{ t('topic.comments') }}</div>
               </div>
-              <router-link :to="`/user/${user?.id}/follows?type=follows`" class="block hover:bg-gray-50 rounded">
+              <router-link :to="`/user/${user?.id}/follows?type=follows`" class="block hover:bg-gray-50 rounded p-1">
                 <div class="text-xl sm:text-2xl font-bold text-gray-700">{{ userStats.follow_count || 0 }}</div>
-                <div class="text-xs text-gray-400">关注</div>
+                <div class="text-xs sm:text-[10px] text-gray-400 leading-tight mt-0.5">{{ t('topic.follows') }}</div>
               </router-link>
-              <router-link :to="`/user/${user?.id}/follows?type=followers`" class="block hover:bg-gray-50 rounded">
+              <router-link :to="`/user/${user?.id}/follows?type=followers`" class="block hover:bg-gray-50 rounded p-1">
                 <div class="text-xl sm:text-2xl font-bold text-gray-700">{{ userStats.follower_count || 0 }}</div>
-                <div class="text-xs text-gray-400">粉丝</div>
+                <div class="text-xs sm:text-[10px] text-gray-400 leading-tight mt-0.5">{{ t('topic.fans') }}</div>
               </router-link>
             </div>
           </div>
           <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 hidden lg:block">
             <div class="flex justify-between items-center mb-3 lg:mb-4">
-              <h3 class="font-medium text-gray-900">勋章墙</h3>
+              <h3 class="font-medium text-gray-900">{{ t('topic.badgeWall') }}</h3>
               <router-link v-if="userBadges.length > 0" :to="`/user/${user?.id}/badges`" class="text-blue-500 text-xs sm:text-sm hover:underline">
-                查看全部
+                {{ t('topic.viewAll') }}
               </router-link>
             </div>
-            <div v-if="userBadges.length > 0" class="grid grid-cols-6 gap-2 lg:gap-3">
-              <div v-for="ub in userBadges.slice(0, 6)" :key="ub.id" 
+            <div v-if="userBadges.length > 0" class="grid grid-cols-3 lg:grid-cols-4 gap-2 lg:gap-3">
+              <div v-for="ub in userBadges.slice(0, 8)" :key="ub.id" 
                 class="flex flex-col items-center p-1.5 rounded-lg hover:bg-gray-50 cursor-pointer"
                 :title="`${ub.badge?.name} - ${ub.badge?.description}`">
                 <SvgBadge :type="ub.badge?.icon" :size="28" />
-                <span class="text-xs text-gray-600 text-center truncate w-full mt-0.5">{{ ub.badge?.name }}</span>
+                <span class="text-[10px] sm:text-xs text-gray-600 text-center truncate w-full mt-0.5">{{ ub.badge?.name }}</span>
               </div>
             </div>
             <div v-else class="text-center text-gray-400 py-4 lg:py-6 text-xs sm:text-sm">
-              暂无勋章
+              {{ t('topic.noBadges') }}
             </div>
           </div>
           <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 hidden lg:block">
             <div class="flex justify-between items-center mb-3 lg:mb-4">
-              <h3 class="font-medium text-gray-900">个人资料</h3>
+              <h3 class="font-medium text-gray-900">{{ t('profile.title') }}</h3>
               <button v-if="isCurrentUser" @click="openEditDialog" class="text-blue-500 text-xs sm:text-sm hover:underline">
-                编辑资料
+                {{ t('topic.editProfile') }}
               </button>
             </div>
             <div class="space-y-2 lg:space-y-3">
               <div class="flex">
-                <span class="w-16 lg:w-20 text-gray-500 text-xs sm:text-sm">昵称</span>
+                <span class="w-16 lg:w-20 text-gray-500 text-xs sm:text-sm">{{ t('topic.nickname') }}</span>
                 <span class="text-gray-900 text-xs sm:text-sm">{{ getUserDisplayName(user) }}</span>
               </div>
               <div class="flex">
-                <span class="w-16 lg:w-20 text-gray-500 text-xs sm:text-sm">签名</span>
+                <span class="w-16 lg:w-20 text-gray-500 text-xs sm:text-sm">{{ t('topic.signature') }}</span>
                 <span class="text-gray-900 text-xs sm:text-sm">{{ user?.signature || '-' }}</span>
               </div>
               <div class="flex">
-                <span class="w-16 lg:w-20 text-gray-500 text-xs sm:text-sm">主页</span>
+                <span class="w-16 lg:w-20 text-gray-500 text-xs sm:text-sm">{{ t('topic.homepage') }}</span>
                 <span class="text-blue-500 text-xs sm:text-sm truncate">{{ user?.intro ? user.intro : 'https://mlog.club/user/' + (user?.id || '') }}</span>
               </div>
             </div>
           </div>
           <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4">
             <div class="flex justify-between items-center mb-3 lg:mb-4">
-              <h3 class="font-medium text-gray-900">粉丝 {{ followers.length }}</h3>
-              <button class="text-blue-500 text-xs sm:text-sm hover:underline">更多</button>
+              <h3 class="font-medium text-gray-900">{{ t('topic.fans') }} {{ followers.length }}</h3>
+              <button class="text-blue-500 text-xs sm:text-sm hover:underline">{{ t('topic.loadMore') }}</button>
             </div>
             <div v-if="followers.length > 0" class="space-y-3">
-              <div v-for="follower in followers" :key="follower.id" class="flex items-center space-x-3">
-                <img :src="getUserAvatar(follower.user)" class="w-10 h-10 rounded-full bg-gray-200">
+              <div v-for="follower in followers" :key="follower.id" class="flex items-center space-x-2">
+                <img :src="getUserAvatar(follower.user)" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex-shrink-0">
                 <div class="flex-1 min-w-0">
                   <div class="text-xs sm:text-sm font-medium text-gray-900 truncate">{{ getUserDisplayName(follower.user) }}
                   </div>
-                  <div class="text-xs text-gray-400 truncate">{{ follower.user?.signature || '这家伙很懒，什么都没留下' }}</div>
+                  <div class="text-xs text-gray-400 truncate">{{ follower.user?.signature || t('topic.noSignature') }}</div>
                 </div>
-                <button class="bg-blue-500 text-white text-xs px-3 py-1 rounded hover:bg-blue-600">+ 关注</button>
+                <button class="bg-blue-500 text-white text-[10px] sm:text-xs px-2 sm:px-3 py-0.5 sm:py-1 rounded hover:bg-blue-600 flex-shrink-0 whitespace-nowrap">+ {{ t('profile.follow') }}</button>
               </div>
             </div>
             <div v-else class="text-center text-gray-400 py-4 text-xs sm:text-sm">
-              暂无粉丝
+              {{ t('topic.noFollowers') }}
             </div>
           </div>
         </div>
@@ -156,7 +156,7 @@
                   <div class="flex items-center space-x-2">
                     <button v-if="isCurrentUser" @click="toggleTopicPin(topic)"
                       :class="['text-xs transition-colors', topic.is_user_pinned ? 'text-red-500 hover:text-red-600' : 'text-gray-400 hover:text-red-500']">
-                      {{ topic.is_user_pinned ? '取消置顶' : '置顶' }}
+                      {{ topic.is_user_pinned ? t('topic.cancelPin') : t('topic.setPin') }}
                     </button>
                     <span class="text-xs text-gray-400">{{ formatTime(topic.created_at) }}</span>
                   </div>
@@ -164,38 +164,63 @@
                 <router-link :to="`/topic/${topic.id}`" class="block">
                   <TopicCard :topic="topic" />
                 </router-link>
-                <div class="flex items-center flex-wrap gap-2 text-xs text-gray-500 mt-2">
-                  <span>👍 {{ topic.like_count || 0 }}</span>
-                  <span>💬 {{ topic.comment_count || 0 }}</span>
-                  <span>👁 {{ topic.view_count || 0 }}</span>
+                <div class="flex items-center space-x-4 sm:space-x-6 text-xs sm:text-sm text-gray-500 mt-2">
+                  <button @click="toggleLike(topic)"
+                    :class="['flex items-center space-x-1 transition-colors', topic.liked ? 'text-red-500' : 'hover:text-red-500']">
+                    <svg class="w-4 h-4" :fill="topic.liked ? 'currentColor' : 'none'" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                      </path>
+                    </svg>
+                    <span>{{ topic.like_count || 0 }}</span>
+                  </button>
+                  <router-link :to="`/topic/${topic.id}`" class="flex items-center space-x-1 hover:text-blue-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                      </path>
+                    </svg>
+                    <span>{{ topic.reply_count || 0 }}</span>
+                  </router-link>
+                  <button class="flex items-center space-x-1 hover:text-green-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                      </path>
+                    </svg>
+                    <span>{{ topic.view_count || 0 }}</span>
+                  </button>
                   <span v-if="topic.forum" class="bg-gray-100 px-2 py-0.5 rounded">{{ topic.forum.name }}</span>
                 </div>
               </div>
             </div>
             <div v-else class="text-center text-gray-400 py-8 lg:py-12 text-sm">
-              暂无帖子
+              {{ t('topic.noTopics') }}
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <el-dialog v-model="showEditDialog" title="编辑资料" width="500px" :close-on-click-modal="false">
+    <el-dialog v-model="showEditDialog" :title="t('topic.editProfile')" width="500px" :close-on-click-modal="false">
       <el-form :model="editForm" label-width="80px">
-        <el-form-item label="昵称">
-          <el-input v-model="editForm.nickname" placeholder="请输入昵称" maxlength="20" show-word-limit />
+        <el-form-item :label="t('topic.nickname')">
+          <el-input v-model="editForm.nickname" :placeholder="t('topic.nicknamePlaceholder')" maxlength="20" show-word-limit />
         </el-form-item>
-        <el-form-item label="签名">
-          <el-input v-model="editForm.signature" type="textarea" :rows="3" placeholder="请输入个性签名" maxlength="100"
+        <el-form-item :label="t('topic.signature')">
+          <el-input v-model="editForm.signature" type="textarea" :rows="3" :placeholder="t('topic.signaturePlaceholder')" maxlength="100"
             show-word-limit />
         </el-form-item>
-        <el-form-item label="个人主页">
-          <el-input v-model="editForm.intro" placeholder="请输入个人主页链接" />
+        <el-form-item :label="t('topic.homepage')">
+          <el-input v-model="editForm.intro" :placeholder="t('topic.homepagePlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showEditDialog = false">取消</el-button>
-        <el-button type="primary" @click="handleSaveProfile" :loading="saving">保存</el-button>
+        <el-button @click="showEditDialog = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSaveProfile" :loading="saving">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -204,8 +229,11 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+
+const { t } = useI18n()
 import api, { topicApi } from '@/api'
 import { uploadImage } from '@/utils/upload'
 import { getUserAvatar, getUserDisplayName } from '@/utils/user'
@@ -280,10 +308,10 @@ function formatTime(time) {
   const date = new Date(time)
   const now = new Date()
   const diff = now - date
-  if (diff < 60000) return '刚刚'
-  if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前'
-  if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前'
-  if (diff < 2592000000) return Math.floor(diff / 86400000) + '天前'
+  if (diff < 60000) return t('topic.justNow')
+  if (diff < 3600000) return t('topic.minutesAgo', { minutes: Math.floor(diff / 60000) })
+  if (diff < 86400000) return t('topic.hoursAgo', { hours: Math.floor(diff / 3600000) })
+  if (diff < 2592000000) return t('topic.daysAgo', { days: Math.floor(diff / 86400000) })
   return date.toLocaleDateString()
 }
 
@@ -292,24 +320,24 @@ async function handleBackgroundUpload(event) {
   if (!file) return
 
   if (!file.type.startsWith('image/')) {
-    ElMessage.error('只能上传图片文件')
+    ElMessage.error(t('topic.onlyImageAllowed'))
     return
   }
 
   try {
-    ElMessage.info('正在上传背景图片...')
+    ElMessage.info(t('topic.uploadingBackground'))
 
     const url = await uploadImage(file, {
       dir: 'backgrounds',
-      onInstant: () => ElMessage.success('背景图片更新成功（秒传）')
+      onInstant: () => ElMessage.success(t('topic.backgroundUpdated') + t('topic.instantUploadSuccess'))
     })
 
-    ElMessage.success('背景图片更新成功')
+    ElMessage.success(t('topic.backgroundUpdated'))
     user.value.background = url
     await updateProfile({ background: url })
   } catch (error) {
     console.error('Background upload error:', error)
-    ElMessage.error('背景图片上传失败')
+    ElMessage.error(t('topic.backgroundUpdated') + ' ' + t('common.failed'))
   }
 
   event.target.value = ''
@@ -320,24 +348,24 @@ async function handleAvatarUpload(event) {
   if (!file) return
 
   if (!file.type.startsWith('image/')) {
-    ElMessage.error('只能上传图片文件')
+    ElMessage.error(t('topic.onlyImageAllowed'))
     return
   }
 
   try {
-    ElMessage.info('正在上传头像...')
+    ElMessage.info(t('topic.uploadingAvatar'))
 
     const url = await uploadImage(file, {
       dir: 'avatars',
-      onInstant: () => ElMessage.success('头像更新成功（秒传）')
+      onInstant: () => ElMessage.success(t('topic.avatarUpdated') + t('topic.instantUploadSuccess'))
     })
 
-    ElMessage.success('头像更新成功')
+    ElMessage.success(t('topic.avatarUpdated'))
     user.value.avatar = url
     await updateProfile({ avatar: url })
   } catch (error) {
     console.error('Avatar upload error:', error)
-    ElMessage.error('头像上传失败')
+    ElMessage.error(t('topic.avatarUpdated') + ' ' + t('common.failed'))
   }
 
   event.target.value = ''
@@ -378,9 +406,9 @@ async function handleSaveProfile() {
     }
 
     showEditDialog.value = false
-    ElMessage.success('资料更新成功')
+    ElMessage.success(t('topic.profileUpdated'))
   } catch (error) {
-    ElMessage.error('资料更新失败')
+    ElMessage.error(t('topic.profileUpdateFailed'))
   } finally {
     saving.value = false
   }
@@ -389,9 +417,9 @@ async function handleSaveProfile() {
 async function toggleTopicPin(topic) {
   try {
     await ElMessageBox.confirm(
-      topic.is_user_pinned ? '确定要取消置顶这篇帖子吗？' : '确定要置顶这篇帖子吗？',
-      topic.is_user_pinned ? '取消置顶' : '置顶帖子',
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+      topic.is_user_pinned ? t('topic.confirmUnpin') : t('topic.confirmPin'),
+      topic.is_user_pinned ? t('topic.unpinTopic') : t('topic.pinTopic'),
+      { confirmButtonText: t('common.confirm'), cancelButtonText: t('common.cancel'), type: 'warning' }
     )
     await topicApi.pinTopic(topic.id, !topic.is_user_pinned)
 
@@ -415,11 +443,11 @@ async function toggleTopicPin(topic) {
       userTopics.value.splice(insertIndex, 0, topic)
     }
 
-    ElMessage.success(topic.is_user_pinned ? '帖子已置顶' : '帖子已取消置顶')
+    ElMessage.success(topic.is_user_pinned ? t('topic.topicPinned') : t('topic.topicUnpinned'))
   } catch (e) {
     if (e !== 'cancel') {
-      console.error('操作失败', e)
-      ElMessage.error('操作失败')
+      console.error('Operation failed', e)
+      ElMessage.error(t('common.operationFailed'))
     }
   }
 }
@@ -478,6 +506,49 @@ async function loadUserBadges() {
   }
 }
 
+async function toggleLike(topic) {
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning(t('common.pleaseLoginFirst'))
+    return
+  }
+
+  try {
+    if (topic.liked) {
+      await api.delete(`/likes?target_type=topic&target_id=${topic.id}`)
+      topic.like_count--
+    } else {
+      await api.post('/likes', {
+        target_type: 'topic',
+        target_id: topic.id
+      })
+      topic.like_count++
+    }
+    topic.liked = !topic.liked
+  } catch (e) {
+    console.error(e)
+    ElMessage.error(t('common.operationFailed'))
+  }
+}
+
+async function checkTopicLikes() {
+  if (!userStore.isLoggedIn || userTopics.value.length === 0) return
+
+  try {
+    const topicIds = userTopics.value.map(t => t.id)
+    const res = await api.post('/likes/check', {
+      target_type: 'topic',
+      target_ids: topicIds
+    })
+    if (res.liked_map) {
+      for (const topic of userTopics.value) {
+        topic.liked = res.liked_map[topic.id] || false
+      }
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 onMounted(async () => {
   await Promise.all([
     loadUser(),
@@ -486,6 +557,18 @@ onMounted(async () => {
     loadUserStats(),
     loadUserBadges()
   ])
+})
+
+watch(() => userTopics.value.length, (newLen) => {
+  if (newLen > 0) {
+    checkTopicLikes()
+  }
+})
+
+watch(() => userStore.isLoggedIn, (isLoggedIn) => {
+  if (isLoggedIn) {
+    checkTopicLikes()
+  }
 })
 </script>
 

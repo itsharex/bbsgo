@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
     <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4">
-      <h1 class="text-lg sm:text-xl font-bold text-gray-900">我的收藏</h1>
+      <h1 class="text-lg sm:text-xl font-bold text-gray-900">{{ t('favorites.myFavorites') }}</h1>
     </div>
     <div v-if="loading" class="text-center py-8">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
@@ -12,9 +12,9 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
       </svg>
-      <p class="text-gray-500 text-sm">还没有收藏任何帖子</p>
+      <p class="text-gray-500 text-sm">{{ t('favorites.noFavorites') }}</p>
       <router-link to="/" class="inline-block mt-4 text-blue-500 hover:underline text-sm">
-        去首页逛逛吧
+        {{ t('favorites.goHomepage') }}
       </router-link>
     </div>
     <div v-else class="space-y-3 sm:space-y-4">
@@ -54,6 +54,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/api'
@@ -62,6 +63,7 @@ import { getDisplayBadges } from '@/utils/badge'
 import SvgBadge from '@/components/SvgBadge.vue'
 import TopicCard from '@/components/TopicCard.vue'
 
+const { t } = useI18n()
 const userStore = useUserStore()
 const loading = ref(false)
 const favorites = ref([])
@@ -76,10 +78,10 @@ function formatTime(timeStr) {
   const hours = Math.floor(minutes / 60)
   const days = Math.floor(hours / 24)
 
-  if (seconds < 60) return '刚刚'
-  if (minutes < 60) return `${minutes}分钟前`
-  if (hours < 24) return `${hours}小时前`
-  if (days < 30) return `${days}天前`
+  if (seconds < 60) return t('notifications.justNow')
+  if (minutes < 60) return t('notifications.minutesAgo', { 0: minutes })
+  if (hours < 24) return t('notifications.hoursAgo', { 0: hours })
+  if (days < 30) return t('notifications.daysAgo', { 0: days })
 
   return date.toLocaleDateString('zh-CN')
 }
@@ -97,7 +99,7 @@ async function loadFavorites() {
     favorites.value = res || []
   } catch (e) {
     console.error(e)
-    ElMessage.error('加载收藏列表失败')
+    ElMessage.error(t('favorites.loadFailed'))
   } finally {
     loading.value = false
   }
@@ -105,9 +107,9 @@ async function loadFavorites() {
 
 async function removeFavorite(fav) {
   try {
-    await ElMessageBox.confirm('确认取消收藏?', '提示', {
-      confirmButtonText: '确认',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('favorites.confirmRemove'), t('favorites.tips'), {
+      confirmButtonText: t('favorites.confirm'),
+      cancelButtonText: t('favorites.cancel'),
       type: 'warning'
     })
   } catch {
@@ -117,10 +119,10 @@ async function removeFavorite(fav) {
   try {
     await api.delete(`/favorites?topic_id=${fav.topic_id}`)
     favorites.value = favorites.value.filter(f => f.id !== fav.id)
-    ElMessage.success('已取消收藏')
+    ElMessage.success(t('favorites.removed'))
   } catch (e) {
     console.error(e)
-    ElMessage.error('取消收藏失败')
+    ElMessage.error(t('favorites.removeFailed'))
   }
 }
 

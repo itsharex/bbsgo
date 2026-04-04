@@ -1,20 +1,20 @@
 <template>
   <div class="users-page">
     <!-- 角色选择对话框 -->
-    <el-dialog v-model="roleDialogVisible" title="修改用户角色" width="400px" :close-on-click-modal="false">
+    <el-dialog v-model="roleDialogVisible" :title="t('user.editRole')" width="400px" :close-on-click-modal="false">
       <div class="role-dialog-content">
-        <p class="role-dialog-user">当前用户：<strong>{{ selectedUser?.username }}</strong></p>
+        <p class="role-dialog-user">{{ t('user.currentUser') }}：<strong>{{ selectedUser?.username }}</strong></p>
         <div class="role-options">
           <el-radio-group v-model="selectedRole">
-            <el-radio :value="0" class="role-option">普通用户</el-radio>
-            <el-radio :value="1" class="role-option">版主</el-radio>
-            <el-radio :value="2" class="role-option">管理员</el-radio>
+            <el-radio :value="0" class="role-option">{{ t('user.roleOptions.0') }}</el-radio>
+            <el-radio :value="1" class="role-option">{{ t('user.roleOptions.1') }}</el-radio>
+            <el-radio :value="2" class="role-option">{{ t('user.roleOptions.2') }}</el-radio>
           </el-radio-group>
         </div>
       </div>
       <template #footer>
-        <el-button @click="roleDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmRoleChange">确定</el-button>
+        <el-button @click="roleDialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="confirmRoleChange">{{ t('common.confirm') }}</el-button>
       </template>
     </el-dialog>
 
@@ -24,14 +24,14 @@
           <div class="header-left">
             <h3>
               <Users :size="18" />
-              用户列表
+              {{ t('user.title') }}
             </h3>
-            <span class="total-count">共 {{ total }} 位用户</span>
+            <span class="total-count">{{ t('user.totalUsers').replace('%d', total) }}</span>
           </div>
           <div class="header-right">
             <el-input
               v-model="searchKeyword"
-              placeholder="搜索用户名或邮箱"
+              :placeholder="t('user.searchPlaceholder')"
               clearable
               @clear="loadUsers"
               @keyup.enter="loadUsers"
@@ -43,7 +43,7 @@
             </el-input>
             <el-button type="primary" @click="loadUsers">
               <Search :size="16" />
-              搜索
+              {{ t('common.search') }}
             </el-button>
           </div>
         </div>
@@ -51,7 +51,7 @@
 
       <el-table :data="users" stripe style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="用户信息" min-width="180">
+        <el-table-column :label="t('user.userInfo')" min-width="180">
           <template #default="{ row }">
             <div class="user-cell">
               <el-avatar :size="36" :src="row.avatar">
@@ -64,39 +64,39 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="角色" width="120">
+        <el-table-column :label="t('user.role')" width="120">
           <template #default="{ row }">
             <el-tag :type="getRoleType(row.role)" size="small">
               {{ getRoleName(row.role) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="credits" label="积分" width="100" sortable />
-        <el-table-column label="状态" width="100">
+        <el-table-column prop="credits" :label="t('user.credits')" width="100" sortable />
+        <el-table-column :label="t('user.status')" width="100">
           <template #default="{ row }">
-            <el-tag v-if="row.is_banned" type="danger" size="small">已封禁</el-tag>
-            <el-tag v-else type="success" size="small">正常</el-tag>
+            <el-tag v-if="row.is_banned" type="danger" size="small">{{ t('user.banned') }}</el-tag>
+            <el-tag v-else type="success" size="small">{{ t('user.normal') }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="注册时间" width="120">
+        <el-table-column :label="t('user.createdAt')" width="120">
           <template #default="{ row }">
             <span class="date-text">{{ formatDate(row.created_at) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="240" fixed="right">
+        <el-table-column :label="t('user.actions')" width="240" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="editRole(row)">
               <Shield :size="14" />
-              角色
+              {{ t('user.role') }}
             </el-button>
             <el-button link :type="row.is_banned ? 'success' : 'danger'" @click="toggleBan(row)">
               <Ban v-if="!row.is_banned" :size="14" />
               <CheckCircle v-else :size="14" />
-              {{ row.is_banned ? '解封' : '封禁' }}
+              {{ row.is_banned ? t('user.unban') : t('user.ban') }}
             </el-button>
             <el-button link type="danger" @click="deleteUser(row)">
               <Trash2 :size="14" />
-              删除
+              {{ t('user.remove') }}
             </el-button>
           </template>
         </el-table-column>
@@ -117,10 +117,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/api'
 import { Users, User, Search, Shield, Ban, CheckCircle, Trash2 } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const users = ref([])
 const searchKeyword = ref('')
 const page = ref(1)
@@ -132,8 +134,7 @@ const selectedUser = ref(null)
 const selectedRole = ref(0)
 
 function getRoleName(role) {
-  const roles = { 0: '普通用户', 1: '版主', 2: '管理员' }
-  return roles[role] || '未知'
+  return t(`user.roleOptions.${role}`) || t('common.noData')
 }
 
 function getRoleType(role) {
@@ -142,7 +143,7 @@ function getRoleType(role) {
 }
 
 function formatDate(date) {
-  return new Date(date).toLocaleDateString('zh-CN')
+  return new Date(date).toLocaleDateString()
 }
 
 async function loadUsers() {
@@ -158,8 +159,8 @@ async function loadUsers() {
     users.value = res?.list || []
     total.value = res?.total || 0
   } catch (e) {
-    console.error('加载用户失败', e)
-    ElMessage.error('加载用户失败')
+    console.error('load users failed', e)
+    ElMessage.error(t('common.failed'))
   } finally {
     loading.value = false
   }
@@ -176,30 +177,30 @@ async function confirmRoleChange() {
   try {
     await api.put(`/admin/users/${selectedUser.value.id}/role`, { role: selectedRole.value })
     selectedUser.value.role = selectedRole.value
-    ElMessage.success('角色已更新')
+    ElMessage.success(t('common.success'))
     roleDialogVisible.value = false
   } catch (e) {
-    console.error('更新角色失败', e)
-    ElMessage.error('更新角色失败')
+    console.error('update role failed', e)
+    ElMessage.error(t('common.failed'))
   }
 }
 
 async function toggleBan(user) {
-  const action = user.is_banned ? '解封' : '封禁'
+  const action = user.is_banned ? t('user.unban') : t('user.ban')
   try {
     await ElMessageBox.confirm(
-      `确定要${action}用户 "${user.username}" 吗？`,
-      `${action}用户`,
-      { confirmButtonText: action, cancelButtonText: '取消', type: 'warning' }
+      `${t('common.confirm')} ${action} "${user.username}"?`,
+      action,
+      { confirmButtonText: action, cancelButtonText: t('common.cancel'), type: 'warning' }
     )
 
     await api.put(`/admin/users/${user.id}/ban`, { is_banned: !user.is_banned })
     user.is_banned = !user.is_banned
-    ElMessage.success(`用户已${action}`)
+    ElMessage.success(t('common.success'))
   } catch (e) {
     if (e !== 'cancel') {
-      console.error(`${action}用户失败`, e)
-      ElMessage.error(`${action}失败`)
+      console.error(`${action} user failed`, e)
+      ElMessage.error(t('common.failed'))
     }
   }
 }
@@ -207,19 +208,19 @@ async function toggleBan(user) {
 async function deleteUser(user) {
   try {
     await ElMessageBox.confirm(
-      `确定要彻底删除用户 "${user.username}" 吗？此操作不可恢复，相关帖子、收藏、点赞等数据也将被删除！`,
-      '删除用户',
-      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'error' }
+      t('user.deleteConfirm'),
+      t('user.remove'),
+      { confirmButtonText: t('user.remove'), cancelButtonText: t('common.cancel'), type: 'error' }
     )
 
     await api.delete(`/admin/users/${user.id}`)
     users.value = users.value.filter(u => u.id !== user.id)
     total.value--
-    ElMessage.success('用户已删除')
+    ElMessage.success(t('common.success'))
   } catch (e) {
     if (e !== 'cancel') {
-      console.error('删除用户失败', e)
-      ElMessage.error(e.response?.data?.message || '删除用户失败')
+      console.error('delete user failed', e)
+      ElMessage.error(e.response?.data?.message || t('common.failed'))
     }
   }
 }

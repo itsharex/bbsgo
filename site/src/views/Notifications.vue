@@ -2,13 +2,13 @@
   <div class="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
     <div class="bg-white rounded-lg shadow-sm">
       <div class="p-3 sm:p-4 border-b flex justify-between items-center">
-        <h2 class="text-lg sm:text-xl font-bold">通知</h2>
-        <button @click="markAllRead" class="text-blue-500 text-xs sm:text-sm hover:text-blue-600">全部标记已读</button>
+        <h2 class="text-lg sm:text-xl font-bold">{{ t('notifications.title') }}</h2>
+        <button @click="markAllRead" class="text-blue-500 text-xs sm:text-sm hover:text-blue-600">{{ t('notifications.markAllRead') }}</button>
       </div>
 
       <div class="divide-y">
         <div v-if="notifications.length === 0" class="p-6 sm:p-8 text-center text-gray-500 text-sm">
-          暂无通知
+          {{ t('notifications.noNotifications') }}
         </div>
         <div v-for="notif in notifications" :key="notif.id"
           :class="['p-3 sm:p-4 hover:bg-gray-50 cursor-pointer', !notif.is_read ? 'bg-blue-50' : '']"
@@ -33,7 +33,7 @@
 
       <div v-if="total > pageSize" class="p-3 sm:p-4 border-t flex justify-center">
         <button v-if="page * pageSize < total" @click="loadMore" class="text-blue-500 hover:text-blue-600 text-sm">
-          加载更多
+          {{ t('notifications.loadMore') }}
         </button>
       </div>
     </div>
@@ -43,9 +43,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import api from '@/api'
 import SvgBadge from '@/components/SvgBadge.vue'
 
+const { t } = useI18n()
 const router = useRouter()
 const notifications = ref([])
 const page = ref(1)
@@ -57,10 +59,10 @@ function formatTime(date) {
   const now = new Date()
   const diff = now - d
 
-  if (diff < 60000) return '刚刚'
-  if (diff < 3600000) return `${Math.floor(diff / 60000)} 分钟前`
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)} 小时前`
-  if (diff < 604800000) return `${Math.floor(diff / 86400000)} 天前`
+  if (diff < 60000) return t('notifications.justNow')
+  if (diff < 3600000) return t('notifications.minutesAgo', { 0: Math.floor(diff / 60000) })
+  if (diff < 86400000) return t('notifications.hoursAgo', { 0: Math.floor(diff / 3600000) })
+  if (diff < 604800000) return t('notifications.daysAgo', { 0: Math.floor(diff / 86400000) })
   return d.toLocaleDateString('zh-CN')
 }
 

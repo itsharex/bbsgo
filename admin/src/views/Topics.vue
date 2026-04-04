@@ -6,14 +6,14 @@
           <div class="header-left">
             <h3>
               <FileText :size="18" />
-              帖子列表
+              {{ t('topic.title') }}
             </h3>
-            <span class="total-count">共 {{ total }} 条帖子</span>
+            <span class="total-count">{{ t('topic.totalTopics').replace('%d', total) }}</span>
           </div>
           <div class="header-right">
             <el-input
               v-model="searchKeyword"
-              placeholder="搜索帖子标题"
+              :placeholder="t('topic.searchPlaceholder')"
               clearable
               @clear="loadTopics"
               @keyup.enter="loadTopics"
@@ -25,7 +25,7 @@
             </el-input>
             <el-button type="primary" @click="loadTopics">
               <Search :size="16" />
-              搜索
+              {{ t('common.search') }}
             </el-button>
           </div>
         </div>
@@ -33,7 +33,7 @@
 
       <el-table :data="topics" stripe style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="标题" min-width="200">
+        <el-table-column :label="t('topic.title')" min-width="200">
           <template #default="{ row }">
             <div class="title-cell">
               <el-link :href="`/topic/${row.id}`" target="_blank" type="primary">
@@ -42,7 +42,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="作者" width="120">
+        <el-table-column :label="t('topic.author')" width="120">
           <template #default="{ row }">
             <div class="author-cell">
               <el-avatar :size="24" :src="row.user?.avatar">
@@ -52,12 +52,12 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="版块" width="120">
+        <el-table-column :label="t('topic.forum')" width="120">
           <template #default="{ row }">
             <el-tag type="info" size="small">{{ row.forum?.name || '-' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="浏览/点赞/评论" width="150">
+        <el-table-column :label="t('topic.stats')" width="150">
           <template #default="{ row }">
             <div class="stats-cell">
               <span class="stat-item">
@@ -75,34 +75,34 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="150">
+        <el-table-column :label="t('topic.status')" width="150">
           <template #default="{ row }">
             <div class="status-cell">
-              <el-tag v-if="row.is_pinned" type="danger" size="small">置顶</el-tag>
-              <el-tag v-if="row.is_essence" type="warning" size="small">精华</el-tag>
-              <el-tag v-if="row.is_locked" type="info" size="small">锁定</el-tag>
+              <el-tag v-if="row.is_pinned" type="danger" size="small">{{ t('topic.pinned') }}</el-tag>
+              <el-tag v-if="row.is_essence" type="warning" size="small">{{ t('topic.essence') }}</el-tag>
+              <el-tag v-if="row.is_locked" type="info" size="small">{{ t('topic.locked') }}</el-tag>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="发布时间" width="120">
+        <el-table-column :label="t('topic.publishTime')" width="120">
           <template #default="{ row }">
             <span class="date-text">{{ formatDate(row.created_at) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column :label="t('common.actions')" width="180" fixed="right">
           <template #default="{ row }">
             <div class=" inline-flex">
               <el-button link type="primary" @click="togglePin(row)">
                 <Pin :size="14" />
-                {{ row.is_pinned ? '取消置顶' : '置顶' }}
+                {{ row.is_pinned ? t('topic.unpin') : t('topic.pin') }}
               </el-button>
               <el-button link type="primary" @click="viewTopic(row)">
                 <ExternalLink :size="14" />
-                查看
+                {{ t('topic.view') }}
               </el-button>
               <el-button link type="danger" @click="deleteTopic(row)">
                 <Trash2 :size="14" />
-                删除
+                {{ t('common.delete') }}
               </el-button>
             </div>
 
@@ -125,10 +125,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/api'
 import { FileText, Search, User, Eye, Heart, MessageCircle, ExternalLink, Trash2, Pin } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const topics = ref([])
 const searchKeyword = ref('')
 const page = ref(1)
@@ -137,7 +139,7 @@ const total = ref(0)
 const loading = ref(false)
 
 function formatDate(date) {
-  return new Date(date).toLocaleDateString('zh-CN')
+  return new Date(date).toLocaleDateString()
 }
 
 async function loadTopics() {
@@ -153,8 +155,8 @@ async function loadTopics() {
     topics.value = res?.list || []
     total.value = res?.total || 0
   } catch (e) {
-    console.error('加载帖子失败', e)
-    ElMessage.error('加载帖子失败')
+    console.error('load topics failed', e)
+    ElMessage.error(t('common.failed'))
   } finally {
     loading.value = false
   }
@@ -167,40 +169,40 @@ function viewTopic(topic) {
 async function togglePin(topic) {
   try {
     await ElMessageBox.confirm(
-      topic.is_pinned ? '确定要取消置顶这条帖子吗？' : '确定要置顶这条帖子吗？',
-      topic.is_pinned ? '取消置顶' : '置顶帖子',
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+      topic.is_pinned ? t('topic.confirmUnpin') : t('topic.confirmPin'),
+      topic.is_pinned ? t('topic.unpin') : t('topic.pin'),
+      { confirmButtonText: t('common.confirm'), cancelButtonText: t('common.cancel'), type: 'warning' }
     )
 
     await api.put(`/admin/topics/${topic.id}/pin`, {
       pinned: !topic.is_pinned
     })
     topic.is_pinned = !topic.is_pinned
-    ElMessage.success(topic.is_pinned ? '帖子已置顶' : '帖子已取消置顶')
+    ElMessage.success(t('common.success'))
   } catch (e) {
     if (e !== 'cancel') {
-      console.error('操作失败', e)
-      ElMessage.error('操作失败')
+      console.error('toggle pin failed', e)
+      ElMessage.error(t('common.failed'))
     }
   }
 }
 
 async function deleteTopic(topic) {
   try {
-    await ElMessageBox.confirm(`确定要删除帖子 "${topic.title}" 吗？`, '删除帖子', {
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(`${t('topic.confirmDelete')} "${topic.title}"?`, t('common.delete'), {
+      confirmButtonText: t('common.delete'),
+      cancelButtonText: t('common.cancel'),
       type: 'warning'
     })
 
     await api.delete(`/admin/topics/${topic.id}`)
     topics.value = topics.value.filter(t => t.id !== topic.id)
     total.value--
-    ElMessage.success('帖子已删除')
+    ElMessage.success(t('common.success'))
   } catch (e) {
     if (e !== 'cancel') {
-      console.error('删除失败', e)
-      ElMessage.error('删除失败')
+      console.error('delete topic failed', e)
+      ElMessage.error(t('common.failed'))
     }
   }
 }

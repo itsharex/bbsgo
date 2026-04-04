@@ -1,8 +1,8 @@
 <template>
   <div class="max-w-6xl mx-auto px-4 py-6">
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-      <h1 class="text-2xl font-bold text-gray-900 mb-2">关注动态</h1>
-      <p class="text-gray-500">查看你关注的用户最新发布的内容</p>
+      <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ t('followTopics.followingUpdates') }}</h1>
+      <p class="text-gray-500">{{ t('followTopics.followingUpdatesDesc') }}</p>
     </div>
 
     <div v-if="loading" class="flex justify-center py-12">
@@ -12,8 +12,8 @@
     </div>
 
     <div v-else-if="topics.length === 0" class="bg-white rounded-lg shadow-sm p-12 text-center">
-      <p class="text-gray-500 mb-4">还没有关注任何人，或者关注的用户还没有发布内容</p>
-      <router-link to="/" class="text-blue-500 hover:underline">去发现更多用户</router-link>
+      <p class="text-gray-500 mb-4">{{ t('followTopics.noFollowingOrNoContent') }}</p>
+      <router-link to="/" class="text-blue-500 hover:underline">{{ t('followTopics.goDiscover') }}</router-link>
     </div>
 
     <div v-else class="space-y-4">
@@ -34,11 +34,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import api from '@/api'
 import TopicCard from '@/components/TopicCard.vue'
 
+const { t } = useI18n()
 const topics = ref([])
 const loading = ref(false)
 const page = ref(1)
@@ -56,8 +58,8 @@ async function loadFollowTopics() {
     topics.value = res.list || []
     total.value = res.total || 0
   } catch (e) {
-    console.error('加载关注动态失败', e)
-    ElMessage.error('加载关注动态失败')
+    console.error(t('followTopics.loadFailed'), e)
+    ElMessage.error(t('followTopics.loadFailed'))
   } finally {
     loading.value = false
   }

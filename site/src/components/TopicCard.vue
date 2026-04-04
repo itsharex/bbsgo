@@ -3,13 +3,13 @@
     <!-- 标题行：置顶/精华/锁定标签 + 标题 -->
     <h3 class="text-base sm:text-lg font-semibold mb-2 hover:text-blue-500 line-clamp-2 flex items-center flex-wrap gap-1">
       <!-- 管理员置顶 -->
-      <span v-if="topic.is_pinned" class="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-medium">置顶</span>
+      <span v-if="topic.is_pinned" class="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-medium">{{ t('topic.pinned') }}</span>
       <!-- 精华 -->
-      <span v-if="topic.is_essence" class="text-xs bg-yellow-500 text-white px-1.5 py-0.5 rounded font-medium">精华</span>
+      <span v-if="topic.is_essence" class="text-xs bg-yellow-500 text-white px-1.5 py-0.5 rounded font-medium">{{ t('topic.essence') }}</span>
       <!-- 锁定 -->
-      <span v-if="topic.is_locked" class="text-xs bg-gray-500 text-white px-1.5 py-0.5 rounded font-medium">锁定</span>
+      <span v-if="topic.is_locked" class="text-xs bg-gray-500 text-white px-1.5 py-0.5 rounded font-medium">{{ t('topic.lock') }}</span>
       <!-- 作者置顶（个人主页用） -->
-      <span v-if="topic.is_user_pinned" class="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-medium">置顶</span>
+      <span v-if="topic.is_user_pinned" class="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-medium">{{ t('topic.pinned') }}</span>
       <span class="text-gray-900">{{ topic.title }}</span>
     </h3>
 
@@ -25,13 +25,13 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        视频
+        {{ t('topic.video') }}
       </span>
       <span v-if="hasPoll" class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-600 rounded text-xs">
         <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
         </svg>
-        投票
+        {{ t('topic.poll') }}
       </span>
     </div>
 
@@ -44,7 +44,10 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { stripMarkdown, extractFirstImage, hasVideo } from '@/utils/markdown'
+
+const { t } = useI18n()
 
 const props = defineProps({
   topic: {

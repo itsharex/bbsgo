@@ -3,7 +3,7 @@
     <aside class="w-full lg:w-40 flex-shrink-0 lg:block mb-4 lg:mb-0">
       <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="px-4 py-3 border-b bg-gray-50">
-          <h3 class="font-semibold text-gray-700">热门话题</h3>
+                    <h3 class="font-semibold text-gray-700">{{ t('home.hotTopics') }}</h3>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1">
           <router-link v-for="tag in tags" :key="tag.id" :to="tag.id ? `/?tag=${tag.id}` : '/'" :class="['px-4 py-3 flex items-center justify-between transition-colors',
@@ -63,11 +63,11 @@
                 <h3
                   class="text-base sm:text-lg font-semibold mb-2 hover:text-blue-500 line-clamp-2 flex items-center flex-wrap gap-1">
                   <span v-if="topic.is_pinned"
-                    class="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-medium">置顶</span>
+                    class="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-medium">{{ t('home.pinned') }}</span>
                   <span v-if="topic.is_essence"
-                    class="text-xs bg-yellow-500 text-white px-1.5 py-0.5 rounded font-medium">精华</span>
+                    class="text-xs bg-yellow-500 text-white px-1.5 py-0.5 rounded font-medium">{{ t('home.essence') }}</span>
                   <span v-if="topic.is_locked"
-                    class="text-xs bg-gray-500 text-white px-1.5 py-0.5 rounded font-medium">锁定</span>
+                    class="text-xs bg-gray-500 text-white px-1.5 py-0.5 rounded font-medium">{{ t('home.locked') }}</span>
                   <span class="text-gray-900">{{ topic.title }}</span>
                 </h3>
                 <!-- 图片预览 -->
@@ -86,7 +86,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    视频
+                    {{ t('home.video') }}
                   </span>
                   <span v-if="topic.has_poll"
                     class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-600 rounded text-xs">
@@ -95,7 +95,7 @@
                         d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
                       </path>
                     </svg>
-                    投票
+                    {{ t('home.poll') }}
                   </span>
                 </div>
                 <!-- 无图片时显示文字预览 -->
@@ -151,43 +151,43 @@
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
               </path>
             </svg>
-            <span class="text-gray-500 text-sm">加载中...</span>
+            <span class="text-gray-500 text-sm">{{ t('common.loading') }}</span>
           </div>
           <div v-else-if="noMore" class="text-gray-400 text-sm">
-            已经到底啦~
+            {{ t('common.noMoreData') }}
           </div>
         </div>
       </div>
     </div>
     <aside class="w-full xl:w-52 flex-shrink-0 hidden xl:block mt-4 lg:mt-0">
       <div class="bg-white rounded-lg shadow-sm p-3 mb-4" v-if="userStore.isLoggedIn">
-        <h3 class="font-semibold text-gray-900 mb-2 text-sm">签到</h3>
+        <h3 class="font-semibold text-gray-900 mb-2 text-sm">{{ t('checkin.title') }}</h3>
         <div class="text-center">
           <div class="text-2xl font-bold text-gray-800 mb-1">{{ signInStatus.credits || userStore.user?.credits || 0 }}
           </div>
-          <div class="text-xs text-gray-500 mb-2">积分</div>
+          <div class="text-xs text-gray-500 mb-2">{{ t('checkin.credits') }}</div>
           <button @click="handleSignIn" :disabled="signInLoading || signInStatus.signed_today" :class="['w-full py-1.5 rounded-lg text-sm font-medium transition-colors',
             signInStatus.signed_today
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
               : 'bg-blue-500 text-white hover:bg-blue-600']">
-            {{ signInLoading ? '签到中...' : (signInStatus.signed_today ? '今日已签到' : '立即签到') }}
+            {{ signInLoading ? t('checkin.signInIng') : (signInStatus.signed_today ? t('checkin.signedToday') : t('checkin.signInNow')) }}
           </button>
           <div v-if="signInStatus.last_sign_at" class="mt-2 text-xs text-gray-500">
-            你已经连续签到 {{ getStreakDays() }} 天啦！
+            {{ t('checkin.signInDays', { days: getStreakDays() }) }}
           </div>
         </div>
       </div>
       <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
-        <h3 class="font-semibold text-gray-900 mb-3 text-sm">热门帖子</h3>
+        <h3 class="font-semibold text-gray-900 mb-3 text-sm">{{ t('home.hotPosts') }}</h3>
         <div class="space-y-3">
-          <router-link v-for="t in hotTopics" :key="t.id" :to="`/topic/${t.id}`" class="block group">
-            <div class="text-sm text-gray-700 group-hover:text-blue-500 line-clamp-2">{{ t.title }}</div>
-            <div class="text-xs text-gray-400 mt-1">{{ t.view_count }} 浏览</div>
+          <router-link v-for="topic in hotTopics" :key="topic.id" :to="`/topic/${topic.id}`" class="block group">
+            <div class="text-sm text-gray-700 group-hover:text-blue-500 line-clamp-2">{{ topic.title }}</div>
+            <div class="text-xs text-gray-400 mt-1">{{ topic.view_count }} {{ t('home.views') }}</div>
           </router-link>
         </div>
       </div>
       <div class="bg-white rounded-lg shadow-sm p-4">
-        <h3 class="font-semibold text-gray-900 mb-3 text-sm">活跃用户</h3>
+        <h3 class="font-semibold text-gray-900 mb-3 text-sm">{{ t('home.activeUsers') }}</h3>
         <div class="space-y-3">
           <router-link v-for="(user, index) in creditUsers" :key="user.id" :to="`/user/${user.id}`"
             class="flex items-center justify-between hover:bg-gray-50 -mx-2 px-2 py-1 rounded transition-colors">
@@ -206,6 +206,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useIntersectionObserver } from '@vueuse/core'
 import { ElMessage } from 'element-plus'
 import api from '@/api'
@@ -215,6 +216,7 @@ import { stripMarkdown, extractFirstImage, hasVideo } from '@/utils/markdown'
 import { getDisplayBadges } from '@/utils/badge'
 import SvgBadge from '@/components/SvgBadge.vue'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
@@ -251,10 +253,10 @@ function formatTime(time) {
   const date = new Date(time)
   const now = new Date()
   const diff = now - date
-  if (diff < 60000) return '刚刚'
-  if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前'
-  if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前'
-  return Math.floor(diff / 86400000) + '天前'
+  if (diff < 60000) return t('topic.justNow')
+  if (diff < 3600000) return t('topic.minutesAgo', { minutes: Math.floor(diff / 60000) })
+  if (diff < 86400000) return t('topic.hoursAgo', { hours: Math.floor(diff / 3600000) })
+  return t('topic.daysAgo', { days: Math.floor(diff / 86400000) })
 }
 
 // 获取帖子作者的展示勋章（最多2枚）
@@ -367,7 +369,7 @@ watch([() => route.query.forum, () => route.query.tag], () => {
 
 async function toggleLike(topic) {
   if (!userStore.isLoggedIn) {
-    ElMessage.warning('请先登录')
+    ElMessage.warning(t('common.pleaseLoginFirst'))
     return
   }
 
@@ -385,7 +387,7 @@ async function toggleLike(topic) {
     topic.liked = !topic.liked
   } catch (e) {
     console.error(e)
-    ElMessage.error('操作失败')
+    ElMessage.error(t('common.operationFailed'))
   }
 }
 
@@ -406,7 +408,7 @@ async function handleSignIn() {
   signInLoading.value = true
   try {
     const res = await api.post('/user/signin')
-    ElMessage.success(`签到成功，获得 ${res.credits} 积分，总积分 ${res.total_credits}`)
+    ElMessage.success(t('checkin.signInSuccess', { credits: res.credits, total: res.total_credits }))
     signInStatus.value.signed_today = true
     signInStatus.value.last_sign_at = new Date().toISOString()
     signInStatus.value.credits = res.total_credits
@@ -415,7 +417,7 @@ async function handleSignIn() {
     }
   } catch (e) {
     console.error(e)
-    ElMessage.error(e.response?.data?.message || '签到失败')
+    ElMessage.error(e.response?.data?.message || t('checkin.signInFailed'))
   } finally {
     signInLoading.value = false
   }

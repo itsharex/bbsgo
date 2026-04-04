@@ -11,7 +11,7 @@
           </div>
           <div v-if="!isAuthPage" class="flex items-center space-x-2 sm:space-x-4">
             <div class="relative">
-              <input type="text" placeholder="搜索"
+              <input type="text" :placeholder="t('common.search')"
                 class="w-32 sm:w-64 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-gray-200 text-xs sm:text-sm focus:outline-none focus:border-blue-400"
                 @keypress.enter="handleSearch" v-model="searchKeyword">
               <button @click="handleSearch" class="absolute right-3 top-1.5 sm:top-2.5 text-gray-400 hover:text-blue-500">
@@ -22,9 +22,26 @@
               </button>
             </div>
             <template v-if="userStore.isLoggedIn">
+              <!-- 语言切换 -->
+              <el-dropdown @command="switchLanguage" trigger="click">
+                <span class="language-btn">
+                  <Globe :size="16" />
+                  <span>{{ locale === 'zh' ? '中文' : 'EN' }}</span>
+                </span>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item :command="'zh'" :class="{ 'is-active': locale === 'zh' }">
+                      中文
+                    </el-dropdown-item>
+                    <el-dropdown-item :command="'en'" :class="{ 'is-active': locale === 'en' }">
+                      English
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>              
               <router-link v-if="configStore.state.allow_post" to="/new-topic"
                 class="bg-blue-500 whitespace-nowrap text-white px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-600">
-                发表
+                {{ t('common.publish') }}
               </router-link>
               <button @click="$router.push('/notifications')" class="relative text-gray-600 hover:text-blue-500">
                 <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,58 +61,59 @@
                   </svg>
                 </button>
                 <div v-if="showUserMenu" class="absolute right-0 mt-2 w-44 sm:w-48 bg-white rounded-lg shadow-lg py-2 z-50">
-                  <router-link 
-                    :to="`/user/${userStore.user?.id}`" 
+                  <router-link
+                    :to="`/user/${userStore.user?.id}`"
                     @click="closeUserMenu"
                     class="flex items-center px-3 sm:px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
-                    <span class="text-sm">个人中心</span>
+                    <span class="text-sm">{{ t('nav.personalCenter') }}</span>
                   </router-link>
-                  <router-link 
-                    to="/messages" 
+                  <router-link
+                    to="/messages"
                     @click="closeUserMenu"
                     class="flex items-center px-3 sm:px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
                     </svg>
-                    <span class="text-sm">我的消息</span>
+                    <span class="text-sm">{{ t('nav.myMessages') }}</span>
                   </router-link>
-                  <router-link 
-                    to="/notifications" 
+                  <router-link
+                    to="/notifications"
                     @click="closeUserMenu"
                     class="flex items-center px-3 sm:px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
                     </svg>
-                    <span class="text-sm">系统通知</span>
+                    <span class="text-sm">{{ t('nav.systemNotifications') }}</span>
                   </router-link>
-                  <router-link 
-                    to="/favorites" 
+                  <router-link
+                    to="/favorites"
                     @click="closeUserMenu"
                     class="flex items-center px-3 sm:px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
                     </svg>
-                    <span class="text-sm">我的收藏</span>
+                    <span class="text-sm">{{ t('nav.myFavorites') }}</span>
                   </router-link>
                   <div class="border-t border-gray-100 my-2"></div>
-                  <button 
+                  <button
                     @click="handleLogout"
                     class="flex items-center w-full px-3 sm:px-4 py-2 text-red-600 hover:bg-red-50 transition-colors">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                     </svg>
-                    <span class="text-sm">退出登录</span>
+                    <span class="text-sm">{{ t('nav.logout') }}</span>
                   </button>
                 </div>
               </div>
+
             </template>
             <template v-else>
-              <router-link to="/login" class="text-gray-600 hover:text-blue-500 text-sm">登录</router-link>
+              <router-link to="/login" class="text-gray-600 hover:text-blue-500 text-sm">{{ t('common.login') }}</router-link>
               <router-link v-if="configStore.state.allow_register" to="/register"
-                class="bg-blue-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-600">注册</router-link>
+                class="bg-blue-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-600">{{ t('common.register') }}</router-link>
             </template>
           </div>
         </div>
@@ -128,11 +146,14 @@
 <script setup>
 import { ref, onMounted, computed, onBeforeUnmount, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import { useConfigStore } from '@/stores/config'
 import api from '@/api'
 import defaultLogo from '@/assets/bbs.png'
+import { Globe } from 'lucide-vue-next'
 
+const { t, locale } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
@@ -163,6 +184,11 @@ function toggleUserMenu() {
 
 function closeUserMenu() {
   showUserMenu.value = false
+}
+
+function switchLanguage(lang) {
+  locale.value = lang
+  localStorage.setItem('site_locale', lang)
 }
 
 function handleLogout() {
@@ -231,7 +257,7 @@ async function loadForums() {
   try {
     const res = await api.get('/forums')
     // 在板块列表最前面加一个"全部"选项
-    forums.value = [{ id: 1, name: '全部', sort_order: 0 }, ...(res || [])]
+    forums.value = [{ id: 1, name: t('nav.allForums'), sort_order: 0 }, ...(res || [])]
   } catch (e) {
     console.error(e)
   }
@@ -249,7 +275,7 @@ async function loadUnreadCount() {
     ])
     unreadCount.value = (notifRes?.count || 0) + (msgRes?.count || 0)
   } catch (e) {
-    console.error('加载未读数量失败:', e)
+    console.error(t('common.failed'), e)
   }
 }
 
@@ -281,3 +307,28 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
+
+<style scoped>
+.language-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #6b7280;
+  transition: all 0.2s;
+}
+
+.language-btn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+:deep(.el-dropdown-menu__item.is-active) {
+  color: #409eff;
+  font-weight: 600;
+}
+</style>

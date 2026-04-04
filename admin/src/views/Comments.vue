@@ -6,14 +6,14 @@
           <div class="header-left">
             <h3>
               <MessageCircle :size="18" />
-              评论列表
+              {{ t('comment.title') }}
             </h3>
-            <span class="total-count">共 {{ total }} 条评论</span>
+            <span class="total-count">{{ t('comment.totalComments').replace('%d', total) }}</span>
           </div>
           <div class="header-right">
             <el-input
               v-model="searchKeyword"
-              placeholder="搜索评论内容"
+              :placeholder="t('comment.searchPlaceholder')"
               clearable
               @clear="loadComments"
               @keyup.enter="loadComments"
@@ -25,7 +25,7 @@
             </el-input>
             <el-button type="primary" @click="loadComments">
               <Search :size="16" />
-              搜索
+              {{ t('common.search') }}
             </el-button>
           </div>
         </div>
@@ -33,14 +33,14 @@
 
       <el-table :data="comments" stripe style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="内容" min-width="200">
+        <el-table-column :label="t('comment.content')" min-width="200">
           <template #default="{ row }">
             <el-tooltip :content="row.content" placement="top" :disabled="row.content.length < 60">
               <span class="content-text">{{ row.content }}</span>
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column label="作者" width="120">
+        <el-table-column :label="t('comment.author')" width="120">
           <template #default="{ row }">
             <div class="author-cell">
               <el-avatar :size="24" :src="row.user?.avatar">
@@ -50,15 +50,15 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="所属帖子" width="120">
+        <el-table-column :label="t('comment.topic')" width="120">
           <template #default="{ row }">
             <el-button link type="primary" @click="viewTopic(row.topic_id)">
               <ExternalLink :size="12" />
-              查看
+              {{ t('common.view') }}
             </el-button>
           </template>
         </el-table-column>
-        <el-table-column label="点赞" width="80">
+        <el-table-column :label="t('comment.like')" width="80">
           <template #default="{ row }">
             <span class="like-count">
               <Heart :size="12" />
@@ -66,16 +66,16 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="发布时间" width="120">
+        <el-table-column :label="t('comment.publishTime')" width="120">
           <template #default="{ row }">
             <span class="date-text">{{ formatDate(row.created_at) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120" fixed="right">
+        <el-table-column :label="t('common.actions')" width="120" fixed="right">
           <template #default="{ row }">
             <el-button link type="danger" @click="deleteComment(row)">
               <Trash2 :size="14" />
-              删除
+              {{ t('common.delete') }}
             </el-button>
           </template>
         </el-table-column>
@@ -96,10 +96,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/api'
 import { MessageCircle, Search, User, ExternalLink, Heart, Trash2 } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const comments = ref([])
 const searchKeyword = ref('')
 const page = ref(1)
@@ -108,7 +110,7 @@ const total = ref(0)
 const loading = ref(false)
 
 function formatDate(date) {
-  return new Date(date).toLocaleDateString('zh-CN')
+  return new Date(date).toLocaleDateString()
 }
 
 async function loadComments() {
@@ -124,8 +126,8 @@ async function loadComments() {
     comments.value = res?.list || []
     total.value = res?.total || 0
   } catch (e) {
-    console.error('加载评论失败', e)
-    ElMessage.error('加载评论失败')
+    console.error('load comments failed', e)
+    ElMessage.error(t('common.failed'))
   } finally {
     loading.value = false
   }
@@ -137,20 +139,20 @@ function viewTopic(topicId) {
 
 async function deleteComment(comment) {
   try {
-    await ElMessageBox.confirm('确定要删除这条评论吗？', '删除评论', {
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('comment.confirmDelete'), t('comment.delete'), {
+      confirmButtonText: t('common.delete'),
+      cancelButtonText: t('common.cancel'),
       type: 'warning'
     })
 
     await api.delete(`/admin/comments/${comment.id}`)
     comments.value = comments.value.filter(c => c.id !== comment.id)
     total.value--
-    ElMessage.success('评论已删除')
+    ElMessage.success(t('common.success'))
   } catch (e) {
     if (e !== 'cancel') {
-      console.error('删除失败', e)
-      ElMessage.error('删除失败')
+      console.error('delete comment failed', e)
+      ElMessage.error(t('common.failed'))
     }
   }
 }

@@ -6,14 +6,14 @@
           <div class="header-left">
             <h3>
               <Award :size="18" />
-              勋章管理
+              {{ t('badge.title') }}
             </h3>
-            <span class="total-count">共 {{ badges.length }} 枚勋章</span>
+            <span class="total-count">{{ t('badge.totalBadges').replace('%d', badges.length) }}</span>
           </div>
           <div class="header-right">
             <el-button type="primary" @click="initBadges">
               <RefreshCw :size="16" />
-              初始化勋章
+              {{ t('badge.initBadges') }}
             </el-button>
           </div>
         </div>
@@ -21,79 +21,79 @@
 
       <el-table :data="badges" stripe style="width: 100%; font-size: 0.75rem;" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="勋章" min-width="200">
+        <el-table-column :label="t('badge.badge')" min-width="200">
           <template #default="{ row }">
             <div class="badge-cell">
               <SvgBadge :type="row.icon" :size="32" />
               <div class="badge-info">
-                <span class="badge-name">{{ row.name || '未命名' }}</span>
+                <span class="badge-name">{{ row.name || '-' }}</span>
                 <span class="badge-type">{{ getTypeName(row.type) }}</span>
               </div>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="描述" min-width="250">
+        <el-table-column :label="t('badge.description')" min-width="250">
           <template #default="{ row }">
-            {{ row.description || '暂无描述' }}
+            {{ row.description || t('badge.noDescription') }}
           </template>
         </el-table-column>
-        <el-table-column label="获得条件" min-width="180">
+        <el-table-column :label="t('badge.condition')" min-width="180">
           <template #default="{ row }">
-            {{ row.condition || '暂无条件' }}
+            {{ row.condition || t('badge.noCondition') }}
           </template>
         </el-table-column>
-        <el-table-column label="获得人数" width="120">
+        <el-table-column :label="t('badge.awardCount')" width="120">
           <template #default="{ row }">
-            <el-tag type="info" size="small">{{ row.award_count || 0 }} 人</el-tag>
+            <el-tag type="info" size="small">{{ row.award_count || 0 }} {{ t('badge.people') }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column :label="t('common.actions')" width="200" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="viewBadgeUsers(row)">
               <Users :size="14" />
-              查看用户
+              {{ t('badge.viewUsers') }}
             </el-button>
             <el-button link type="danger" @click="deleteBadge(row)">
               <Trash2 :size="14" />
-              删除
+              {{ t('badge.delete') }}
             </el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
 
-    <el-dialog v-model="usersDialogVisible" :title="`${currentBadge?.name || '勋章'} - 获得用户`" width="800px">
+    <el-dialog v-model="usersDialogVisible" :title="t('badge.badgeUsers').replace('%s', currentBadge?.name || t('badge.badge'))" width="800px">
       <el-table :data="badgeUsers" stripe style="width: 100%" v-loading="usersLoading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column label="用户信息" min-width="180">
+        <el-table-column :label="t('badge.userInfo')" min-width="180">
           <template #default="{ row }">
             <div class="user-cell">
               <el-avatar :size="36" :src="row.user?.avatar">
                 <User :size="18" />
               </el-avatar>
               <div class="user-info">
-                <span class="username">{{ row.user?.username || '未知用户' }}</span>
+                <span class="username">{{ row.user?.username || t('badge.unknownUser') }}</span>
                 <span class="email">{{ row.user?.email || '-' }}</span>
               </div>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="获得时间" width="180">
+        <el-table-column :label="t('badge.awardedAt')" width="180">
           <template #default="{ row }">
             <span class="date-text">{{ row.awarded_at ? formatDateTime(row.awarded_at) : '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="100">
+        <el-table-column :label="t('badge.status')" width="100">
           <template #default="{ row }">
-            <el-tag v-if="row.is_revoked" type="danger" size="small">已撤销</el-tag>
-            <el-tag v-else type="success" size="small">正常</el-tag>
+            <el-tag v-if="row.is_revoked" type="danger" size="small">{{ t('badge.revoked2') }}</el-tag>
+            <el-tag v-else type="success" size="small">{{ t('badge.normal') }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120" fixed="right" v-if="!currentBadge?.is_revoked">
+        <el-table-column :label="t('common.actions')" width="120" fixed="right" v-if="!currentBadge?.is_revoked">
           <template #default="{ row }">
             <el-button v-if="!row.is_revoked" link type="danger" @click="revokeBadge(row)">
               <XCircle :size="14" />
-              撤销
+              {{ t('badge.revoke') }}
             </el-button>
           </template>
         </el-table-column>
@@ -109,20 +109,20 @@
       </div>
     </el-dialog>
 
-    <el-dialog v-model="revokeDialogVisible" title="撤销勋章" width="400px">
+    <el-dialog v-model="revokeDialogVisible" :title="t('badge.revokeDialogTitle')" width="400px">
       <el-form :model="revokeForm" label-width="80px">
-        <el-form-item label="撤销原因">
-          <el-input 
-            v-model="revokeForm.reason" 
-            type="textarea" 
+        <el-form-item :label="t('badge.revokeReason2')">
+          <el-input
+            v-model="revokeForm.reason"
+            type="textarea"
             :rows="3"
-            placeholder="请输入撤销原因"
+            :placeholder="t('badge.revokeReasonPlaceholder')"
           />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="revokeDialogVisible = false">取消</el-button>
-        <el-button type="danger" @click="confirmRevoke">确定撤销</el-button>
+        <el-button @click="revokeDialogVisible = false">{{ t('badge.cancel') }}</el-button>
+        <el-button type="danger" @click="confirmRevoke">{{ t('badge.confirmRevoke2') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -130,11 +130,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import api from '@/api'
 import { Award, Users, User, RefreshCw, Trash2, XCircle } from 'lucide-vue-next'
 import SvgBadge from '@/components/SvgBadge.vue'
 
+const { t } = useI18n()
 const badges = ref([])
 const loading = ref(false)
 const usersDialogVisible = ref(false)
@@ -150,16 +152,16 @@ const revokeForm = ref({
 })
 
 function getTypeName(type) {
-  const types = { 
-    basic: '基础入门', 
-    advanced: '进阶成就', 
-    top: '顶级荣耀' 
+  const types = {
+    basic: t('badge.type.basic'),
+    advanced: t('badge.type.advanced'),
+    top: t('badge.type.top')
   }
-  return types[type] || '未知'
+  return types[type] || t('badge.type.unknown')
 }
 
 function formatDateTime(date) {
-  return new Date(date).toLocaleString('zh-CN')
+  return new Date(date).toLocaleString()
 }
 
 async function loadBadges() {
@@ -168,8 +170,8 @@ async function loadBadges() {
     const res = await api.get('/admin/badges')
     badges.value = res || []
   } catch (e) {
-    console.error('加载勋章列表失败', e)
-    ElMessage.error('加载勋章列表失败')
+    console.error('Load badges failed', e)
+    ElMessage.error(t('common.failed'))
   } finally {
     loading.value = false
   }
@@ -178,18 +180,18 @@ async function loadBadges() {
 async function initBadges() {
   try {
     await ElMessageBox.confirm(
-      '确定要初始化系统勋章吗？这将创建9枚默认勋章。',
-      '初始化勋章',
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'info' }
+      t('badge.confirmInit'),
+      t('badge.init'),
+      { confirmButtonText: t('common.confirm'), cancelButtonText: t('common.cancel'), type: 'info' }
     )
-    
+
     await api.post('/admin/badges/init')
-    ElMessage.success('勋章初始化成功')
+    ElMessage.success(t('badge.initSuccess'))
     await loadBadges()
   } catch (e) {
     if (e !== 'cancel') {
-      console.error('初始化勋章失败', e)
-      ElMessage.error('初始化勋章失败')
+      console.error('Init badges failed', e)
+      ElMessage.error(t('common.failed'))
     }
   }
 }
@@ -211,8 +213,8 @@ async function loadBadgeUsers(page = 1) {
     badgeUsers.value = res?.list || []
     usersTotal.value = res?.total || 0
   } catch (e) {
-    console.error('加载用户列表失败', e)
-    ElMessage.error('加载用户列表失败')
+    console.error('Load badge users failed', e)
+    ElMessage.error(t('common.failed'))
   } finally {
     usersLoading.value = false
   }
@@ -221,18 +223,18 @@ async function loadBadgeUsers(page = 1) {
 async function deleteBadge(badge) {
   try {
     await ElMessageBox.confirm(
-      `确定要删除勋章 "${badge.name}" 吗？此操作不可恢复！`,
-      '删除勋章',
-      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'error' }
+      t('badge.confirmDeleteBadge').replace('%s', badge.name),
+      t('badge.deleteBadgeTitle'),
+      { confirmButtonText: t('common.delete'), cancelButtonText: t('common.cancel'), type: 'error' }
     )
 
     await api.delete(`/admin/badges/${badge.id}`)
     badges.value = badges.value.filter(b => b.id !== badge.id)
-    ElMessage.success('勋章已删除')
+    ElMessage.success(t('common.success'))
   } catch (e) {
     if (e !== 'cancel') {
-      console.error('删除勋章失败', e)
-      ElMessage.error('删除勋章失败')
+      console.error('Delete badge failed', e)
+      ElMessage.error(t('common.failed'))
     }
   }
 }
@@ -247,18 +249,18 @@ function revokeBadge(userBadge) {
 
 async function confirmRevoke() {
   if (!revokeForm.value.reason) {
-    ElMessage.warning('请输入撤销原因')
+    ElMessage.warning(t('badge.revokeReasonPlaceholder'))
     return
   }
 
   try {
     await api.put(`/admin/badges/${revokeForm.value.id}/revoke`, revokeForm.value)
-    ElMessage.success('勋章已撤销')
+    ElMessage.success(t('common.success'))
     revokeDialogVisible.value = false
     await loadBadgeUsers()
   } catch (e) {
-    console.error('撤销勋章失败', e)
-    ElMessage.error('撤销勋章失败')
+    console.error('Revoke badge failed', e)
+    ElMessage.error(t('common.failed'))
   }
 }
 
