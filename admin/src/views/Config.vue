@@ -300,6 +300,35 @@
             </el-row>
           </el-form>
         </el-tab-pane>
+
+        <el-tab-pane :label="t('config.sso')" name="sso">
+          <el-alert
+            :title="t('config.ssoTip')"
+            type="info"
+            :closable="false"
+            show-icon
+            style="margin-bottom: 20px"
+          >
+            <template #default>
+              <p style="margin: 0" v-html="t('config.ssoTipDesc')"></p>
+            </template>
+          </el-alert>
+
+          <el-form :model="config" label-position="top">
+            <el-row :gutter="24">
+              <el-col :span="12">
+                <el-form-item :label="t('config.ssoCookieName')">
+                  <el-input v-model="config.sso_cookie_name" :placeholder="t('config.ssoCookieNamePlaceholder')" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item :label="t('config.ssoVerifyUrl')">
+                  <el-input v-model="config.sso_verify_url" :placeholder="t('config.ssoVerifyUrlPlaceholder')" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+        </el-tab-pane>
       </el-tabs>
 
       <div class="form-footer">
@@ -352,7 +381,9 @@ const config = ref({
   tencent_region: '',
   tencent_domain: '',
   jwt_secret: '',
-  jwt_expire_days: '7'
+  jwt_expire_days: '7',
+  sso_cookie_name: 'token',
+  sso_verify_url: ''
 })
 
 const saving = ref(false)
@@ -440,7 +471,9 @@ async function loadConfig() {
         tencent_region: res.tencent_region || '',
         tencent_domain: res.tencent_domain || '',
         jwt_secret: res.jwt_secret || '',
-        jwt_expire_days: res.jwt_expire_days || '7'
+        jwt_expire_days: res.jwt_expire_days || '7',
+        sso_cookie_name: res.sso_cookie_name || 'token',
+        sso_verify_url: res.sso_verify_url || ''
       }
     }
   } catch (e) {

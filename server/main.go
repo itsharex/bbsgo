@@ -7,6 +7,8 @@ import (
 	"bbsgo/fileserver"
 	"bbsgo/routes"
 	"bbsgo/seed"
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -14,6 +16,12 @@ import (
 )
 
 func main() {
+	var (
+		bindIP   = flag.String("a", "", "IP address to bind (default: all interfaces)")
+		bindPort = flag.Int("p", 8080, "Port number to listen on (default: 8080)")
+	)
+	flag.Parse()
+
 	database.InitDB()
 	database.AutoMigrate()
 	cache.Init()
@@ -47,8 +55,9 @@ func main() {
 	// 主站 - 所有其他路径（SPA）
 	r.PathPrefix("/").Handler(http.HandlerFunc(fileserver.ServeSite))
 
-	log.Printf("server starting on :8080...")
-	if err := http.ListenAndServe(":8080", r); err != nil {
+	addr := fmt.Sprintf("%s:%d", *bindIP, *bindPort)
+	log.Printf("server starting on %s...", addr)
+	if err := http.ListenAndServe(addr, r); err != nil {
 		log.Fatalf("server failed to start: %v", err)
 	}
 }

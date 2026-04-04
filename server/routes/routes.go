@@ -25,6 +25,9 @@ func SetupRoutes() *mux.Router {
 	// ========== API v1 版本 ==========
 	api := r.PathPrefix("/api/v1").Subrouter()
 
+	// 应用 SSO 中间件，自动检查共享域 cookie 并登录
+	api.Use(middleware.SSOMiddleware)
+
 	// ========== 公开接口（无需认证）==========
 
 	// 用户注册和登录
@@ -232,6 +235,9 @@ func SetupRoutes() *mux.Router {
 func SetupAPIRoutes(api *mux.Router) {
 	// 应用 CORS 中间件
 	api.Use(middleware.CORS)
+
+	// 应用 SSO 中间件，自动检查共享域 cookie 并登录
+	api.Use(middleware.SSOMiddleware)
 
 	// ========== 公开接口（无需认证）==========
 

@@ -22,6 +22,8 @@ type User struct {
 	Credits      int            `gorm:"default:0" json:"credits"`                     // 积分
 	Level        int            `gorm:"default:1" json:"level"`                       // 等级
 	Reputation   int            `gorm:"default:100" json:"reputation"`                // 信誉分（0-100）
+	SSOProvider  string         `gorm:"size:50;index" json:"sso_provider"`            // SSO 来源标识
+	SSOUid       string         `gorm:"size:100;index" json:"sso_uid"`                // 第三方用户ID
 	LastSignAt   *time.Time     `json:"last_sign_at"`                                 // 最后签到时间
 	CreatedAt    time.Time      `json:"created_at"`                                   // 创建时间
 	UpdatedAt    time.Time      `json:"updated_at"`                                   // 更新时间

@@ -309,14 +309,39 @@ watch(() => userStore.isLoggedIn, (isLoggedIn) => {
   }
 })
 
+// 检测 SSO cookie 并同步到 localStorage
+async function checkSSOCookie() {
+  if (!localStorage.getItem('bbsgo_token')) {
+    const cookieMatch = document.cookie.match(/bbsgo_token=([^;]+)/);
+    if (cookieMatch) {
+      console.log('[sso] found token in cookie, syncing to localStorage')
+      localStorage.setItem('bbsgo_token', cookieMatch[1])
+      try {
+        await userStore.refreshProfile()
+        console.log('[sso] after refresh, user:', userStore.user)
+      } catch (e) {
+        console.error('[sso] refreshProfile failed:', e)
+      }
+    }
+  }
+}
+
 onMounted(async () => {
   await configStore.loadConfig()
-  console.log('🔧 App onMount - 配置状态:', {
-    allow_post: configStore.state.allow_post,
-    loading: configStore.state.loading
-  })
   loadSiteConfig()
   loadForums()
+  // 调用一个需要认证的 API 触发 SSO 中间件
+  try {
+    await api.get('/user/profile')
+  } catch (e) {
+    // ignore
+  }
+  // SSO cookie 检测
+  await checkSSOCookie()
+  // 如果同步到了 token，重新获取用户信息
+  if (localStorage.getItem('bbsgo_token')) {
+    await userStore.refreshProfile()
+  }
   loadUnreadCount()
   document.addEventListener('click', handleClickOutside)
 

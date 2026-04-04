@@ -3,7 +3,7 @@ import { ref, computed } from "vue";
 import api from "@/api";
 
 export const useUserStore = defineStore("user", () => {
-  const token = ref(localStorage.getItem("token") || "");
+  const token = ref(localStorage.getItem("bbsgo_token") || "");
   const user = ref(JSON.parse(localStorage.getItem("user") || "null"));
 
   const isLoggedIn = computed(() => !!token.value && !!user.value);
@@ -12,7 +12,7 @@ export const useUserStore = defineStore("user", () => {
     const res = await api.post("/login", loginData);
     token.value = res.token;
     user.value = res.user;
-    localStorage.setItem("token", res.token);
+    localStorage.setItem("bbsgo_token", res.token);
     localStorage.setItem("user", JSON.stringify(res.user));
   }
 
@@ -20,14 +20,14 @@ export const useUserStore = defineStore("user", () => {
     const res = await api.post("/register", registerData);
     token.value = res.token;
     user.value = res.user;
-    localStorage.setItem("token", res.token);
+    localStorage.setItem("bbsgo_token", res.token);
     localStorage.setItem("user", JSON.stringify(res.user));
   }
 
   function logout() {
     token.value = "";
     user.value = null;
-    localStorage.removeItem("token");
+    localStorage.removeItem("bbsgo_token");
     localStorage.removeItem("user");
   }
 
