@@ -239,6 +239,40 @@ func GetUserStats(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// GetUserFollows 获取指定用户的关注列表
+func GetUserFollows(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID, _ := strconv.Atoi(vars["id"])
+
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	if page < 1 {
+		page = 1
+	}
+	pageSize := 20
+	offset := (page - 1) * pageSize
+
+	var follows []models.Follow
+	var total int64
+
+	database.DB.Model(&models.Follow{}).Where("user_id = ?", userID).Count(&total)
+
+	if err := database.DB.Where("user_id = ?", userID).
+		Preload("FollowUser").
+		Order("created_at DESC").
+		Offset(offset).Limit(pageSize).
+		Find(&follows).Error; err != nil {
+		log.Printf("get user follows: failed to query follows, userID: %d, error: %v", userID, err)
+		errors.Error(w, errors.CodeServerInternal, "")
+		return
+	}
+
+	errors.Success(w, map[string]interface{}{
+		"list":  follows,
+		"total": total,
+		"page":  page,
+	})
+}
+
 func GetUserFollowers(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID, _ := strconv.Atoi(vars["id"])

@@ -495,6 +495,8 @@ export default {
     followFailed: 'Follow operation failed',
     myFollowing: 'My Following',
     myFans: 'My Followers',
+    userFollowing: "{name}'s Following",
+    userFans: "{name}'s Followers",
     returnToProfile: 'Return to Profile',
     totalPeople: '{total} people',
     userLazy: 'This person is lazy and left nothing...'

@@ -69,8 +69,14 @@ const { t } = useI18n()
 const route = useRoute()
 const userId = computed(() => route.params.id)
 const type = computed(() => route.query.type || 'follows')
+const user = ref(null)
 
 const title = computed(() => {
+  if (user.value?.username) {
+    return type.value === 'follows'
+      ? t('follow.userFollowing', { name: user.value.username })
+      : t('follow.userFans', { name: user.value.username })
+  }
   return type.value === 'follows' ? t('follow.myFollowing') : t('follow.myFans')
 })
 
@@ -92,8 +98,8 @@ function getUserID(item) {
 async function loadList() {
   loading.value = true
   try {
-    const url = type.value === 'follows' 
-      ? '/user/follows' 
+    const url = type.value === 'follows'
+      ? `/users/${userId.value}/following`
       : `/users/${userId.value}/followers`
     
     const res = await api.get(url, {
@@ -110,12 +116,23 @@ async function loadList() {
   }
 }
 
+async function loadUser() {
+  try {
+    user.value = await api.get(`/users/${userId.value}`)
+  } catch (e) {
+    console.error(t('follow.loadFailed'), e)
+  }
+}
+
 function handlePageChange(newPage) {
   page.value = newPage
   loadList()
 }
 
-onMounted(() => {
-  loadList()
+onMounted(async () => {
+  await Promise.all([
+    loadUser(),
+    loadList()
+  ])
 })
 </script>

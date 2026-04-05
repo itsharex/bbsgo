@@ -495,6 +495,8 @@ export default {
     followFailed: '关注操作失败',
     myFollowing: '我的关注',
     myFans: '我的粉丝',
+    userFollowing: '{name}的关注',
+    userFans: '{name}的粉丝',
     returnToProfile: '返回个人主页',
     totalPeople: '共 {total} 人',
     userLazy: '这个人很懒，什么都没写'

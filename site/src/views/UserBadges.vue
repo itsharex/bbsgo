@@ -54,18 +54,8 @@
               </el-tag>
 
               <!-- 已获得时间 -->
-              <div v-if="item.awarded" class="text-xs text-green-600 mt-0.5">
+              <div v-if="item.awarded_at" class="text-xs text-green-600 mt-0.5">
                 {{ formatDateTime(item.awarded_at) }}
-              </div>
-
-              <!-- 未获得进度 -->
-              <div v-else-if="item.progress" class="w-full mt-0.5">
-                <div class="w-full bg-gray-200 rounded-full h-1">
-                  <div class="h-1 rounded-full bg-blue-400 transition-all"
-                    :style="{ width: Math.min(100, ((item.progress.current || 0) / item.progress.target) * 100) + '%' }">
-                  </div>
-                </div>
-                <div class="text-xs text-gray-400">{{ item.progress.current || 0 }}/{{ item.progress.target }}</div>
               </div>
             </div>
           </el-tooltip>
@@ -155,7 +145,15 @@ async function loadUser() {
 async function loadBadgeProgress() {
   loading.value = true
   try {
-    badgeProgress.value = await api.get('/badges/progress')
+    // 获取指定用户的勋章列表
+    const res = await api.get(`/users/${userId}/badges`)
+    // 转换数据格式：UserBadge -> badgeProgress 格式
+    // 只显示未撤销的勋章，并且添加 awarded 字段
+    badgeProgress.value = (res || []).map(ub => ({
+      badge: ub.badge,
+      awarded: !!ub.awarded_at,
+      awarded_at: ub.awarded_at
+    }))
   } catch (e) {
     console.error(t('userBadges.loadFailed'), e)
     if (e.code) {

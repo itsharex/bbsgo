@@ -126,7 +126,7 @@
           <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4">
             <div class="flex justify-between items-center mb-3 lg:mb-4">
               <h3 class="font-medium text-gray-900">{{ t('topic.fans') }} {{ followers.length }}</h3>
-              <button class="text-blue-500 text-xs sm:text-sm hover:underline">{{ t('topic.loadMore') }}</button>
+              <button @click="$router.push(`/user/${user?.id}/follows?type=followers`)" class="text-blue-500 text-xs sm:text-sm hover:underline">{{ t('topic.loadMore') }}</button>
             </div>
             <div v-if="followers.length > 0" class="space-y-3">
               <div v-for="follower in followers" :key="follower.id" class="flex items-center space-x-2">
