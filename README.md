@@ -8,6 +8,26 @@
 
 Rainbow BBS is a full-featured community forum system with a frontend-backend separated architecture. The backend is developed in Go, and the frontend is built with Vue 3 + Element Plus. The system comes out of the box with detailed Chinese comments, suitable for learning and secondary development.
 
+## Screenshots
+
+### Home Page
+![Home Page](snapshot/en/home.png)
+
+### Topic List
+![Topic List](snapshot/en/topic.png)
+
+### Post Detail
+![Post Detail](snapshot/en/post.png)
+
+### User Profile
+![User Profile](snapshot/en/profile.png)
+
+### Chat System
+![Chat System](snapshot/en/chat.png)
+
+### Admin Console
+![Admin Console](snapshot/en/console.png)
+
 **Tech Stack:**
 
 - **Backend**: Go + GORM + SQLite + gorilla/mux

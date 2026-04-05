@@ -330,17 +330,16 @@ onMounted(async () => {
   await configStore.loadConfig()
   loadSiteConfig()
   loadForums()
-  // 调用一个需要认证的 API 触发 SSO 中间件
-  try {
-    await api.get('/user/profile')
-  } catch (e) {
-    // ignore
-  }
-  // SSO cookie 检测
+  // SSO cookie 同步检测（如果主站有cookie会同步到localStorage）
   await checkSSOCookie()
-  // 如果同步到了 token，重新获取用户信息
+  // 只有本地已有 token 才获取用户信息，避免 401 重定向
   if (localStorage.getItem('bbsgo_token')) {
-    await userStore.refreshProfile()
+    try {
+      await userStore.refreshProfile()
+    } catch (e) {
+      // token 无效，清除本地状态
+      userStore.logout()
+    }
   }
   loadUnreadCount()
   document.addEventListener('click', handleClickOutside)

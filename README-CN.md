@@ -8,6 +8,26 @@
 
 彩虹BBS是一个功能完善的社区论坛系统，采用前后端分离架构。后端使用 Go 语言开发，前端使用 Vue 3 + Element Plus 构建。系统开箱即配，带有详细的中文注释，适合学习二次开发。
 
+## 产品截图
+
+### 首页
+![首页](snapshot/cn/home.png)
+
+### 话题列表
+![话题列表](snapshot/cn/topic.png)
+
+### 帖子详情
+![帖子详情](snapshot/cn/post.png)
+
+### 用户资料
+![用户资料](snapshot/cn/profile.png)
+
+### 私信系统
+![私信系统](snapshot/cn/chat.png)
+
+### 管理后台
+![管理后台](snapshot/cn/console.png)
+
 **技术栈：**
 
 - **后端**：Go + GORM + SQLite + gorilla/mux

@@ -353,7 +353,7 @@ async function loadHotTopics() {
       params: {
         page: 1,
         page_size: 5,
-        order_by: 'view_count'
+        sort: 'hot'
       }
     })
     hotTopics.value = res.list || []

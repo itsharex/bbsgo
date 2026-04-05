@@ -32,11 +32,11 @@
               <!-- 私信通知 -->
               <p v-else-if="notif.type === 'message'" class="text-gray-900 text-sm">
                 {{ t('notifications.newMessage') }}
-                <span v-if="notif.from_user" class="text-blue-500">@{{ notif.from_user.username }}</span>
+                <span v-if="notif.from_user" class="text-blue-500">@{{ getUserDisplayName(notif.from_user, t) }}</span>
               </p>
               <!-- 关注通知 -->
               <p v-else-if="notif.type === 'follow'" class="text-gray-900 text-sm">
-                {{ t('notifications.userFollowedYou', { username: notif.related_user?.username || '' }) }}
+                {{ t('notifications.userFollowedYou', { username: getUserDisplayName(notif.related_user, t) }) }}
               </p>
               <!-- 最佳评论通知 -->
               <p v-else-if="notif.type === 'best_comment'" class="text-gray-900 text-sm">
@@ -67,6 +67,7 @@ import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import api from '@/api'
 import { getErrorI18nKey } from '@/utils/error'
+import { getUserDisplayName } from '@/utils/user'
 import SvgBadge from '@/components/SvgBadge.vue'
 
 const { t } = useI18n()

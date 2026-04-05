@@ -36,11 +36,11 @@ api.interceptors.response.use(
     }
   },
   (error) => {
+    // 只清除本地状态，不再自动跳转登录页
+    // 写操作（点赞、评论等）组件自行处理登录提示
     if (error.response?.status === 401) {
       localStorage.removeItem("bbsgo_token");
       localStorage.removeItem("user");
-      window.location.href = "/login";
-      return Promise.reject(error);
     }
 
     // 不在这里自动显示错误消息，让各组件自己处理

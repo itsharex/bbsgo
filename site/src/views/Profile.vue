@@ -113,7 +113,9 @@
               </div>
               <div class="flex">
                 <span class="w-16 lg:w-20 text-gray-500 text-xs sm:text-sm">{{ t('topic.homepage') }}</span>
-                <span class="text-blue-500 text-xs sm:text-sm truncate">{{ user?.intro ? user.intro : 'https://mlog.club/user/' + (user?.id || '') }}</span>
+                <a :href="`${origin}/user/${user?.id}`" class="text-blue-500 text-xs sm:text-sm truncate hover:underline">
+                  {{ user?.intro || `${origin}/user/${user?.id}` }}
+                </a>
               </div>
             </div>
           </div>
@@ -130,7 +132,7 @@
                   </div>
                   <div class="text-xs text-gray-400 truncate">{{ follower.user?.signature || t('topic.noSignature') }}</div>
                 </div>
-                <button class="bg-blue-500 text-white text-[10px] sm:text-xs px-2 sm:px-3 py-0.5 sm:py-1 rounded hover:bg-blue-600 flex-shrink-0 whitespace-nowrap">+ {{ t('profile.follow') }}</button>
+                <FollowButton :user-id="follower.user.id" />
               </div>
             </div>
             <div v-else class="text-center text-gray-400 py-4 text-xs sm:text-sm">
@@ -243,6 +245,7 @@ import TopicCard from '@/components/TopicCard.vue'
 import SvgBadge from '@/components/SvgBadge.vue'
 import FollowButton from '@/components/FollowButton.vue'
 
+const origin = window.location.origin
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
