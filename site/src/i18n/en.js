@@ -319,6 +319,7 @@ export default {
     draft: 'Save Draft',
     uploadImage: 'Upload Image',
     insertImage: 'Insert Image',
+    insertVideo: 'Upload Video',
     insertLink: 'Insert Link',
     selectForumPlaceholder: 'Please select a forum',
     tagTip: '(optional, max 3)',

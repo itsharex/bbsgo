@@ -319,6 +319,7 @@ export default {
     draft: '存草稿',
     uploadImage: '上传图片',
     insertImage: '插入图片',
+    insertVideo: '上传视频',
     insertLink: '插入链接',
     selectForumPlaceholder: '请选择版块',
     tagTip: '（可选，最多3个）',
