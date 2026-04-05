@@ -13,10 +13,10 @@
 ### 首页
 ![首页](snapshot/cn/home.png)
 
-### 话题列表
+### 帖子详情
 ![话题列表](snapshot/cn/topic.png)
 
-### 帖子详情
+### 发表帖子
 ![帖子详情](snapshot/cn/post.png)
 
 ### 用户资料

@@ -13,10 +13,10 @@ Rainbow BBS is a full-featured community forum system with a frontend-backend se
 ### Home Page
 ![Home Page](snapshot/en/home.png)
 
-### Topic List
+### Topic Detail
 ![Topic List](snapshot/en/topic.png)
 
-### Post Detail
+### Edit Topic
 ![Post Detail](snapshot/en/post.png)
 
 ### User Profile
