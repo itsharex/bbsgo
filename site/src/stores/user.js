@@ -1,33 +1,31 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import api from "@/api";
+import api, { authApi } from "@/api";
 
 export const useUserStore = defineStore("user", () => {
-  const token = ref(localStorage.getItem("bbsgo_token") || "");
   const user = ref(JSON.parse(localStorage.getItem("user") || "null"));
 
-  const isLoggedIn = computed(() => !!token.value && !!user.value);
+  const isLoggedIn = computed(() => !!user.value);
 
   async function login(loginData) {
     const res = await api.post("/login", loginData);
-    token.value = res.token;
     user.value = res.user;
-    localStorage.setItem("bbsgo_token", res.token);
     localStorage.setItem("user", JSON.stringify(res.user));
   }
 
   async function register(registerData) {
     const res = await api.post("/register", registerData);
-    token.value = res.token;
-    user.value = res.user;
-    localStorage.setItem("bbsgo_token", res.token);
-    localStorage.setItem("user", JSON.stringify(res.user));
+    // 注册成功后刷新用户信息，确保状态同步
+    await refreshProfile();
   }
 
-  function logout() {
-    token.value = "";
+  async function logout() {
+    try {
+      await authApi.logout();
+    } catch (e) {
+      // 即使 API 调用失败，也清除本地状态
+    }
     user.value = null;
-    localStorage.removeItem("bbsgo_token");
     localStorage.removeItem("user");
   }
 
@@ -38,7 +36,6 @@ export const useUserStore = defineStore("user", () => {
   }
 
   return {
-    token,
     user,
     isLoggedIn,
     login,

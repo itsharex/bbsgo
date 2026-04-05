@@ -590,6 +590,9 @@ export default {
     verifyCodeError: '验证码错误',
     verifyCodeExpired: '验证码已过期',
     emailNotRegistered: '邮箱未注册',
+    invalidUsername: '用户名格式错误，仅允许字母、数字和下划线，且不能以数字开头',
+    passwordTooWeak: '密码长度至少8位，需包含大写字母、小写字母、数字和特殊字符中的至少3种',
+    passwordMismatch: '两次密码输入不一致',
     // 2xxx - 用户相关类
     userNotFound: '用户不存在',
     noPermission: '无权限操作',
@@ -631,6 +634,7 @@ export default {
     symbolsOrEmojiOnly: '内容仅包含符号或表情',
     repeatingChars: '内容包含重复字符',
     tooManyLinks: '内容包含过多外部链接',
+    tooManyRequests: '请求过于频繁，请稍后再试',
     // 5xxx - 系统错误类
     serverInternal: '服务器内部错误',
     databaseError: '数据库操作失败',

@@ -12,18 +12,8 @@ export class ApiError extends Error {
 const api = axios.create({
   baseURL: "/api/v1",
   timeout: 10000,
+  withCredentials: true, // 自动发送和接收 Cookie
 });
-
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("bbsgo_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
 
 api.interceptors.response.use(
   (response) => {
@@ -31,20 +21,15 @@ api.interceptors.response.use(
     if (res.code === 0) {
       return res.data;
     } else {
-      // 不弹错误提示，由组件自行处理
       return Promise.reject(new ApiError(res.code, res.message));
     }
   },
   (error) => {
-    // 只清除本地状态，不再自动跳转登录页
-    // 写操作（点赞、评论等）组件自行处理登录提示
+    // 401 错误时清除本地用户状态
     if (error.response?.status === 401) {
-      localStorage.removeItem("bbsgo_token");
       localStorage.removeItem("user");
     }
 
-    // 不在这里自动显示错误消息，让各组件自己处理
-    // 这样可以避免重复弹窗，并且组件可以提供更有针对性的错误信息
     return Promise.reject(error);
   },
 );
@@ -76,10 +61,12 @@ export const reportApi = {
 }
 
 export const homeApi = {
-  // 获取首页聚合数据
   getHomePage: (params) => api.get('/homepage', { params }),
-  // 获取筛选条件下的首页数据
   getHomePageWithQuery: (params) => api.get('/homepage/query', { params }),
+}
+
+export const authApi = {
+  logout: () => api.post('/logout'),
 }
 
 export default api;

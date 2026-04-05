@@ -16,6 +16,9 @@ export default {
   1010: 'errors.verifyCodeError',
   1011: 'errors.verifyCodeExpired',
   1012: 'errors.emailNotRegistered',
+  1013: 'errors.invalidUsername',
+  1014: 'errors.passwordTooWeak',
+  1015: 'errors.passwordMismatch',
 
   // 2xxx - 用户相关类
   2001: 'errors.userNotFound',
@@ -60,6 +63,7 @@ export default {
   4018: 'errors.symbolsOrEmojiOnly',
   4019: 'errors.repeatingChars',
   4020: 'errors.tooManyLinks',
+  4021: 'errors.tooManyRequests',
 
   // 5xxx - 系统错误类
   5001: 'errors.serverInternal',

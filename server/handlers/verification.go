@@ -99,6 +99,13 @@ func SendVerificationCode(w http.ResponseWriter, r *http.Request) {
 // RegisterWithCode 邮箱注册处理器
 // 使用邮箱验证码进行注册
 func RegisterWithCode(w http.ResponseWriter, r *http.Request) {
+	// 检查是否允许注册
+	if !config.GetConfigBool("allow_register", true) {
+		log.Printf("register with code: registration disabled")
+		errors.Error(w, errors.CodeRegisterDisabled, "")
+		return
+	}
+
 	// 解析请求体
 	var req RegisterWithCodeRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -114,10 +121,38 @@ func RegisterWithCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 验证用户名格式
+	if err := utils.ValidateUsername(req.Username); err != nil {
+		log.Printf("register with code: invalid username, username: %s, error: %v", req.Username, err)
+		errors.Error(w, errors.CodeInvalidUsername, err.Error())
+		return
+	}
+
+	// 验证邮箱格式
+	if err := utils.ValidateEmail(req.Email); err != nil {
+		log.Printf("register with code: invalid email, email: %s, error: %v", req.Email, err)
+		errors.Error(w, errors.CodeInvalidEmail, err.Error())
+		return
+	}
+
 	// 验证两次密码
 	if req.Password != req.ConfirmPassword {
 		log.Printf("register with code: password mismatch, username: %s", req.Username)
-		errors.Error(w, errors.CodeInvalidParams, "")
+		errors.Error(w, errors.CodePasswordMismatch, "")
+		return
+	}
+
+	// 验证密码长度（至少8位）
+	if len(req.Password) < 8 {
+		log.Printf("register with code: password too short, username: %s", req.Username)
+		errors.Error(w, errors.CodePasswordTooWeak, "密码长度至少8位")
+		return
+	}
+
+	// 验证密码复杂度：包含至少3种字符类型
+	if err := validatePasswordSimple(req.Password); err != nil {
+		log.Printf("register with code: password validation failed, username: %s, error: %v", req.Username, err)
+		errors.Error(w, errors.CodePasswordTooWeak, err.Error())
 		return
 	}
 
@@ -194,6 +229,9 @@ func RegisterWithCode(w http.ResponseWriter, r *http.Request) {
 		errors.Error(w, errors.CodeTokenGenerateFailed, "")
 		return
 	}
+
+	// 设置 httpOnly Cookie
+	setAuthCookie(w, token)
 
 	log.Printf("register with code: user registered successfully, userID: %d, username: %s, email: %s", user.ID, user.Username, user.Email)
 

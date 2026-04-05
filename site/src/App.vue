@@ -296,7 +296,7 @@ async function loadUnreadCount() {
     ])
     unreadCount.value = (notifRes?.count || 0) + (msgRes?.count || 0)
   } catch (e) {
-    console.error(t('common.failed'), e)
+    console.error('loadUnreadCount failed:', e)
   }
 }
 
@@ -309,21 +309,9 @@ watch(() => userStore.isLoggedIn, (isLoggedIn) => {
   }
 })
 
-// 检测 SSO cookie 并同步到 localStorage
+// 检测 SSO cookie - cookie 会自动随请求发送，无需额外处理
 async function checkSSOCookie() {
-  if (!localStorage.getItem('bbsgo_token')) {
-    const cookieMatch = document.cookie.match(/bbsgo_token=([^;]+)/);
-    if (cookieMatch) {
-      console.log('[sso] found token in cookie, syncing to localStorage')
-      localStorage.setItem('bbsgo_token', cookieMatch[1])
-      try {
-        await userStore.refreshProfile()
-        console.log('[sso] after refresh, user:', userStore.user)
-      } catch (e) {
-        console.error('[sso] refreshProfile failed:', e)
-      }
-    }
-  }
+  // Cookie 会自动随请求发送，不需要同步到 localStorage
 }
 
 onMounted(async () => {

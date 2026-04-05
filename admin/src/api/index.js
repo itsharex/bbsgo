@@ -3,23 +3,8 @@ import axios from "axios";
 const api = axios.create({
   baseURL: "/api/v1",
   timeout: 10000,
+  withCredentials: true, // 自动发送和接收 Cookie
 });
-
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("admin_token");
-    console.log(`请求拦截器: token=${token}, url=${config.url}`);
-    if (token && token !== "null" && token !== "undefined") {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    console.log(`请求: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, config.params || {}, config.data || {});
-    return config;
-  },
-  (error) => {
-    console.error("请求拦截器错误:", error);
-    return Promise.reject(error);
-  },
-);
 
 api.interceptors.response.use(
   (response) => {
@@ -35,7 +20,6 @@ api.interceptors.response.use(
     if (error.response) {
       console.error(`响应错误: ${error.config?.url}`, error.response.status, error.response.data);
       if (error.response.status === 401) {
-        localStorage.removeItem("admin_token");
         localStorage.removeItem("admin_user");
         window.location.href = "/console/login";
       }
@@ -47,5 +31,9 @@ api.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+export const authApi = {
+  logout: () => api.post('/logout'),
+}
 
 export default api;

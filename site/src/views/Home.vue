@@ -502,8 +502,7 @@ async function checkTopicLikes() {
       }
     }
   } catch (e) {
-    console.error(e)
-    ElMessage.error(t(getErrorI18nKey(e?.code)))
+    console.error('checkTopicLikes failed:', e)
   }
 }
 

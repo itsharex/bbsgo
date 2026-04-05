@@ -5,7 +5,7 @@ import 'highlight.js/styles/github.css'
 
 // 创建 markdown-it 实例
 const md = new MarkdownIt({
-  html: true,
+  html: false, // 禁止 HTML 标签，防止 XSS 攻击
   linkify: true,
   typographer: true,
   highlight: function (str, lang) {
@@ -37,7 +37,9 @@ export function renderMarkdown(content) {
     ALLOW_DATA_ATTR: false,
     // 强制所有链接添加 rel="noopener noreferrer" 防止钓鱼
     FORCE_BODY: true,
-    ADD_ATTR: ['target']
+    ADD_ATTR: ['target'],
+    // 添加钩子，确保所有链接都有 rel="noopener noreferrer"
+    ADD_TAGS: [],
   })
 }
 

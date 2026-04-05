@@ -48,6 +48,9 @@ func AutoMigrate() {
 
 // createCompositeIndexes 创建复合索引优化查询性能
 func createCompositeIndexes() {
+	// PollVote 表索引迁移：删除旧索引，创建新索引支持多选投票
+	DB.Exec("DROP INDEX IF EXISTS idx_poll_user")
+	DB.Exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_poll_user_option ON poll_votes(poll_id, user_id, option_id)")
 	// Topic 表索引
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_topic_forum_created ON topics(forum_id, created_at DESC)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_topic_pinned_hot ON topics(is_pinned DESC, (like_count + reply_count * 2) DESC)")

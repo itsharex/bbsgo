@@ -50,14 +50,14 @@
 
         <div v-if="!hasVoted && !isPollEnded" class="space-y-3">
           <div v-for="option in poll.options" :key="option.id"
-            @click="poll.poll_type === 'single' && selectOption(option.id)"
+            @click="poll.poll_type === 'single' ? selectOption(option.id) : toggleOption(option.id)"
             :class="['p-4 rounded-lg border-2 cursor-pointer transition-all',
               selectedOptions.includes(option.id) ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300 bg-white']">
             <div class="flex items-center">
               <input v-if="poll.poll_type === 'single'" type="radio" :checked="selectedOptions.includes(option.id)"
-                class="w-4 h-4 text-blue-600" @click.stop>
+                class="w-4 h-4 text-blue-600 pointer-events-none">
               <input v-else type="checkbox" :checked="selectedOptions.includes(option.id)"
-                @change="toggleOption(option.id)" @click.stop class="w-4 h-4 text-blue-600 rounded">
+                class="w-4 h-4 text-blue-600 rounded pointer-events-none">
               <span class="ml-3 text-gray-700">{{ option.text }}</span>
             </div>
           </div>

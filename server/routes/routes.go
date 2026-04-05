@@ -34,6 +34,7 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/register", handlers.RegisterWithCode).Methods("POST")      // 邮箱注册
 	api.HandleFunc("/send-code", handlers.SendVerificationCode).Methods("POST") // 发送验证码
 	api.HandleFunc("/login", handlers.Login).Methods("POST")                    // 登录
+	api.HandleFunc("/logout", handlers.Logout).Methods("POST")                  // 登出
 
 	// 公开内容获取
 	api.HandleFunc("/forums", handlers.GetForums).Methods("GET")                      // 获取版块列表
@@ -46,13 +47,13 @@ func SetupRoutes() *mux.Router {
 	api.HandleFunc("/tags/{id}", handlers.GetTag).Methods("GET")                      // 获取标签详情
 	api.HandleFunc("/announcements", handlers.GetAnnouncements).Methods("GET")        // 获取公告列表
 	api.HandleFunc("/users/credit", handlers.GetCreditUsers).Methods("GET")           // 获取积分排行
-	api.HandleFunc("/homepage", handlers.GetHomePage).Methods("GET")                 // 获取首页聚合数据
+	api.HandleFunc("/homepage", handlers.GetHomePage).Methods("GET")                  // 获取首页聚合数据
 	api.HandleFunc("/users/search", handlers.SearchUsers).Methods("GET")              // 搜索用户
 	api.HandleFunc("/users/{id}", handlers.GetUser).Methods("GET")                    // 获取用户公开信息
 	api.HandleFunc("/users/{id}/stats", handlers.GetUserStats).Methods("GET")         // 获取用户统计
 	api.HandleFunc("/users/{id}/followers", handlers.GetUserFollowers).Methods("GET") // 获取用户粉丝
 	api.HandleFunc("/users/{id}/topics", handlers.GetUserTopics).Methods("GET")       // 获取用户话题
-	api.HandleFunc("/users/{id}/badges", handlers.GetUserBadgesByID).Methods("GET")  // 获取指定用户勋章
+	api.HandleFunc("/users/{id}/badges", handlers.GetUserBadgesByID).Methods("GET")   // 获取指定用户勋章
 	api.HandleFunc("/search", handlers.Search).Methods("GET")                         // 搜索
 
 	// 投票公开接口
@@ -183,17 +184,17 @@ func SetupRoutes() *mux.Router {
 	admin.HandleFunc("/config", handlers.UpdateSiteConfig).Methods("PUT") // 更新配置
 
 	// 防刷系统配置
-	admin.HandleFunc("/antispam/config", handlers.GetAntiSpamConfig).Methods("GET")        // 获取防刷配置
-	admin.HandleFunc("/antispam/config", handlers.UpdateAntiSpamConfig).Methods("POST")   // 更新防刷配置
-	admin.HandleFunc("/antispam/stats", handlers.GetAntiSpamStats).Methods("GET")         // 获取防刷统计
-	admin.HandleFunc("/antispam/keywords", handlers.GetSpamKeywords).Methods("GET")        // 获取敏感词列表
-	admin.HandleFunc("/antispam/keywords", handlers.AddSpamKeyword).Methods("POST")       // 添加敏感词
-	admin.HandleFunc("/antispam/keywords", handlers.DeleteSpamKeyword).Methods("DELETE")   // 删除敏感词
-	admin.HandleFunc("/users/{id}/reputation", handlers.AdjustUserReputation).Methods("POST") // 调整用户信誉分
-	admin.HandleFunc("/users/{id}/unban", handlers.UnbanUser).Methods("POST")             // 解禁用户
-	admin.HandleFunc("/users/{id}/ban-status", handlers.GetUserBanStatus).Methods("GET")  // 获取用户禁言状态
+	admin.HandleFunc("/antispam/config", handlers.GetAntiSpamConfig).Methods("GET")                // 获取防刷配置
+	admin.HandleFunc("/antispam/config", handlers.UpdateAntiSpamConfig).Methods("POST")            // 更新防刷配置
+	admin.HandleFunc("/antispam/stats", handlers.GetAntiSpamStats).Methods("GET")                  // 获取防刷统计
+	admin.HandleFunc("/antispam/keywords", handlers.GetSpamKeywords).Methods("GET")                // 获取敏感词列表
+	admin.HandleFunc("/antispam/keywords", handlers.AddSpamKeyword).Methods("POST")                // 添加敏感词
+	admin.HandleFunc("/antispam/keywords", handlers.DeleteSpamKeyword).Methods("DELETE")           // 删除敏感词
+	admin.HandleFunc("/users/{id}/reputation", handlers.AdjustUserReputation).Methods("POST")      // 调整用户信誉分
+	admin.HandleFunc("/users/{id}/unban", handlers.UnbanUser).Methods("POST")                      // 解禁用户
+	admin.HandleFunc("/users/{id}/ban-status", handlers.GetUserBanStatus).Methods("GET")           // 获取用户禁言状态
 	admin.HandleFunc("/users/{id}/reputation-logs", handlers.GetUserReputationLogs).Methods("GET") // 获取信誉分日志
-	admin.HandleFunc("/users/{id}/ban", handlers.AdminBanUser).Methods("POST")            // 管理员禁言用户
+	admin.HandleFunc("/users/{id}/ban", handlers.AdminBanUser).Methods("POST")                     // 管理员禁言用户
 
 	// 版块分类管理
 	admin.HandleFunc("/forum-categories", handlers.GetAllForumCategories).Methods("GET")       // 获取分类列表
@@ -245,6 +246,7 @@ func SetupAPIRoutes(api *mux.Router) {
 	api.HandleFunc("/register", handlers.RegisterWithCode).Methods("POST")      // 邮箱注册
 	api.HandleFunc("/send-code", handlers.SendVerificationCode).Methods("POST") // 发送验证码
 	api.HandleFunc("/login", handlers.Login).Methods("POST")                    // 登录
+	api.HandleFunc("/logout", handlers.Logout).Methods("POST")                  // 登出
 
 	// 公开内容获取
 	api.HandleFunc("/forums", handlers.GetForums).Methods("GET")                      // 获取版块列表
@@ -257,13 +259,13 @@ func SetupAPIRoutes(api *mux.Router) {
 	api.HandleFunc("/tags/{id}", handlers.GetTag).Methods("GET")                      // 获取标签详情
 	api.HandleFunc("/announcements", handlers.GetAnnouncements).Methods("GET")        // 获取公告列表
 	api.HandleFunc("/users/credit", handlers.GetCreditUsers).Methods("GET")           // 获取积分排行
-	api.HandleFunc("/homepage", handlers.GetHomePage).Methods("GET")                 // 获取首页聚合数据
+	api.HandleFunc("/homepage", handlers.GetHomePage).Methods("GET")                  // 获取首页聚合数据
 	api.HandleFunc("/users/search", handlers.SearchUsers).Methods("GET")              // 搜索用户
 	api.HandleFunc("/users/{id}", handlers.GetUser).Methods("GET")                    // 获取用户公开信息
 	api.HandleFunc("/users/{id}/stats", handlers.GetUserStats).Methods("GET")         // 获取用户统计
 	api.HandleFunc("/users/{id}/followers", handlers.GetUserFollowers).Methods("GET") // 获取用户粉丝
 	api.HandleFunc("/users/{id}/topics", handlers.GetUserTopics).Methods("GET")       // 获取用户话题
-	api.HandleFunc("/users/{id}/badges", handlers.GetUserBadgesByID).Methods("GET")  // 获取指定用户勋章
+	api.HandleFunc("/users/{id}/badges", handlers.GetUserBadgesByID).Methods("GET")   // 获取指定用户勋章
 	api.HandleFunc("/search", handlers.Search).Methods("GET")                         // 搜索
 
 	// 投票公开接口
@@ -394,17 +396,17 @@ func SetupAPIRoutes(api *mux.Router) {
 	admin.HandleFunc("/config", handlers.UpdateSiteConfig).Methods("PUT") // 更新配置
 
 	// 防刷系统配置
-	admin.HandleFunc("/antispam/config", handlers.GetAntiSpamConfig).Methods("GET")        // 获取防刷配置
-	admin.HandleFunc("/antispam/config", handlers.UpdateAntiSpamConfig).Methods("POST")   // 更新防刷配置
-	admin.HandleFunc("/antispam/stats", handlers.GetAntiSpamStats).Methods("GET")         // 获取防刷统计
-	admin.HandleFunc("/antispam/keywords", handlers.GetSpamKeywords).Methods("GET")        // 获取敏感词列表
-	admin.HandleFunc("/antispam/keywords", handlers.AddSpamKeyword).Methods("POST")       // 添加敏感词
-	admin.HandleFunc("/antispam/keywords", handlers.DeleteSpamKeyword).Methods("DELETE")   // 删除敏感词
-	admin.HandleFunc("/users/{id}/reputation", handlers.AdjustUserReputation).Methods("POST") // 调整用户信誉分
-	admin.HandleFunc("/users/{id}/unban", handlers.UnbanUser).Methods("POST")             // 解禁用户
-	admin.HandleFunc("/users/{id}/ban-status", handlers.GetUserBanStatus).Methods("GET")  // 获取用户禁言状态
+	admin.HandleFunc("/antispam/config", handlers.GetAntiSpamConfig).Methods("GET")                // 获取防刷配置
+	admin.HandleFunc("/antispam/config", handlers.UpdateAntiSpamConfig).Methods("POST")            // 更新防刷配置
+	admin.HandleFunc("/antispam/stats", handlers.GetAntiSpamStats).Methods("GET")                  // 获取防刷统计
+	admin.HandleFunc("/antispam/keywords", handlers.GetSpamKeywords).Methods("GET")                // 获取敏感词列表
+	admin.HandleFunc("/antispam/keywords", handlers.AddSpamKeyword).Methods("POST")                // 添加敏感词
+	admin.HandleFunc("/antispam/keywords", handlers.DeleteSpamKeyword).Methods("DELETE")           // 删除敏感词
+	admin.HandleFunc("/users/{id}/reputation", handlers.AdjustUserReputation).Methods("POST")      // 调整用户信誉分
+	admin.HandleFunc("/users/{id}/unban", handlers.UnbanUser).Methods("POST")                      // 解禁用户
+	admin.HandleFunc("/users/{id}/ban-status", handlers.GetUserBanStatus).Methods("GET")           // 获取用户禁言状态
 	admin.HandleFunc("/users/{id}/reputation-logs", handlers.GetUserReputationLogs).Methods("GET") // 获取信誉分日志
-	admin.HandleFunc("/users/{id}/ban", handlers.AdminBanUser).Methods("POST")            // 管理员禁言用户
+	admin.HandleFunc("/users/{id}/ban", handlers.AdminBanUser).Methods("POST")                     // 管理员禁言用户
 
 	// 版块分类管理
 	admin.HandleFunc("/forum-categories", handlers.GetAllForumCategories).Methods("GET")       // 获取分类列表

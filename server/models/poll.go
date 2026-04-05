@@ -40,11 +40,11 @@ type PollOption struct {
 // PollVote 投票记录模型
 type PollVote struct {
 	ID         uint           `gorm:"primarykey" json:"id"`
-	PollID     uint           `gorm:"not null;index:idx_poll_user,unique" json:"poll_id"`
+	PollID     uint           `gorm:"not null;index:idx_poll_user_option,unique" json:"poll_id"`
 	Poll       Poll           `gorm:"foreignKey:PollID" json:"-"`
-	OptionID   uint           `gorm:"not null;index" json:"option_id"`
+	OptionID   uint           `gorm:"not null;index:idx_poll_user_option,unique" json:"option_id"`
 	Option     PollOption     `gorm:"foreignKey:OptionID" json:"-"`
-	UserID     uint           `gorm:"not null;index:idx_poll_user,unique" json:"user_id"`
+	UserID     uint           `gorm:"not null;index:idx_poll_user_option,unique" json:"user_id"`
 	User       User           `gorm:"foreignKey:UserID" json:"-"`
 	CreatedAt  time.Time      `json:"created_at"`
 	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`

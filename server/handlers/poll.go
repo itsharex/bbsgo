@@ -5,12 +5,10 @@ import (
 	"bbsgo/errors"
 	"bbsgo/middleware"
 	"bbsgo/models"
-	"bbsgo/utils"
 	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -198,8 +196,8 @@ func GetPollByTopic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 尝试从 token 获取用户ID（可选认证）
-	userID := tryGetUserIDFromRequest(r)
+	// 尝试获取用户ID（可选认证）
+	userID := middleware.GetOptionalUserID(r)
 
 	if userID > 0 {
 		var votes []models.PollVote
@@ -224,22 +222,6 @@ func GetPollByTopic(w http.ResponseWriter, r *http.Request) {
 		"has_voted": false,
 	}
 	errors.Success(w, response)
-}
-
-// tryGetUserIDFromRequest 尝试从请求中获取用户ID（不强制认证）
-func tryGetUserIDFromRequest(r *http.Request) uint {
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		return 0
-	}
-
-	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-	claims, err := utils.ParseToken(tokenString)
-	if err != nil {
-		return 0
-	}
-
-	return claims.UserID
 }
 
 // SubmitVote 提交投票
@@ -287,11 +269,25 @@ func SubmitVote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var existingVote models.PollVote
-	if err := database.DB.Where("poll_id = ? AND user_id = ?", poll.ID, userID).First(&existingVote).Error; err == nil {
-		log.Printf("submit vote: user already voted, pollID: %d, userID: %d", poll.ID, userID)
-		errors.Error(w, errors.CodeAlreadyVoted, "")
-		return
+	// 检查是否已投过这些选项
+	if len(req.OptionIDs) == 1 {
+		// 单选：检查是否已投过任何票
+		var existingVote models.PollVote
+		if err := database.DB.Where("poll_id = ? AND user_id = ?", poll.ID, userID).First(&existingVote).Error; err == nil {
+			log.Printf("submit vote: user already voted, pollID: %d, userID: %d", poll.ID, userID)
+			errors.Error(w, errors.CodeAlreadyVoted, "")
+			return
+		}
+	} else {
+		// 多选：检查每个选项是否已投过
+		for _, optID := range req.OptionIDs {
+			var existingVote models.PollVote
+			if err := database.DB.Where("poll_id = ? AND user_id = ? AND option_id = ?", poll.ID, userID, optID).First(&existingVote).Error; err == nil {
+				log.Printf("submit vote: user already voted for option, pollID: %d, userID: %d, optionID: %d", poll.ID, userID, optID)
+				errors.Error(w, errors.CodeAlreadyVoted, "")
+				return
+			}
+		}
 	}
 
 	if poll.PollType == "single" && len(req.OptionIDs) > 1 {

@@ -102,8 +102,11 @@ const (
 	CodeUsernameOrPassword  = 1008 // 用户名或密码错误
 	CodeInvalidEmail        = 1009 // 邮箱格式错误
 	CodeVerifyCodeError     = 1010 // 验证码错误
+	CodePasswordMismatch    = 1015 // 两次密码输入不一致
 	CodeVerifyCodeExpired   = 1011 // 验证码已过期
 	CodeEmailNotRegistered  = 1012 // 邮箱未注册
+	CodeInvalidUsername     = 1013 // 用户名格式错误
+	CodePasswordTooWeak     = 1014 // 密码强度不足
 
 	// 2xxx - 用户相关类
 	CodeUserNotFound      = 2001 // 用户不存在
@@ -148,6 +151,7 @@ const (
 	CodeSymbolsOrEmojiOnly  = 4018 // 内容仅包含符号或表情
 	CodeRepeatingChars      = 4019 // 内容包含重复字符
 	CodeTooManyLinks       = 4020 // 内容包含过多外部链接
+	CodeTooManyRequests    = 4021 // 请求过于频繁，请稍后再试
 
 	// 5xxx - 系统错误类
 	CodeServerInternal = 5001 // 服务器内部错误
@@ -169,8 +173,11 @@ var CodeMessages = map[int]string{
 	CodeUsernameOrPassword:   "用户名或密码错误",
 	CodeInvalidEmail:         "邮箱格式错误",
 	CodeVerifyCodeError:      "验证码错误",
+	CodePasswordMismatch:     "两次密码输入不一致",
 	CodeVerifyCodeExpired:    "验证码已过期",
 	CodeEmailNotRegistered:   "邮箱未注册",
+	CodeInvalidUsername:      "用户名格式错误，仅允许字母、数字和下划线，且不能以数字开头",
+	CodePasswordTooWeak:      "密码强度不足，密码长度至少8位，需包含大写字母、小写字母、数字和特殊字符中的至少3种",
 	CodeUserNotFound:         "用户不存在",
 	CodeNoPermission:        "无权限操作",
 	CodeUnauthorized:        "未认证，请先登录",
@@ -209,6 +216,7 @@ var CodeMessages = map[int]string{
 	CodeSymbolsOrEmojiOnly:  "内容仅包含符号或表情",
 	CodeRepeatingChars:      "内容包含重复字符",
 	CodeTooManyLinks:       "内容包含过多外部链接",
+	CodeTooManyRequests:    "请求过于频繁，请稍后再试",
 	CodeServerInternal:       "服务器内部错误",
 	CodeDatabaseError:        "数据库操作失败",
 	CodeUploadFailed:         "文件上传失败",

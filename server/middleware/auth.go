@@ -18,7 +18,7 @@ type contextKey string
 const UserContextKey = contextKey("user")
 
 // Auth JWT 认证中间件
-// 验证请求头中的 Bearer Token，解析并验证 JWT
+// 从 Cookie 或 Authorization 头读取 Token，解析并验证 JWT
 // 验证成功后，将用户信息存入 context 供后续处理器使用
 func Auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -28,16 +28,26 @@ func Auth(next http.Handler) http.Handler {
 			return
 		}
 
-		// 从请求头获取 Authorization 字段
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			log.Printf("auth middleware: authorization header is empty, path: %s, method: %s", r.URL.Path, r.Method)
+		var tokenString string
+
+		// 优先从 Cookie 中获取 Token
+		cookie, err := r.Cookie("bbsgo_token")
+		if err == nil && cookie.Value != "" {
+			tokenString = cookie.Value
+		} else {
+			// Cookie 中没有 Token，尝试从 Authorization 头获取（兼容旧方式）
+			authHeader := r.Header.Get("Authorization")
+			if authHeader != "" {
+				tokenString = strings.TrimPrefix(authHeader, "Bearer ")
+			}
+		}
+
+		// 如果都没有 Token，返回未授权
+		if tokenString == "" {
+			log.Printf("auth middleware: no token found, path: %s, method: %s", r.URL.Path, r.Method)
 			errors.ErrorWithStatus(w, http.StatusUnauthorized, errors.CodeUnauthorized, "")
 			return
 		}
-
-		// 提取 Bearer Token
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 		// 解析并验证 Token
 		claims, err := utils.ParseToken(tokenString)
@@ -47,13 +57,22 @@ func Auth(next http.Handler) http.Handler {
 			return
 		}
 
-		// 验证 TokenVersion，防止密码修改后旧token仍可用
+		// 查询用户信息
 		var user models.User
-		if err := database.DB.Select("token_version").First(&user, claims.UserID).Error; err != nil {
+		if err := database.DB.First(&user, claims.UserID).Error; err != nil {
 			log.Printf("auth middleware: user not found, userID: %d, path: %s", claims.UserID, r.URL.Path)
 			errors.ErrorWithStatus(w, http.StatusUnauthorized, errors.CodeUnauthorized, "")
 			return
 		}
+
+		// 检查用户是否被封禁
+		if user.IsBanned {
+			log.Printf("auth middleware: user is banned, userID: %d, path: %s", claims.UserID, r.URL.Path)
+			errors.ErrorWithStatus(w, http.StatusForbidden, errors.CodeUserBanned, "您的账户已被封禁")
+			return
+		}
+
+		// 验证 TokenVersion，防止密码修改后旧token仍可用
 		if user.TokenVersion != claims.TokenVersion {
 			log.Printf("auth middleware: token version mismatch, userID: %d, tokenVersion: %d, dbVersion: %d, path: %s",
 				claims.UserID, claims.TokenVersion, user.TokenVersion, r.URL.Path)
@@ -85,6 +104,13 @@ func AdminAuth(next http.Handler) http.Handler {
 		if err := database.DB.First(&user, userID).Error; err != nil {
 			log.Printf("admin auth middleware: user not found, userID: %d, path: %s, error: %v", userID, r.URL.Path, err)
 			errors.ErrorWithStatus(w, http.StatusUnauthorized, errors.CodeUserNotFound, "")
+			return
+		}
+
+		// 检查用户是否被封禁
+		if user.IsBanned {
+			log.Printf("admin auth middleware: user is banned, userID: %d, path: %s", userID, r.URL.Path)
+			errors.ErrorWithStatus(w, http.StatusForbidden, errors.CodeUserBanned, "您的账户已被封禁")
 			return
 		}
 
@@ -126,6 +152,12 @@ func GetAdminIDFromContext(ctx context.Context) (uint, bool) {
 		return 0, false
 	}
 
+	// 检查是否被封禁
+	if user.IsBanned {
+		log.Printf("get admin id from context: user is banned, userID: %d", userID)
+		return 0, false
+	}
+
 	// 检查是否为管理员
 	if user.Role < 2 {
 		log.Printf("get admin id from context: user is not admin, userID: %d, role: %d", userID, user.Role)
@@ -133,4 +165,31 @@ func GetAdminIDFromContext(ctx context.Context) (uint, bool) {
 	}
 
 	return userID, true
+}
+
+// GetOptionalUserID 从请求中获取用户ID（不强制认证）
+// 优先从 Authorization header 获取，失败则从 cookie 获取
+// 返回: 用户ID，未登录或失败返回0
+func GetOptionalUserID(r *http.Request) uint {
+	var tokenString string
+
+	// 优先从 Authorization header 获取
+	authHeader := r.Header.Get("Authorization")
+	if authHeader != "" {
+		tokenString = strings.TrimPrefix(authHeader, "Bearer ")
+	} else {
+		// 否则从 cookie 获取
+		cookie, err := r.Cookie("bbsgo_token")
+		if err != nil || cookie.Value == "" {
+			return 0
+		}
+		tokenString = cookie.Value
+	}
+
+	claims, err := utils.ParseToken(tokenString)
+	if err != nil {
+		return 0
+	}
+
+	return claims.UserID
 }

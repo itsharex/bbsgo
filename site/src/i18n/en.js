@@ -590,6 +590,9 @@ export default {
     verifyCodeError: 'Incorrect verification code',
     verifyCodeExpired: 'Verification code expired',
     emailNotRegistered: 'Email not registered',
+    invalidUsername: 'Invalid username format, only letters, numbers and underscores allowed, cannot start with a number',
+    passwordTooWeak: 'Minimum 8 characters with at least 3 of: uppercase, lowercase, numbers, special characters',
+    passwordMismatch: 'Passwords do not match',
     // 2xxx - User Related
     userNotFound: 'User not found',
     noPermission: 'Permission denied',
@@ -631,6 +634,7 @@ export default {
     symbolsOrEmojiOnly: 'Content only contains symbols or emojis',
     repeatingChars: 'Content contains repeating characters',
     tooManyLinks: 'Content contains too many external links',
+    tooManyRequests: 'Too many requests, please try again later',
     // 5xxx - System Errors
     serverInternal: 'Internal server error',
     databaseError: 'Database operation failed',
