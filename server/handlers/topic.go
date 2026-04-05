@@ -243,6 +243,13 @@ func CreateTopic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// XSS 安全检查
+	if middleware.ContainsXSS(req.Title) || middleware.ContainsXSS(req.Content) {
+		log.Printf("create topic: potential XSS attack detected, title: %s, userID: %d", req.Title, userID)
+		errors.Error(w, errors.CodeSensitiveContent, "内容包含不安全字符")
+		return
+	}
+
 	// 验证标签数量
 	if len(req.TagNames) > 3 {
 		log.Printf("create topic: too many tags, count: %d", len(req.TagNames))

@@ -73,7 +73,7 @@ func SSOMiddleware(next http.Handler) http.Handler {
 		}
 
 		// 生成 BBSGO token
-		bbsgoToken, err := utils.GenerateToken(user.ID, user.Username)
+		bbsgoToken, err := utils.GenerateToken(user.ID, user.Username, user.TokenVersion)
 		if err != nil {
 			log.Printf("[sso middleware] generate token failed: %v", err)
 			next.ServeHTTP(w, r)

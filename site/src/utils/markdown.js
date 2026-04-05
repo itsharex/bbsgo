@@ -1,5 +1,6 @@
 import MarkdownIt from 'markdown-it'
 import hljs from 'highlight.js'
+import DOMPurify from 'isomorphic-dompurify'
 import 'highlight.js/styles/github.css'
 
 // 创建 markdown-it 实例
@@ -22,7 +23,22 @@ const md = new MarkdownIt({
 // 渲染 markdown 为 HTML
 export function renderMarkdown(content) {
   if (!content) return ''
-  return md.render(content)
+  const html = md.render(content)
+  // 使用 DOMPurify 消毒，防止 XSS 攻击
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr',
+      'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'span',
+      'strong', 'em', 'del', 'sup', 'sub',
+      'a', 'img', 'video', 'audio', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'div', 'section', 'article'
+    ],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'target', 'rel', 'controls', 'loop', 'muted'],
+    ALLOW_DATA_ATTR: false,
+    // 强制所有链接添加 rel="noopener noreferrer" 防止钓鱼
+    FORCE_BODY: true,
+    ADD_ATTR: ['target']
+  })
 }
 
 // 去除 markdown 语法，转换为纯文本（用于预览）

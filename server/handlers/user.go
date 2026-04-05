@@ -48,6 +48,27 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if password, ok := updates["password"].(string); ok && password != "" {
+		// 修改密码需要验证旧密码
+		oldPassword, ok := updates["old_password"].(string)
+		if !ok || oldPassword == "" {
+			log.Printf("update profile: old password is required, userID: %d", userID)
+			errors.Error(w, errors.CodeInvalidParams, "请输入旧密码")
+			return
+		}
+
+		// 查询当前用户验证旧密码
+		var currentUser models.User
+		if err := database.DB.Select("password_hash", "token_version").First(&currentUser, userID).Error; err != nil {
+			log.Printf("update profile: user not found, userID: %d", userID)
+			errors.Error(w, errors.CodeUserNotFound, "")
+			return
+		}
+		if !utils.CheckPassword(oldPassword, currentUser.PasswordHash) {
+			log.Printf("update profile: old password mismatch, userID: %d", userID)
+			errors.Error(w, errors.CodeUsernameOrPassword, "旧密码错误")
+			return
+		}
+
 		hashedPassword, err := utils.HashPassword(password)
 		if err != nil {
 			log.Printf("update profile: failed to hash password, userID: %d, error: %v", userID, err)
@@ -55,7 +76,11 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		updates["password_hash"] = hashedPassword
+		// 递增 TokenVersion，使旧token失效
+		updates["token_version"] = currentUser.TokenVersion + 1
+		log.Printf("update profile: password changed, userID: %d, new token_version: %d", userID, currentUser.TokenVersion+1)
 		delete(updates, "password")
+		delete(updates, "old_password")
 	}
 
 	delete(updates, "id")

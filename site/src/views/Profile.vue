@@ -41,6 +41,10 @@
               class="bg-blue-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-600">
               {{ t('topic.editProfile') }}
             </button>
+            <button v-if="isCurrentUser" @click="openPasswordDialog"
+              class="bg-gray-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-600">
+              {{ t('profile.changePassword') }}
+            </button>
             <template v-else-if="userStore.isLoggedIn">
               <FollowButton :user-id="parseInt(route.params.id)" />
               <button @click="sendMessage"
@@ -225,6 +229,25 @@
         <el-button type="primary" @click="handleSaveProfile" :loading="saving">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
+
+    <!-- 修改密码对话框 -->
+    <el-dialog v-model="showPasswordDialog" :title="t('profile.changePassword')" width="400px" :close-on-click-modal="false">
+      <el-form :model="passwordForm" :rules="passwordRules" ref="passwordFormRef" label-width="100px">
+        <el-form-item :label="t('profile.oldPassword')" prop="old_password">
+          <el-input v-model="passwordForm.old_password" type="password" show-password :placeholder="t('profile.oldPasswordPlaceholder')" />
+        </el-form-item>
+        <el-form-item :label="t('profile.newPassword')" prop="new_password">
+          <el-input v-model="passwordForm.new_password" type="password" show-password :placeholder="t('profile.newPasswordPlaceholder')" />
+        </el-form-item>
+        <el-form-item :label="t('profile.confirmPassword')" prop="confirm_password">
+          <el-input v-model="passwordForm.confirm_password" type="password" show-password :placeholder="t('profile.confirmPasswordPlaceholder')" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showPasswordDialog = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleChangePassword" :loading="passwordSaving">{{ t('common.save') }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -266,6 +289,72 @@ const editForm = ref({
   signature: '',
   intro: ''
 })
+
+// 修改密码相关
+const showPasswordDialog = ref(false)
+const passwordSaving = ref(false)
+const passwordFormRef = ref(null)
+const passwordForm = ref({
+  old_password: '',
+  new_password: '',
+  confirm_password: ''
+})
+
+const validateConfirmPassword = (rule, value, callback) => {
+  if (value !== passwordForm.value.new_password) {
+    callback(new Error(t('profile.passwordMismatch')))
+  } else {
+    callback()
+  }
+}
+
+const passwordRules = {
+  old_password: [
+    { required: true, message: () => t('profile.oldPasswordRequired'), trigger: 'blur' }
+  ],
+  new_password: [
+    { required: true, message: () => t('profile.newPasswordRequired'), trigger: 'blur' },
+    { min: 6, message: () => t('profile.passwordMinLength'), trigger: 'blur' }
+  ],
+  confirm_password: [
+    { required: true, message: () => t('profile.confirmPasswordRequired'), trigger: 'blur' },
+    { validator: validateConfirmPassword, trigger: 'blur' }
+  ]
+}
+
+function openPasswordDialog() {
+  passwordForm.value = {
+    old_password: '',
+    new_password: '',
+    confirm_password: ''
+  }
+  showPasswordDialog.value = true
+}
+
+async function handleChangePassword() {
+  try {
+    await passwordFormRef.value.validate()
+  } catch (e) {
+    return
+  }
+
+  passwordSaving.value = true
+  try {
+    await api.put('/user/profile', {
+      old_password: passwordForm.value.old_password,
+      password: passwordForm.value.new_password
+    })
+    showPasswordDialog.value = false
+    ElMessage.success(t('profile.passwordChangeSuccess'))
+    // 密码修改后 token_version 递增，旧 token 失效，需要重新登录
+    userStore.logout()
+    router.push('/login')
+  } catch (error) {
+    ElMessage.error(t(getErrorI18nKey(error?.code)))
+  } finally {
+    passwordSaving.value = false
+  }
+}
 
 const isCurrentUser = computed(() => {
   return userStore.user?.id === parseInt(route.params.id)

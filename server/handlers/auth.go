@@ -88,7 +88,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 生成 JWT Token
-	token, err := utils.GenerateToken(user.ID, user.Username)
+	token, err := utils.GenerateToken(user.ID, user.Username, user.TokenVersion)
 	if err != nil {
 		log.Printf("register: failed to generate token, userID: %d, error: %v", user.ID, err)
 		errors.Error(w, errors.CodeTokenGenerateFailed, "")
@@ -129,7 +129,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 生成 JWT Token
-	token, err := utils.GenerateToken(user.ID, user.Username)
+	token, err := utils.GenerateToken(user.ID, user.Username, user.TokenVersion)
 	if err != nil {
 		log.Printf("login: failed to generate token, userID: %d, error: %v", user.ID, err)
 		errors.Error(w, errors.CodeTokenGenerateFailed, "")

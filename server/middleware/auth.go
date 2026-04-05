@@ -47,6 +47,20 @@ func Auth(next http.Handler) http.Handler {
 			return
 		}
 
+		// 验证 TokenVersion，防止密码修改后旧token仍可用
+		var user models.User
+		if err := database.DB.Select("token_version").First(&user, claims.UserID).Error; err != nil {
+			log.Printf("auth middleware: user not found, userID: %d, path: %s", claims.UserID, r.URL.Path)
+			errors.ErrorWithStatus(w, http.StatusUnauthorized, errors.CodeUnauthorized, "")
+			return
+		}
+		if user.TokenVersion != claims.TokenVersion {
+			log.Printf("auth middleware: token version mismatch, userID: %d, tokenVersion: %d, dbVersion: %d, path: %s",
+				claims.UserID, claims.TokenVersion, user.TokenVersion, r.URL.Path)
+			errors.ErrorWithStatus(w, http.StatusUnauthorized, errors.CodeUnauthorized, "")
+			return
+		}
+
 		// 将用户信息存入 context
 		ctx := context.WithValue(r.Context(), UserContextKey, claims)
 		next.ServeHTTP(w, r.WithContext(ctx))

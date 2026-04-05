@@ -6,9 +6,9 @@
         <p class="role-dialog-user">{{ t('user.currentUser') }}：<strong>{{ selectedUser?.username }}</strong></p>
         <div class="role-options">
           <el-radio-group v-model="selectedRole">
-            <el-radio :value="0" class="role-option">{{ t('user.roleOptions.0') }}</el-radio>
-            <el-radio :value="1" class="role-option">{{ t('user.roleOptions.1') }}</el-radio>
-            <el-radio :value="2" class="role-option">{{ t('user.roleOptions.2') }}</el-radio>
+            <el-radio :value="0">{{ t('user.roleOptions.0') }}</el-radio>
+            <el-radio :value="1">{{ t('user.roleOptions.1') }}</el-radio>
+            <el-radio :value="2">{{ t('user.roleOptions.2') }}</el-radio>
           </el-radio-group>
         </div>
       </div>
@@ -347,23 +347,28 @@ onMounted(() => {
   padding: 16px 20px;
 }
 
-.role-option {
+:deep(.role-options .el-radio-group) {
+  display: flex;
+  /* flex-direction: column; */
+  gap: 16px;
+}
+
+:deep(.role-options .el-radio) {
+  margin-right: 0;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+}
+
+:deep(.role-options .el-radio__input) {
+  height: 40px;
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
-  height: 32px;
 }
 
-:deep(.role-option .el-radio) {
+:deep(.role-options .el-radio__label) {
+  line-height: 40px;
   display: flex;
   align-items: center;
-}
-
-:deep(.role-option .el-radio__label) {
-  margin-left: 8px;
-}
-
-.role-option:last-child {
-  margin-bottom: 0;
 }
 </style>

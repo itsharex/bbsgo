@@ -455,9 +455,22 @@ export default {
   profile: {
     title: 'Profile',
     editProfile: 'Edit Profile',
+    changePassword: 'Change Password',
     follow: 'Follow',
     unfollow: 'Unfollow',
-    followed: 'Following'
+    followed: 'Following',
+    oldPassword: 'Current Password',
+    oldPasswordPlaceholder: 'Enter current password',
+    oldPasswordRequired: 'Please enter current password',
+    newPassword: 'New Password',
+    newPasswordPlaceholder: 'Enter new password (min 6 characters)',
+    newPasswordRequired: 'Please enter new password',
+    passwordMinLength: 'Password must be at least 6 characters',
+    confirmPassword: 'Confirm Password',
+    confirmPasswordPlaceholder: 'Enter new password again',
+    confirmPasswordRequired: 'Please enter new password again',
+    passwordMismatch: 'Passwords do not match',
+    passwordChangeSuccess: 'Password changed successfully, please login again'
   },
   editor: {
     help: 'Help',

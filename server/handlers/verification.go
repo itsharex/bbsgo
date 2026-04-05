@@ -188,7 +188,7 @@ func RegisterWithCode(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 生成 JWT Token
-	token, err := utils.GenerateToken(user.ID, user.Username)
+	token, err := utils.GenerateToken(user.ID, user.Username, user.TokenVersion)
 	if err != nil {
 		log.Printf("register with code: failed to generate token, userID: %d, username: %s, error: %v", user.ID, user.Username, err)
 		errors.Error(w, errors.CodeTokenGenerateFailed, "")

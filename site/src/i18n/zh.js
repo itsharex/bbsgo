@@ -455,9 +455,22 @@ export default {
   profile: {
     title: '个人主页',
     editProfile: '编辑资料',
+    changePassword: '修改密码',
     follow: '关注',
     unfollow: '取消关注',
-    followed: '已关注'
+    followed: '已关注',
+    oldPassword: '旧密码',
+    oldPasswordPlaceholder: '请输入当前密码',
+    oldPasswordRequired: '请输入当前密码',
+    newPassword: '新密码',
+    newPasswordPlaceholder: '请输入新密码（至少6位）',
+    newPasswordRequired: '请输入新密码',
+    passwordMinLength: '密码至少6位',
+    confirmPassword: '确认密码',
+    confirmPasswordPlaceholder: '请再次输入新密码',
+    confirmPasswordRequired: '请再次输入新密码',
+    passwordMismatch: '两次密码输入不一致',
+    passwordChangeSuccess: '密码修改成功，请重新登录'
   },
   editor: {
     help: '帮助',

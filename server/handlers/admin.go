@@ -995,13 +995,16 @@ func ChangeAdminPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 更新密码
-	if err := database.DB.Model(&admin).Update("password_hash", hashedPassword).Error; err != nil {
+	// 更新密码和 TokenVersion
+	if err := database.DB.Model(&admin).Updates(map[string]interface{}{
+		"password_hash":   hashedPassword,
+		"token_version": admin.TokenVersion + 1,
+	}).Error; err != nil {
 		log.Printf("change admin password: failed to update password, adminID: %d, error: %v", adminID, err)
 		errors.Error(w, errors.CodeServerInternal, "")
 		return
 	}
 
-	log.Printf("change admin password: password changed successfully, adminID: %d", adminID)
+	log.Printf("change admin password: password changed successfully, adminID: %d, new token_version: %d", adminID, admin.TokenVersion+1)
 	errors.Success(w, nil)
 }

@@ -170,6 +170,13 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// XSS 安全检查
+	if middleware.ContainsXSS(req.Content) {
+		log.Printf("create comment: potential XSS attack detected, topicID: %d, userID: %d", topicID, userID)
+		errors.Error(w, errors.CodeSensitiveContent, "内容包含不安全字符")
+		return
+	}
+
 	// 查询话题
 	var topic models.Topic
 	if err := database.DB.First(&topic, topicID).Error; err != nil {

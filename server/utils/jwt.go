@@ -12,16 +12,18 @@ import (
 // Claims JWT 载荷结构
 // 包含用户的基本身份信息
 type Claims struct {
-	UserID               uint   `json:"user_id"`  // 用户ID
-	Username             string `json:"username"` // 用户名
+	UserID         uint   `json:"user_id"`   // 用户ID
+	Username       string `json:"username"`   // 用户名
+	TokenVersion  int    `json:"token_version"` // Token版本号，用于密码修改后使旧token失效
 	jwt.RegisteredClaims        // JWT 标准声明（过期时间、签发时间等）
 }
 
 // GenerateToken 生成 JWT 令牌
 // userID: 用户ID
 // username: 用户名
+// tokenVersion: Token版本号
 // 返回: 生成的令牌字符串和错误信息
-func GenerateToken(userID uint, username string) (string, error) {
+func GenerateToken(userID uint, username string, tokenVersion int) (string, error) {
 	// 从配置获取 JWT 密钥，如果未配置则使用默认值
 	secret := config.GetConfig("jwt_secret")
 	if secret == "" {
@@ -34,8 +36,9 @@ func GenerateToken(userID uint, username string) (string, error) {
 
 	// 构建 JWT Claims
 	claims := Claims{
-		UserID:   userID,
-		Username: username,
+		UserID:        userID,
+		Username:      username,
+		TokenVersion:  tokenVersion,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().AddDate(0, 0, expireDays)), // 过期时间
 			IssuedAt:  jwt.NewNumericDate(time.Now()),                           // 签发时间
