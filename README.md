@@ -1,226 +1,226 @@
-# Rainbow BBS: A Modern Community Forum System
+# 彩虹BBS：一个现代化的社区论坛系统
 
-[中文版本](./README-CN.md)
+[English Version](./README-en.md)
 
-> A modern community forum system based on Go + Vue 3, featuring Markdown editing, polling system, badge achievements, and anti-spam mechanisms.
+&gt; 一款基于 Go + Vue 3 的现代化社区论坛系统，支持 Markdown 编辑、投票系统、勋章成就、防刷机制。
 
-## Project Overview
+## 项目简介
 
-Rainbow BBS is a full-featured community forum system with a frontend-backend separated architecture. The backend is developed in Go, and the frontend is built with Vue 3 + Element Plus. The system comes out of the box with detailed Chinese comments, suitable for learning and secondary development.
+彩虹BBS是一个功能完善的社区论坛系统，采用前后端分离架构。后端使用 Go 语言开发，前端使用 Vue 3 + Element Plus 构建。系统开箱即配，带有详细的中文注释，适合学习二次开发。
 
-## Screenshots
+## 产品截图
 
-### Home Page
-![Home Page](snapshot/en/home.png)
+### 首页
+![首页](snapshot/cn/home.png)
 
-### Topic Detail
-![Topic List](snapshot/en/topic.png)
+### 帖子详情
+![话题列表](snapshot/cn/topic.png)
 
-### Edit Topic
-![Post Detail](snapshot/en/post.png)
+### 发表帖子
+![帖子详情](snapshot/cn/post.png)
 
-### User Profile
-![User Profile](snapshot/en/profile.png)
+### 用户资料
+![用户资料](snapshot/cn/profile.png)
 
-### Chat System
-![Chat System](snapshot/en/chat.png)
+### 私信系统
+![私信系统](snapshot/cn/chat.png)
 
-### Admin Console
-![Admin Console](snapshot/en/console.png)
+### 管理后台
+![管理后台](snapshot/cn/console.png)
 
-**Tech Stack:**
+**技术栈：**
 
-- **Backend**: Go + GORM + SQLite + gorilla/mux
-- **Frontend**: Vue 3 + Pinia + Element Plus + Tailwind CSS
-- **Features**: Markdown editing, polling system, badge achievements, private messaging, anti-spam mechanisms
+- **后端**：Go + GORM + SQLite + gorilla/mux
+- **前端**：Vue 3 + Pinia + Element Plus + Tailwind CSS
+- **特性**：Markdown编辑、投票系统、勋章成就、私信通知、防刷机制
 
 ---
 
-## Core Features
+## 核心功能
 
-### 1. Content System
+### 1. 内容系统
 
-#### Forum Management
-The system comes with 8 predefined discussion sections covering various topics:
+#### 版块管理
+系统预设8个讨论区，涵盖技术交流、提问求助、资源分享等话题：
 
 ```
-All | Technology Exchange | Q&amp;A | Industry News | Resource Sharing | Job Hunting | Chit-Chat | Site Management
+全部 | 技术交流 | 提问求助 | 业界资讯 | 资源分享 | 求职招聘 | 灌水闲聊 | 站务管理
 ```
 
-#### Topic Posting
-- Supports Markdown editing (GFM syntax, code highlighting, mathematical formulas)
-- Supports image upload (client-side compression + instant upload detection)
-- Supports video upload (50MB limit)
-- Supports adding polls
-- Supports adding topic tags (up to 3 tags)
+#### 话题发帖
+- 支持 Markdown 编辑（GFM语法、代码高亮、数学公式）
+- 支持图片上传（客户端压缩 + 秒传检测）
+- 支持视频上传（50MB限制）
+- 支持附加投票
+- 支持添加话题标签（最多3个）
 
-#### Comment System
-- Supports @mention replies
-- OP can pin comments
-- OP can mark "Best Comment"
-
----
-
-### 2. Social Interaction
-
-#### Likes and Favorites
-- Like posts or comments
-- Save posts to personal favorites
-
-#### Follow System
-- After following a user, you can view their latest posts in "Follow Feed"
-- Followee receives 1 reputation point reward
-
-#### Private Messaging
-- One-on-one private messages between users
-- Conversation list display
-- Unread message indicator
-
-#### Notification System
-Four notification types, real-time push:
-| Type | Color | Trigger Scenario |
-|------|-------|------------------|
-| Like | Red | Post/comment liked |
-| Comment | Blue | Post commented/reply |
-| Follow | Green | Being followed |
-| Badge | Yellow | New badge earned |
+#### 评论系统
+- 支持 @ 回复功能
+- 楼主可置顶评论
+- 楼主可标记「最佳评论」
 
 ---
 
-### 3. Polling System
+### 2. 社交互动
 
-Create polls for posts to enhance user interaction:
+#### 点赞与收藏
+- 对帖子或评论点赞
+- 收藏帖子到个人收藏夹
 
-**Features:**
-- Single/multiple choice voting
-- 2-10 options
-- Configurable deadline
-- Real-time display of voting results and percentages
-- Each user can vote only once per poll
+#### 关注系统
+- 关注用户后可在「关注动态」中查看其最新帖子
+- 被关注者获得1积分奖励
 
----
+#### 私信系统
+- 用户间一对一私信
+- 会话列表展示
+- 未读消息标记
 
-### 4. Badge System
-
-9 badges divided into three tiers:
-
-#### Basic (basic)
-| Badge | Icon | Condition |
-|-------|------|-----------|
-| Newcomer | newcomer | Register and receive |
-| First Voice | first-post | Publish 1st post |
-| Enthusiastic Replier | first-comment | Publish 1st comment |
-
-#### Advanced (advanced)
-| Badge | Icon | Condition |
-|-------|------|-----------|
-| Hardworking Writer | writer | Publish 50 posts |
-| Community Star | community-star | Publish 1000 comments |
-| Widely Popular | popular | 1000 total likes received |
-| Gold Comment | gold-comment | 5 best comments |
-
-#### Top (top)
-| Badge | Icon | Condition |
-|-------|------|-----------|
-| Opinion Leader | opinion-leader | Followed by 500 users |
-| Community Legend | legend | Registered 2+ years + 200+ posts + 500+ likes + 10+ best comments |
-
-Badges use an automatic check mechanism, awarded automatically after users complete specific actions, with notifications sent.
+#### 通知系统
+四种通知类型，实时推送：
+| 类型 | 颜色 | 触发场景 |
+|------|------|----------|
+| 点赞 | 红色 | 帖子/评论被点赞 |
+| 评论 | 蓝色 | 帖子被评论/被回复 |
+| 关注 | 绿色 | 被用户关注 |
+| 勋章 | 黄色 | 获得新勋章 |
 
 ---
 
-### 5. Reputation and Check-in
+### 3. 投票系统
 
-**Check-in Rules:**
-- Daily check-in
-- Consecutive check-in earns extra reputation rewards
-- Check-in status persisted
+为帖子创建投票，增强用户互动：
 
-**Reputation Rules (configurable):**
-| Action | Reputation |
-|--------|------------|
-| Basic check-in | +10 |
-| Consecutive check-in | +15 |
-| Being followed | +1 (reward for followee) |
+**功能特性：**
+- 单选/多选投票
+- 2-10个选项
+- 可设置截止时间
+- 实时显示投票结果和百分比
+- 每个用户每个投票只能投票一次
 
 ---
 
-### 6. Anti-spam System
+### 4. 勋章系统
 
-Built-in multi-layer protection mechanisms:
+9种勋章，分为三个等级：
 
-#### Rate Limiting
-| Config | Default | Description |
-|--------|---------|-------------|
-| topic_min_interval | 60s | Minimum post interval |
-| comment_min_interval | 30s | Minimum comment interval |
-| max_topics_per_day | 10 | Maximum posts per day |
-| new_user_max_topics_per_day | 3 | Maximum posts per day for new users |
+#### 基础入门（basic）
+| 勋章 | 图标 | 获得条件 |
+|------|------|----------|
+| 初来乍到 | newcomer | 注册即获得 |
+| 首次发声 | first-post | 发布第1个帖子 |
+| 热心回复 | first-comment | 发布第1条评论 |
 
-#### Content Quality Check
-- Empty content detection
-- Pure symbol/emoji detection
-- Content length check (includes Chinese characters + letters + punctuation)
-- Repeated character detection (5+ consecutive repeats)
-- Advertising keyword filtering
-- External link count limit
+#### 进阶成就（advanced）
+| 勋章 | 图标 | 获得条件 |
+|------|------|----------|
+| 笔耕不辍 | writer | 发布50个帖子 |
+| 社区活宝 | community-star | 发布1000条评论 |
+| 广受欢迎 | popular | 累计获得1000个点赞 |
+| 金牌评论 | gold-comment | 获得5次最佳评论 |
 
-#### Report Handling
-- Users can report up to 10 times per day
-- Content automatically hidden after 3 reports
-- Automatic 3-day ban after 5 hides within 7 days
+#### 顶级荣耀（top）
+| 勋章 | 图标 | 获得条件 |
+|------|------|----------|
+| 意见领袖 | opinion-leader | 被500个用户关注 |
+| 社区传奇 | legend | 注册满2年+发帖≥200+获赞≥500+最佳评论≥10 |
+
+勋章采用自动检查机制，在用户完成特定行为后自动授予，并发送通知。
 
 ---
 
-## Technical Architecture
+### 5. 积分与签到
 
-### Project Structure
+**签到规则：**
+- 每日签到1次
+- 连续签到获得额外积分奖励
+- 签到状态持久化
+
+**积分规则（可配置）：**
+| 操作 | 积分 |
+|------|------|
+| 基础签到 | +10 |
+| 连续签到 | +15 |
+| 被关注 | +1（被关注者获得） |
+
+---
+
+### 6. 防刷系统
+
+系统内置多层防护机制：
+
+#### 频率限制
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| topic_min_interval | 60秒 | 发帖最小间隔 |
+| comment_min_interval | 30秒 | 评论最小间隔 |
+| max_topics_per_day | 10 | 每日最大发帖数 |
+| new_user_max_topics_per_day | 3 | 新用户每日最大发帖数 |
+
+#### 内容质量检测
+- 空内容检测
+- 纯符号/表情检测
+- 内容长度检测（汉字+字母+标点都计入）
+- 重复字符检测（5个以上连续重复）
+- 广告关键词过滤
+- 外部链接数量限制
+
+#### 举报处理
+- 用户每日最多举报10次
+- 举报3次后自动隐藏内容
+- 7天内被隐藏5次则自动禁言3天
+
+---
+
+## 技术架构
+
+### 项目结构
 
 ```
 bbsgo/
-├── admin/           # Admin panel Vue project
+├── admin/           # 管理后台 Vue 项目
 │   ├── src/
-│   │   ├── api/           # API encapsulation
-│   │   ├── router/        # Router config
-│   │   ├── stores/         # Pinia state management
-│   │   ├── views/          # Page components
-│   │   └── utils/          # Utility functions
+│   │   ├── api/           # API 封装
+│   │   ├── router/        # 路由配置
+│   │   ├── stores/         # Pinia 状态管理
+│   │   ├── views/          # 页面组件
+│   │   └── utils/          # 工具函数
 │   └── vite.config.js
 │
-├── site/            # Main site Vue project
+├── site/            # 主站 Vue 项目
 │   ├── src/
-│   │   ├── api/           # API encapsulation
-│   │   ├── components/    # Common components
-│   │   ├── router/        # Router config
-│   │   ├── stores/         # Pinia state management
-│   │   ├── utils/          # Utility functions
-│   │   └── views/          # Page components
+│   │   ├── api/           # API 封装
+│   │   ├── components/    # 公共组件
+│   │   ├── router/        # 路由配置
+│   │   ├── stores/         # Pinia 状态管理
+│   │   ├── utils/          # 工具函数
+│   │   └── views/          # 页面组件
 │   └── vite.config.js
 │
-└── server/          # Go backend project
-    ├── handlers/            # HTTP handlers
-    ├── middleware/          # Middleware (auth, CORS)
-    ├── models/              # Data models
-    ├── services/            # Business logic services
-    ├── antispam/            # Anti-spam system
-    ├── storage/             # File storage (local/Qiniu/Aliyun/Tencent)
-    ├── cache/               # Cache layer
-    ├── database/            # Database connection
-    ├── routes/              # Route definitions
-    ├── utils/               # Utility functions
-    └── main.go              # Entry file
+└── server/          # Go 后端项目
+    ├── handlers/            # HTTP 处理器
+    ├── middleware/          # 中间件（认证、CORS）
+    ├── models/              # 数据模型
+    ├── services/            # 业务逻辑服务
+    ├── antispam/            # 防刷系统
+    ├── storage/             # 文件存储（支持本地/七牛/阿里/腾讯）
+    ├── cache/               # 缓存层
+    ├── database/            # 数据库连接
+    ├── routes/              # 路由定义
+    ├── utils/               # 工具函数
+    └── main.go              # 入口文件
 ```
 
 ---
 
-## Quick Deployment
+## 快速部署
 
-### Environment Requirements
+### 环境要求
 - Go 1.18+
 - Node.js 16+
 - SQLite 3
 
-### Start Backend
+### 启动后端
 
 ```bash
 cd server
@@ -228,109 +228,109 @@ go mod tidy
 go run main.go
 ```
 
-Backend service will start on `:8080`.
+后端服务将在 `:8080` 端口启动。
 
-### Start Frontend
+### 启动前端
 
 ```bash
-# Main site
+# 主站
 cd site
 npm install
 npm run dev
 
-# Admin panel
+# 管理后台
 cd admin
 npm install
 npm run dev
 ```
 
-### Initialize Data
+### 初始化数据
 
-On first launch, the system will automatically create:
-- 8 default forums
-- 12 topic tags
-- 1 admin account (admin/12345678)
-- 10 test users
-- 10 preset posts
-
----
-
-## Default Accounts
-
-- **Admin**: admin / 12345678
-- **Test Users**: testuser1 ~ testuser10 / 123456
+首次启动，系统会自动创建：
+- 8个默认版块
+- 12个话题标签
+- 1个管理员账号（admin/12345678）
+- 10个测试用户
+- 10条预设帖子
 
 ---
 
-## Open Source Libraries Used
+## 默认账号
 
-### Backend (Go)
-
-| Library | Version | Purpose |
-|---------|---------|---------|
-| [GORM](https://gorm.io) | v1.25.5 | ORM library for database operations |
-| [SQLite Driver](https://github.com/mattn/go-sqlite3) | v1.14.17 | SQLite database driver |
-| [gorilla/mux](https://github.com/gorilla/mux) | v1.8.1 | HTTP router and dispatcher |
-| [golang-jwt/jwt](https://github.com/golang-jwt/jwt) | v5.2.0 | JWT authentication |
-| [ristretto](https://github.com/dgraph-io/ristretto) | v0.1.1 | High performance cache |
-| [Qiniu SDK](https://github.com/qiniu/go-sdk) | v7.18.2 | Qiniu Cloud Storage |
-| [Aliyun OSS SDK](https://github.com/aliyun/aliyun-oss-go-sdk) | v2.1.0 | Alibaba Cloud OSS |
-| [Tencent COS SDK](https://github.com/tencentyun/cos-go-sdk-v5) | v0.7.45 | Tencent Cloud COS |
-| [x/crypto](https://golang.org/x/crypto) | v0.19.0 | Cryptography utilities |
-
-### Frontend (Site)
-
-| Library | Version | Purpose |
-|---------|---------|---------|
-| [Vue 3](https://vuejs.org) | v3.4.0 | Progressive JavaScript framework |
-| [Vue Router](https://router.vuejs.org) | v4.2.0 | Official router for Vue |
-| [Pinia](https://pinia.vuejs.org) | v2.1.0 | Intuitive state management |
-| [Element Plus](https://element-plus.org) | v2.13.6 | Vue 3 UI component library |
-| [Tailwind CSS](https://tailwindcss.com) | v3.4.0 | Utility-first CSS framework |
-| [ByteMD](https://github.com/bytedance/bytemd) | v1.22.0 | Markdown editor component |
-| [Highlight.js](https://highlightjs.org) | v11.11.1 | Syntax highlighting |
-| [Axios](https://axios-http.com) | v1.6.0 | Promise based HTTP client |
-| [VueUse](https://vueuse.org) | v10.7.0 | Collection of Vue composition utilities |
-| [markdown-it](https://github.com/markdown-it/markdown-it) | v14.1.1 | Markdown parser |
-| [Turndown](https://github.com/mixmark-io/turndown) | v7.2.2 | HTML to Markdown converter |
-| [html2canvas](https://html2canvas.hertzen.com) | v1.4.1 | HTML to canvas renderer |
-| [qrcode](https://github.com/soldair/node-qrcode) | v1.5.4 | QR code generator |
-
-### Frontend (Admin)
-
-| Library | Version | Purpose |
-|---------|---------|---------|
-| [Vue 3](https://vuejs.org) | v3.4.0 | Progressive JavaScript framework |
-| [Vue Router](https://router.vuejs.org) | v4.2.0 | Official router for Vue |
-| [Pinia](https://pinia.vuejs.org) | v2.1.0 | Intuitive state management |
-| [Element Plus](https://element-plus.org) | v2.13.6 | Vue 3 UI component library |
-| [Element Plus Icons](https://github.com/element-plus/element-plus-icons) | v2.3.2 | Icon library |
-| [Lucide Vue](https://lucide.dev) | v1.0.0 | Beautiful & consistent icons |
-| [Vue I18n](https://vue-i18n.intlify.dev) | v9.14.0 | Internationalization plugin |
-| [Axios](https://axios-http.com) | v1.6.0 | Promise based HTTP client |
-| [VueUse](https://vueuse.org) | v10.7.0 | Collection of Vue composition utilities |
-| [Vite](https://vitejs.dev) | v5.0.0 | Next generation frontend tooling |
-
-### Build Tools
-
-- [Vite](https://vitejs.dev) - Next generation frontend tooling
-- [Tailwind CSS](https://tailwindcss.com) - Utility-first CSS framework
-- [PostCSS](https://postcss.org) - A tool for transforming CSS with JavaScript
-- [Autoprefixer](https://github.com/postcss/autoprefixer) - Parse CSS and add vendor prefixes
+- **管理员**：admin / 12345678
+- **测试用户**：testuser1 ~ testuser10 / 123456
 
 ---
 
-## Summary
+## 使用的开源库
 
-Rainbow BBS is a full-featured community forum system with clear code structure and detailed comments, suitable for:
+### 后端 (Go)
 
-1. **Learning Reference**: Frontend-backend separated architecture, Vue 3 + Go in action
-2. **Secondary Development**: Modular design, easy to extend
-3. **Quick Launch**: Out of the box, with detailed documentation
+| 库 | 版本 | 用途 |
+|----|------|------|
+| [GORM](https://gorm.io) | v1.25.5 | 数据库 ORM 库 |
+| [modernc.org/sqlite](https://modernc.org/sqlite) | v1.48.2 | 纯 Go SQLite 驱动（无需 CGO）|
+| [gorilla/mux](https://github.com/gorilla/mux) | v1.8.1 | HTTP 路由和分发器 |
+| [golang-jwt/jwt](https://github.com/golang-jwt/jwt) | v5.2.0 | JWT 认证 |
+| [ristretto](https://github.com/dgraph-io/ristretto) | v0.1.1 | 高性能缓存 |
+| [七牛云 SDK](https://github.com/qiniu/go-sdk) | v7.18.2 | 七牛云对象存储 |
+| [阿里云 OSS SDK](https://github.com/aliyun/aliyun-oss-go-sdk) | v2.1.0 | 阿里云对象存储 |
+| [腾讯云 COS SDK](https://github.com/tencentyun/cos-go-sdk-v5) | v0.7.45 | 腾讯云对象存储 |
+| [x/crypto](https://golang.org/x/crypto) | v0.19.0 | 加密工具库 |
 
-If you're looking for a reference project for a community forum or need to develop a similar product, Rainbow BBS is a good choice.
+### 前端 (主站 Site)
+
+| 库 | 版本 | 用途 |
+|----|------|------|
+| [Vue 3](https://vuejs.org) | v3.4.0 | 渐进式 JavaScript 框架 |
+| [Vue Router](https://router.vuejs.org) | v4.2.0 | Vue 官方路由 |
+| [Pinia](https://pinia.vuejs.org) | v2.1.0 | 直观的状态管理 |
+| [Element Plus](https://element-plus.org) | v2.13.6 | Vue 3 UI 组件库 |
+| [Tailwind CSS](https://tailwindcss.com) | v3.4.0 | 实用优先的 CSS 框架 |
+| [ByteMD](https://github.com/bytedance/bytemd) | v1.22.0 | Markdown 编辑器组件 |
+| [Highlight.js](https://highlightjs.org) | v11.11.1 | 语法高亮 |
+| [Axios](https://axios-http.com) | v1.6.0 | 基于 Promise 的 HTTP 客户端 |
+| [VueUse](https://vueuse.org) | v10.7.0 | Vue 组合式工具集 |
+| [markdown-it](https://github.com/markdown-it/markdown-it) | v14.1.1 | Markdown 解析器 |
+| [Turndown](https://github.com/mixmark-io/turndown) | v7.2.2 | HTML 转 Markdown 转换器 |
+| [html2canvas](https://html2canvas.hertzen.com) | v1.4.1 | HTML 转 Canvas 渲染器 |
+| [qrcode](https://github.com/soldair/node-qrcode) | v1.5.4 | 二维码生成器 |
+
+### 前端 (管理后台 Admin)
+
+| 库 | 版本 | 用途 |
+|----|------|------|
+| [Vue 3](https://vuejs.org) | v3.4.0 | 渐进式 JavaScript 框架 |
+| [Vue Router](https://router.vuejs.org) | v4.2.0 | Vue 官方路由 |
+| [Pinia](https://pinia.vuejs.org) | v2.1.0 | 直观的状态管理 |
+| [Element Plus](https://element-plus.org) | v2.13.6 | Vue 3 UI 组件库 |
+| [Element Plus Icons](https://github.com/element-plus/element-plus-icons) | v2.3.2 | 图标库 |
+| [Lucide Vue](https://lucide.dev) | v1.0.0 | 美观一致的图标 |
+| [Vue I18n](https://vue-i18n.intlify.dev) | v9.14.0 | 国际化插件 |
+| [Axios](https://axios-http.com) | v1.6.0 | 基于 Promise 的 HTTP 客户端 |
+| [VueUse](https://vueuse.org) | v10.7.0 | Vue 组合式工具集 |
+| [Vite](https://vitejs.dev) | v5.0.0 | 下一代前端构建工具 |
+
+### 构建工具
+
+- [Vite](https://vitejs.dev) - 下一代前端构建工具
+- [Tailwind CSS](https://tailwindcss.com) - 实用优先的 CSS 框架
+- [PostCSS](https://postcss.org) - 使用 JavaScript 转换 CSS 的工具
+- [Autoprefixer](https://github.com/postcss/autoprefixer) - 解析 CSS 并添加浏览器前缀
 
 ---
 
-*Welcome to Star and Fork, feel free to raise Issues.*
+## 总结
+
+彩虹BBS是一个功能完善的社区论坛系统，代码结构清晰，注释详细，适合：
+
+1. **学习参考**：前后端分离架构，Vue 3 + Go 实战
+2. **二次开发**：模块化设计，易于扩展
+3. **快速上线**：开箱即用，配有详细文档
+
+如果你正在寻找一个社区论坛的参考项目，或者需要二次开发一个类似的产品，彩虹BBS将是一个不错的选择。
+
+---
+
+*欢迎 Star 和 Fork，有问题可以提 Issue。*
 

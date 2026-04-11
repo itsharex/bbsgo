@@ -9,6 +9,7 @@
               <img :src="siteConfig.site_logo || defaultLogo" class="w-7 h-7 sm:w-8 sm:h-8 object-contain">
               <span class="ml-2 text-lg sm:text-xl font-bold text-gray-800">{{ siteConfig.site_name || '彩虹BBS' }}</span>
             </router-link>
+
           </div>
           <div v-if="!isAuthPage" class="flex items-center space-x-2 sm:space-x-4">
             <div class="relative">
@@ -22,6 +23,10 @@
                 </svg>
               </button>
             </div>
+            <a href="/want.html"
+              class="ml-3 sm:ml-4 px-2.5 sm:px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs sm:text-sm font-medium rounded-lg hover:opacity-90 transition-opacity">
+              {{ t('common.iWant') }}
+            </a>            
             <!-- 语言切换 - 所有人都能看到 -->
             <el-dropdown @command="switchLanguage" trigger="click">
               <span class="language-btn">

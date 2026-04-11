@@ -33,7 +33,8 @@ export default {
     operationSuccess: 'Operation successful',
     operationFailed: 'Operation failed',
     deleteConfirm: 'Are you sure to delete? This cannot be undone.',
-    deleteTitle: 'Delete'
+    deleteTitle: 'Delete',
+    iWant: 'I Want'
   },
   nav: {
     personalCenter: 'Personal Center',

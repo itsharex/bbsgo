@@ -33,7 +33,8 @@ export default {
     operationSuccess: '操作成功',
     operationFailed: '操作失败',
     deleteConfirm: '确定要删除吗？删除后无法恢复。',
-    deleteTitle: '删除'
+    deleteTitle: '删除',
+    iWant: '我想要'
   },
   nav: {
     personalCenter: '个人中心',
