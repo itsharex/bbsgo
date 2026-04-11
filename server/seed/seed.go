@@ -139,7 +139,7 @@ func seedConfigsEn() {
 			Key   string
 			Value string
 		}{
-			{"site_name", "RainbowBBS"},
+			{"site_name", "Rainbow BBS"},
 			{"site_logo", ""},
 			{"site_icon", ""},
 			{"site_description", "A modern community forum system"},
@@ -152,7 +152,7 @@ func seedConfigsEn() {
 			{"email_user", ""},
 			{"email_password", ""},
 			{"email_from", ""},
-			{"email_from_name", "RainbowBBS"},
+			{"email_from_name", "Rainbow BBS"},
 			{"qiniu_access_key", ""},
 			{"qiniu_secret_key", ""},
 			{"qiniu_bucket", ""},

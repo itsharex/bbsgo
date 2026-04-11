@@ -7,12 +7,12 @@
           <div class="flex items-center">
             <router-link to="/" class="flex items-center">
               <img :src="siteConfig.site_logo || defaultLogo" class="w-7 h-7 sm:w-8 sm:h-8 object-contain">
-              <span class="ml-2 text-lg sm:text-xl font-bold text-gray-800">{{ siteConfig.site_name || '彩虹BBS' }}</span>
+              <span class="ml-2  text-lg sm:text-xl font-bold text-gray-800">{{ siteConfig.site_name || '彩虹BBS' }}</span>
             </router-link>
 
           </div>
           <div v-if="!isAuthPage" class="flex items-center space-x-2 sm:space-x-4">
-            <div class="relative">
+            <div class="relative hidden sm:block">
               <input type="text" :placeholder="t('common.search')"
                 class="w-32 sm:w-64 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-gray-200 text-xs sm:text-sm focus:outline-none focus:border-blue-400"
                 @keypress.enter="handleSearch" v-model="searchKeyword">
@@ -24,14 +24,14 @@
               </button>
             </div>
             <a href="/want.html"
-              class="ml-3 sm:ml-4 px-2.5 sm:px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs sm:text-sm font-medium rounded-lg hover:opacity-90 transition-opacity">
+              class="ml-3 text-nowrap sm:ml-4 px-2.5 sm:px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs sm:text-sm font-medium rounded-lg hover:opacity-90 transition-opacity">
               {{ t('common.iWant') }}
             </a>            
             <!-- 语言切换 - 所有人都能看到 -->
             <el-dropdown @command="switchLanguage" trigger="click">
               <span class="language-btn">
                 <Globe :size="16" />
-                <span>{{ locale === 'zh' ? '中文' : 'EN' }}</span>
+                <span class="text-nowrap">{{ locale === 'zh' ? '中文' : 'EN' }}</span>
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
@@ -110,7 +110,7 @@
                     <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                     </svg>
-                    <span class="text-sm">{{ t('nav.logout') }}</span>
+                    <span class="text-sm text-nowrap">{{ t('nav.logout') }}</span>
                   </button>
                 </div>
               </div>
@@ -119,7 +119,7 @@
             <template v-else>
               <router-link to="/login" class="text-gray-600 hover:text-blue-500 text-sm">{{ t('common.login') }}</router-link>
               <router-link v-if="configStore.state.allow_register" to="/register"
-                class="bg-blue-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-600">{{ t('common.register') }}</router-link>
+                class="bg-blue-500 text-nowrap text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-600">{{ t('common.register') }}</router-link>
             </template>
           </div>
         </div>
